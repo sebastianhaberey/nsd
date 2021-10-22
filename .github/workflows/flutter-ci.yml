@@ -22,22 +22,22 @@ jobs:
           java-version: '12.x'
 
       - name: Set up Flutter environment
-      - uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v1
         with:
           channel: 'stable' # 'dev', 'alpha', default to: 'stable'
           flutter-version: '2.5.3' # you can also specify exact version of flutter
 
       - name: Get Flutter dependencies
-      - run: flutter pub get
+        run: flutter pub get
 
       - name: Check code format
-      - run: flutter format --set-exit-if-changed .
+        run: flutter format --set-exit-if-changed .
 
       - name: Analyze code
-      - run: flutter analyze .
+        run: flutter analyze .
 
       - name: Run tests with code coverage
-      - run: flutter test --coverage
+        run: flutter test --coverage
 
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v1
