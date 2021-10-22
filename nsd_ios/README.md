@@ -1,6 +1,6 @@
 # nsd_ios
 
-The iOS implementation of [nsd][1].
+The iOS implementation of the [`nsd`][1] plugin.
 
 ## Usage
 

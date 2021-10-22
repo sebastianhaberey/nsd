@@ -1,6 +1,6 @@
 # nsd_platform_interface
 
-A common platform interface for the [nsd][1] plugin.
+A common platform interface for the [`nsd`][1] plugin
 
 ## Usage
 
