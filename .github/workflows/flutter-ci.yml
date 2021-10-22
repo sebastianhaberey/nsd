@@ -27,7 +27,7 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Check code format
+      - name: Verify code format
         run: flutter format --set-exit-if-changed .
 
       - name: Analyze code
@@ -39,7 +39,7 @@ jobs:
       - name: Report code coverage # see https://github.com/marketplace/actions/report-lcov
         uses: zgosalvez/github-actions-report-lcov@v1
         with:
-          coverage-files: coverage/lcov.*.info
+          coverage-files: coverage/lcov.info
           artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: .
