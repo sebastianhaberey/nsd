@@ -1,0 +1,7 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - prefer_single_quotes
+    - prefer_final_locals
+    - unawaited_futures
