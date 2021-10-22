@@ -26,7 +26,8 @@ await nsd.stopDiscovery(discovery);
 ```dart
 final nsd = NsdPlatform.instance;
 
-final registration = await nsd.register(ServiceInfo(name: 'My Service', type: '_http._tcp'));
+const serviceInfo = ServiceInfo(name: 'My Service', type: '_http._tcp');
+final registration = await nsd.register(serviceInfo);
 
 ...
 
