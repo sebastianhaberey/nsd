@@ -18,10 +18,6 @@ String? deserializeString(arguments, String key) =>
 Map<String, dynamic> serializeServiceType(String serviceType) =>
     {'service.type': serviceType};
 
-String? deserializeServiceType(dynamic arguments) {
-  return deserializeString(arguments, 'service.type');
-}
-
 Map<String, dynamic> serializeErrorCause(ErrorCause errorCause) =>
     {'error.cause': enumValueToString(errorCause)};
 
