@@ -13,7 +13,7 @@ final nsd = NsdPlatform.instance;
 
 final discovery = await nsd.startDiscovery('_http._tcp');
 discovery.addListener(() {
-  // listener is called each time a service is added to / removed from discovery.services
+  // listener is called each time a service info is added to / removed from discovery.serviceInfos
 });
 
 ...

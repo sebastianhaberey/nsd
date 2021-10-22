@@ -209,7 +209,7 @@ class DiscoveryState extends State<DiscoveryWidget> {
   }
 
   List<DataRow> buildDataRows(Discovery discovery) {
-    return discovery.services
+    return discovery.serviceInfos
         .map((e) => DataRow(
               cells: <DataCell>[
                 DataCell(Text(e.name ?? 'unknown')),

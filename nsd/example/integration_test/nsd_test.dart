@@ -56,7 +56,7 @@ Future<void> waitForCondition(Discovery discovery,
   final completer = Completer<void>();
 
   listener() {
-    if (condition(discovery.services)) {
+    if (condition(discovery.serviceInfos)) {
       completer.complete();
     }
   }

@@ -108,7 +108,7 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.services.length, 1);
+      expect(discovery.serviceInfos.length, 1);
     });
 
     test('Client is notified if service is lost', () async {
@@ -128,14 +128,14 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.services.length, 1);
+      expect(discovery.serviceInfos.length, 1);
 
       await mockReply('onServiceLost', {
         ...serializeAgentId(capturedAgentId),
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.services.length, 0);
+      expect(discovery.serviceInfos.length, 0);
     });
   });
 
