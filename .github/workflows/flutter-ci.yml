@@ -39,7 +39,6 @@ jobs:
       - name: Report code coverage # see https://github.com/marketplace/actions/report-lcov
         uses: zgosalvez/github-actions-report-lcov@v1
         with:
-          coverage-files: coverage/lcov.info
+          coverage-files: nsd_platform_interface/coverage/lcov.info
           artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: nsd_platform_interface
