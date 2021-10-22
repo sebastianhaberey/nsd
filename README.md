@@ -1,3 +1,1 @@
-# nsd 
-
-Please find the documentation [here](nsd/README.md).
+Documentation [here](nsd/README.md).
