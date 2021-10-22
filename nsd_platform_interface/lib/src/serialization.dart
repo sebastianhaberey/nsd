@@ -3,15 +3,6 @@ import 'dart:typed_data';
 import 'nsd_platform.dart';
 import 'utilities.dart';
 
-class SerializationError extends Error {
-  final String message;
-
-  SerializationError(this.message);
-
-  @override
-  String toString() => message;
-}
-
 String? deserializeString(arguments, String key) =>
     Map<String, dynamic>.from(arguments)[key];
 
