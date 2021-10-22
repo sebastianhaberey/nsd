@@ -2,7 +2,7 @@
 
 ## Current
 
-- android, macos, platform: integration test (& fix) txt resolution
+- android, macos, platform: test (& fix) txt resolution
 - use proper logging library and let user configure log level for plugin
 - macos: unit tests for helper methods
 - android: unit tests for helper methods
