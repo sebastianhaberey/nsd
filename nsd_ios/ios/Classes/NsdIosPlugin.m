@@ -10,6 +10,6 @@
 
 @implementation NsdIosPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [NsdIosPlugin registerWithRegistrar:registrar];
+  [SwiftNsdIosPlugin registerWithRegistrar:registrar];
 }
 @end
