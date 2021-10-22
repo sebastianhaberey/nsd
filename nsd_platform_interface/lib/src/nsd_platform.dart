@@ -145,17 +145,17 @@ class Discovery with ChangeNotifier {
 
   Discovery(this.id);
 
-  final List<ServiceInfo> _items = [];
+  final List<ServiceInfo> _services = [];
 
-  List<ServiceInfo> get items => List.unmodifiable(_items);
+  List<ServiceInfo> get services => List.unmodifiable(_services);
 
-  void add(ServiceInfo element) {
-    _items.add(element);
+  void add(ServiceInfo serviceInfo) {
+    _services.add(serviceInfo);
     notifyListeners();
   }
 
-  void remove(ServiceInfo element) {
-    _items.removeWhere((e) => isSameService(e, element));
+  void remove(ServiceInfo serviceInfo) {
+    _services.removeWhere((e) => isSameService(e, serviceInfo));
     notifyListeners();
   }
 }

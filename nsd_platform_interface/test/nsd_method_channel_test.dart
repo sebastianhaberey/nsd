@@ -12,12 +12,12 @@ const channelName = 'com.haberey/nsd';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MethodChannelNsdPlatform _platform;
+  late MethodChannelNsdPlatform _nsd;
   late MethodChannel _methodChannel;
   late Map<String, Function(String agentId, dynamic arguments)> _mockHandlers;
 
   setUp(() async {
-    _platform = MethodChannelNsdPlatform();
+    _nsd = MethodChannelNsdPlatform();
     _methodChannel = const MethodChannel(channelName);
     _mockHandlers = HashMap();
 
@@ -37,7 +37,7 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
       };
 
-      await _platform.startDiscovery('foo');
+      await _nsd.startDiscovery('foo');
     });
 
     test('Start fails if native code reports failure', () async {
@@ -54,7 +54,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_platform.startDiscovery('foo'), throwsA(matcher));
+      expect(_nsd.startDiscovery('foo'), throwsA(matcher));
     });
 
     test('Stop succeeds if native code reports success', () async {
@@ -66,8 +66,8 @@ void main() {
         mockReply('onDiscoveryStopSuccessful', serializeAgentId(agentId));
       };
 
-      final discovery = await _platform.startDiscovery('foo');
-      await _platform.stopDiscovery(discovery);
+      final discovery = await _nsd.startDiscovery('foo');
+      await _nsd.stopDiscovery(discovery);
     });
 
     test('Stop fails if native code reports failure', () async {
@@ -83,13 +83,13 @@ void main() {
         });
       };
 
-      final discovery = await _platform.startDiscovery('foo');
+      final discovery = await _nsd.startDiscovery('foo');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_platform.stopDiscovery(discovery), throwsA(matcher));
+      expect(_nsd.stopDiscovery(discovery), throwsA(matcher));
     });
 
     test('Client is notified if service is discovered', () async {
@@ -100,8 +100,7 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
       };
 
-      final discovery =
-          await _platform.startDiscovery('foo', autoResolve: false);
+      final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
       await mockReply('onServiceDiscovered', {
@@ -109,7 +108,7 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.items.length, 1);
+      expect(discovery.services.length, 1);
     });
 
     test('Client is notified if service is lost', () async {
@@ -120,8 +119,7 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
       };
 
-      final discovery =
-          await _platform.startDiscovery('foo', autoResolve: false);
+      final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
 
@@ -130,14 +128,14 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.items.length, 1);
+      expect(discovery.services.length, 1);
 
       await mockReply('onServiceLost', {
         ...serializeAgentId(capturedAgentId),
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.items.length, 0);
+      expect(discovery.services.length, 0);
     });
   });
 
@@ -153,7 +151,7 @@ void main() {
       };
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
-      final result = await _platform.resolve(serviceInfo);
+      final result = await _nsd.resolve(serviceInfo);
 
       // result should contain the original fields plus the updated host / port
       expect(result.name, 'Some name');
@@ -178,7 +176,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_platform.resolve(serviceInfo), throwsA(matcher));
+      expect(_nsd.resolve(serviceInfo), throwsA(matcher));
     });
   });
 
@@ -192,7 +190,7 @@ void main() {
         });
       };
 
-      final registration = await _platform
+      final registration = await _nsd
           .register(const ServiceInfo(name: 'Some name', type: 'foo'));
 
       final serviceInfo = registration.serviceInfo;
@@ -218,7 +216,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_platform.register(serviceInfo), throwsA(matcher));
+      expect(_nsd.register(serviceInfo), throwsA(matcher));
     });
 
     test('Unregistration succeeds if native code reports success', () async {
@@ -239,8 +237,8 @@ void main() {
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
 
-      final registration = await _platform.register(serviceInfo);
-      await _platform.unregister(registration);
+      final registration = await _nsd.register(serviceInfo);
+      await _nsd.unregister(registration);
     });
 
     test('Unregistration fails if native code reports failure', () async {
@@ -262,13 +260,13 @@ void main() {
       };
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
-      final registration = await _platform.register(serviceInfo);
+      final registration = await _nsd.register(serviceInfo);
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_platform.unregister(registration), throwsA(matcher));
+      expect(_nsd.unregister(registration), throwsA(matcher));
     });
   });
 

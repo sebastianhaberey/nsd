@@ -6,4 +6,30 @@ A Flutter plugin for Network Service Discovery (NSD). Supports Android, iOS and 
 
 ## Usage
 
-This plugin is not released yet.
+### Service Discovery
+
+```dart
+final nsd = NsdPlatform.instance;
+
+final discovery = await nsd.startDiscovery('_http._tcp');
+discovery.addListener(() {
+  // listener is called each time a service is added to / removed from discovery.services
+});
+
+...
+
+await nsd.stopDiscovery(discovery);
+```
+
+### Service Registration
+
+```dart
+final nsd = NsdPlatform.instance;
+
+const serviceInfo = ServiceInfo(name: 'My Service', type: '_http._tcp');
+final registration = await nsd.register(serviceInfo);
+
+...
+
+await nsd.unregister(registration);
+```
