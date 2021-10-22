@@ -1,3 +1,3 @@
-# nsd_example
+# nsd example
 
-TODO: README
+Demonstrates how to use the [nsd][1] plugin.
