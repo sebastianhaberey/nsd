@@ -18,6 +18,13 @@
 - figure out how to deal with logging spam on console
 - speed up name allocation by using running discoveries
 
+## Dustbin
+
+- platform: introduce timeouts to prevent stale objects & stale futures
+- platform: discriminate errors into client errors and programming errors
+- platform: unit tests for DiscoveryAgent / RegistrationAgent
+- platform: id to identify service info when discovered / lost / resolved
+
 ## Done
 
 - platform: tests for resolve method
@@ -31,10 +38,3 @@
 - android: use handler id everywhere
 - macos: register
 - platform: extend example application to support multiple discoveries and multiple registrations
-
-# Dismissed
-
-- platform: introduce timeouts to prevent stale objects & stale futures
-- platform: discriminate errors into client errors and programming errors
-- platform: unit tests for DiscoveryAgent / RegistrationAgent
-- platform: id to identify service info when discovered / lost / resolved
