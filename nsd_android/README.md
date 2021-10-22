@@ -1,6 +1,6 @@
 # nsd_android
 
-The Android implementation of [nsd][1].
+The Android implementation of the [`nsd`][1] plugin
 
 ## Usage
 
