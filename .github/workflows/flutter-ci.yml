@@ -15,13 +15,8 @@ jobs:
       run:
         working-directory: nsd_platform_interface
     steps:
-      - name: Set up Java environment
+      - name: Check out repository
         uses: actions/checkout@v2
-
-      - name: Foo
-        uses: actions/setup-java@v1
-        with:
-          java-version: '12.x'
 
       - name: Set up Flutter environment
         uses: subosito/flutter-action@v1
@@ -41,9 +36,10 @@ jobs:
       - name: Run tests with code coverage
         run: flutter test --coverage
 
-      - name: Report code coverage
+      - name: Report code coverage # see https://github.com/marketplace/actions/report-lcov
         uses: zgosalvez/github-actions-report-lcov@v1
         with:
           coverage-files: coverage/lcov.*.info
           artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: .
