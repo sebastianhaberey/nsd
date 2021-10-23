@@ -28,16 +28,18 @@ void main() {
 
     final registrations = await Future.wait(futures);
 
+    // wait for a minimum of ten seconds to ensure there are not more registered services than expected
     await waitForCondition(
-        discovery,
-        (serviceInfos) =>
-            findNameStartingWith(serviceInfos, name).length == serviceCount);
+        () =>
+            findNameStartingWith(discovery.serviceInfos, name).length ==
+            serviceCount,
+        minWait: const Duration(seconds: 10));
 
     // unregister simultaneously for a bit of stress
     await Future.wait(registrations.map((e) => platform.unregister(e)));
 
-    await waitForCondition(discovery,
-        (serviceInfos) => findNameStartingWith(serviceInfos, name).isEmpty);
+    await waitForCondition(
+        () => findNameStartingWith(discovery.serviceInfos, name).isEmpty);
 
     await platform.stopDiscovery(discovery);
   });
@@ -51,17 +53,26 @@ Iterable<ServiceInfo> findNameStartingWith(
         List<ServiceInfo> serviceInfos, String name) =>
     serviceInfos.where((serviceInfo) => serviceInfo.name!.startsWith(name));
 
-Future<void> waitForCondition(Discovery discovery,
-    bool Function(List<ServiceInfo> serviceInfos) condition) async {
-  final completer = Completer<void>();
+Future<void> waitForCondition(bool Function() condition,
+    {Duration minWait = const Duration(),
+    Duration maxWait = const Duration(minutes: 1)}) async {
+  final start = DateTime.now();
+  final min = start.add(minWait);
+  final max = start.add(maxWait);
 
-  listener() {
-    if (condition(discovery.serviceInfos)) {
-      completer.complete();
+  while (true) {
+    final now = DateTime.now();
+
+    if (min.isBefore(now)) {
+      if (condition()) {
+        return;
+      }
+
+      if (now.isAfter(max)) {
+        throw TimeoutException('Timeout while waiting for condition', maxWait);
+      }
     }
-  }
 
-  discovery.addListener(listener);
-  return completer.future
-      .whenComplete(() => discovery.removeListener(listener));
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
 }
