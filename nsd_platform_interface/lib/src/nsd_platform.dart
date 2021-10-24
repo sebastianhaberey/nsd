@@ -92,7 +92,7 @@ class ServiceInfo {
   //   - Attribute present, with no value (e.g. "passreq" -- password required for this service)
   //   - Attribute present, with empty value (e.g. "PlugIns=" -- server supports plugins, but none are presently installed)
   //   - Attribute present, with non-empty value (e.g. "PlugIns=JPEG,MPEG2,MPEG4")
-  final Map<String, Uint8List>? txt;
+  final Map<String, Uint8List?>? txt;
 
   @override
   String toString() =>

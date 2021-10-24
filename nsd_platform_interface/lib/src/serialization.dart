@@ -53,7 +53,7 @@ ServiceInfo? deserializeServiceInfo(dynamic arguments) {
   final host = data['service.host'] as String?;
   final port = data['service.port'] as int?;
   final txt = data['service.txt'] != null
-      ? Map<String, Uint8List>.from(data['service.txt'])
+      ? Map<String, Uint8List?>.from(data['service.txt'])
       : null;
 
   if (name == null &&

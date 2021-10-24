@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -7,6 +9,7 @@ import 'package:nsd_example/logging.dart';
 import 'package:provider/provider.dart';
 
 const String serviceType = '_http._tcp';
+const utf8encoder = Utf8Encoder();
 
 void main() {
   runApp(const MyApp());
@@ -53,8 +56,11 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> addRegistration() async {
-    final serviceInfo =
-        ServiceInfo(name: 'Some Service', type: serviceType, port: nextPort);
+    final serviceInfo = ServiceInfo(
+        name: 'Some Service',
+        type: serviceType,
+        port: nextPort,
+        txt: createTxt());
 
     final registration = await nsd.register(serviceInfo).catchError((error) {
       logError(this, error);
@@ -255,6 +261,17 @@ class RegistrationWidget extends StatelessWidget {
   }
 }
 
-String shorten(String? handle) {
-  return handle?.toString().substring(0, 4) ?? 'unknown';
+/// Shortens the id for display on-screen.
+String shorten(String? id) {
+  return id?.toString().substring(0, 4) ?? 'unknown';
+}
+
+/// Creates a txt attribute object that showcases the most common use cases.
+Map<String, Uint8List?> createTxt() {
+  return <String, Uint8List?>{
+    'attribute-a': utf8encoder.convert('Löwe'),
+    'attribute-b': Uint8List(0),
+    'attribute-c': null,
+    'attribute-d': Uint8List.fromList([0, 1, 2, 3])
+  };
 }
