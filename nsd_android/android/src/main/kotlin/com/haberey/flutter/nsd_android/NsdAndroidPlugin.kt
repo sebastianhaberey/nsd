@@ -58,13 +58,13 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun startDiscovery(methodCall: MethodCall, result: Result) {
-        val serviceType = deserializeServiceType(methodCall)
+        val serviceType = deserializeServiceType(methodCall.arguments())
             ?: throw NsdError(
                 ErrorCause.ILLEGAL_ARGUMENT,
                 "Cannot start discovery: expected service type"
             )
 
-        val agentId = deserializeAgentId(methodCall) ?: throw NsdError(
+        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
             "Cannot start discovery: expected agent id"
         )
@@ -82,7 +82,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun stopDiscovery(methodCall: MethodCall, result: Result) {
-        val agentId = deserializeAgentId(methodCall) ?: throw NsdError(
+        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
             "Cannot stop discovery: expected agent id"
         )
@@ -92,7 +92,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun register(methodCall: MethodCall, result: Result) {
-        val serviceInfo = deserializeServiceInfo(methodCall);
+        val serviceInfo = deserializeServiceInfo(methodCall.arguments())
         if (serviceInfo == null || serviceInfo.serviceName == null || serviceInfo.serviceType == null || serviceInfo.port == 0) {
             throw NsdError(
                 ErrorCause.ILLEGAL_ARGUMENT,
@@ -100,12 +100,12 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             )
         }
 
-        val agentId = deserializeAgentId(methodCall) ?: throw NsdError(
+        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
             "Cannot register service: expected agent id"
         )
 
-        val registrationListener = createRegistrationListener(agentId, serviceInfo)
+        val registrationListener = createRegistrationListener(agentId)
         registrationListeners[agentId] = registrationListener
 
         nsdManager.registerService(
@@ -116,7 +116,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun resolve(methodCall: MethodCall, result: Result) {
-        val serviceInfo = deserializeServiceInfo(methodCall);
+        val serviceInfo = deserializeServiceInfo(methodCall.arguments())
         if (serviceInfo == null || serviceInfo.serviceName == null || serviceInfo.serviceType == null) {
             throw NsdError(
                 ErrorCause.ILLEGAL_ARGUMENT,
@@ -124,7 +124,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             )
         }
 
-        val agentId = deserializeAgentId(methodCall) ?: throw NsdError(
+        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
             "Cannot resolve service: expected agent id"
         )
@@ -141,7 +141,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun unregister(methodCall: MethodCall, result: Result) {
-        val agentId = deserializeAgentId(methodCall) ?: throw NsdError(
+        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
             "Cannot unregister service: agent id expected"
         )
@@ -156,14 +156,14 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     private fun createDiscoveryListener(agentId: String) =
         object : NsdManager.DiscoveryListener {
 
-            val serviceInfos = ArrayList<NsdServiceInfo>();
+            val serviceInfos = ArrayList<NsdServiceInfo>()
 
             override fun onDiscoveryStarted(serviceType: String) {
                 invokeMethod("onDiscoveryStartSuccessful", serializeAgentId(agentId))
             }
 
             override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                discoveryListeners.remove(agentId);
+                discoveryListeners.remove(agentId)
                 val arguments = serializeAgentId(agentId) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
@@ -171,12 +171,12 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             }
 
             override fun onDiscoveryStopped(serviceType: String) {
-                discoveryListeners.remove(agentId);
+                discoveryListeners.remove(agentId)
                 invokeMethod("onDiscoveryStopSuccessful", serializeAgentId(agentId))
             }
 
             override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
-                discoveryListeners.remove(agentId);
+                discoveryListeners.remove(agentId)
                 val arguments = serializeAgentId(agentId) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
@@ -188,7 +188,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 // The code example at https://developer.android.com/training/connect-devices-wirelessly/nsd
                 // filters out any services on the same machine, but that won't suffice for all use cases.
                 if (serviceInfos.none { isSameService(it, serviceInfo) }) {
-                    serviceInfos.add(serviceInfo);
+                    serviceInfos.add(serviceInfo)
                     val arguments = serializeAgentId(agentId) + serializeServiceInfo(serviceInfo)
                     invokeMethod("onServiceDiscovered", arguments)
                 }
@@ -197,7 +197,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             override fun onServiceLost(serviceInfo: NsdServiceInfo) {
                 val existingServiceInfo = serviceInfos.find { isSameService(it, serviceInfo) }
                 if (existingServiceInfo != null) {
-                    serviceInfos.remove(existingServiceInfo);
+                    serviceInfos.remove(existingServiceInfo)
                     val arguments =
                         serializeAgentId(agentId) + serializeServiceInfo(existingServiceInfo)
                     invokeMethod("onServiceLost", arguments)
@@ -206,7 +206,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
         }
 
     private fun isSameService(a: NsdServiceInfo, b: NsdServiceInfo): Boolean {
-        return (a.serviceName == b.serviceName) && (a.serviceType == b.serviceType);
+        return (a.serviceName == b.serviceName) && (a.serviceType == b.serviceType)
     }
 
     private fun createResolveListener(agentId: String) =
@@ -222,30 +222,23 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 val arguments = serializeAgentId(agentId) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
-                resolveListeners.remove(agentId);
+                resolveListeners.remove(agentId)
                 resolveSemaphore.release()
                 invokeMethod("onResolveFailed", arguments)
             }
         }
 
-    private fun createRegistrationListener(agentId: String, originalServiceInfo: NsdServiceInfo) =
+    private fun createRegistrationListener(agentId: String) =
         object : NsdManager.RegistrationListener {
 
-            override fun onServiceRegistered(newServiceInfo: NsdServiceInfo) {
-                // the returned service info only contains a name
-                // TODO return name only and do the merging in nsd_platform_interface
-                val arguments = serializeAgentId(agentId) + serializeServiceInfo(
-                    name = newServiceInfo.serviceName,
-                    type = originalServiceInfo.serviceType,
-                    host = originalServiceInfo.host,
-                    port = originalServiceInfo.port,
-                    txt = originalServiceInfo.attributes,
-                )
+            override fun onServiceRegistered(registeredServiceInfo: NsdServiceInfo) {
+                val arguments =
+                    serializeAgentId(agentId) + serializeServiceName(registeredServiceInfo.serviceName)
                 invokeMethod("onRegistrationSuccessful", arguments)
             }
 
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                registrationListeners.remove(agentId);
+                registrationListeners.remove(agentId)
                 val arguments = serializeAgentId(agentId) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
@@ -253,12 +246,12 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             }
 
             override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
-                registrationListeners.remove(agentId);
+                registrationListeners.remove(agentId)
                 invokeMethod("onUnregistrationSuccessful", serializeAgentId(agentId))
             }
 
             override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                registrationListeners.remove(agentId);
+                registrationListeners.remove(agentId)
                 val arguments = serializeAgentId(agentId) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
