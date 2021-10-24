@@ -2,20 +2,17 @@
 
 ## Current
 
-- all: test (& fix) txt resolution
+- all: clean up agent id
+- macos: unit tests for helper methods
+- android: unit tests for helper methods
 - initial release: documentation / changelogs / clean up pubspec files / publish
-
-## Next
 
 ## Unsorted
 
 - use proper logging library and let user configure log level for plugin
-- macos: unit tests for helper methods
-- android: unit tests for helper methods
 - platform: replace dynamic arguments / return values with more concrete types where possible
 - clean up code according to flutter coding guidelines
 - dart code: cleanup visibility (add _ where needed)
-- all: clean up agent id
 - figure out how to deal with logging spam on console
 - speed up name allocation by using running discoveries
 
@@ -28,6 +25,7 @@
 
 ## Done
 
+- all: test (& fix) txt resolution
 - ios: copy from macos & test it
 - platform: tests for resolve method
 - platform: platform-agnostic integration tests (live functionality)
