@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -81,16 +82,24 @@ void main() {
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
 
-    final stringValue = utf8encoder.convert('Löwe');
+    final stringValue = utf8encoder.convert('κόσμε');
     final blankValue = Uint8List(0);
-    final binaryValue = Uint8List.fromList([0, 1, 2, 3]);
 
     final txt = <String, Uint8List?>{
       'attribute-a': stringValue,
       'attribute-b': blankValue,
       'attribute-c': null,
-      'attribute-d': binaryValue
     };
+
+    // these bytes cannot appear in a correct UTF-8 string,
+    // see https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+    final binaryValue = Uint8List.fromList([254, 255]);
+
+    // Android's NsdManager doesn't support binary txt data due to signature of
+    // NsdServiceInfo.setAttribute(String key, String value)
+    if (!Platform.isAndroid) {
+      txt['attribute-d'] = binaryValue;
+    }
 
     final serviceInfo =
         ServiceInfo(name: name, type: serviceType, port: basePort, txt: txt);
@@ -110,8 +119,8 @@ void main() {
     // should be present even though it is blank
     expect(receivedTxt.containsKey('attribute-b'), true);
 
-    // not all OS will return a blank list, e.g. macOS / iOS return null here
-    expect(isBlankOrNull(receivedTxt['attribute-b']), true);
+    // should theoretically be a blank list but Android / macOS / iOS return null here
+    expect(receivedTxt['attribute-b'], null);
 
     // should be present even though it is null
     expect(receivedTxt.containsKey('attribute-c'), true);
@@ -119,8 +128,9 @@ void main() {
     // null values are supported
     expect(receivedTxt['attribute-c'], null);
 
-    // binary data is also supported
-    expect(receivedTxt['attribute-d'], binaryValue);
+    if (!Platform.isAndroid) {
+      expect(receivedTxt['attribute-d'], binaryValue);
+    }
 
     await nsd.unregister(registration);
     await nsd.stopDiscovery(discovery);

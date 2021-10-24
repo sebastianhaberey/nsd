@@ -269,9 +269,8 @@ String shorten(String? id) {
 /// Creates a txt attribute object that showcases the most common use cases.
 Map<String, Uint8List?> createTxt() {
   return <String, Uint8List?>{
-    'attribute-a': utf8encoder.convert('Löwe'),
+    'attribute-a': utf8encoder.convert('κόσμε'),
     'attribute-b': Uint8List(0),
     'attribute-c': null,
-    'attribute-d': Uint8List.fromList([0, 1, 2, 3])
   };
 }
