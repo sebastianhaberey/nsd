@@ -6,11 +6,11 @@ import 'utilities.dart';
 String? deserializeString(arguments, String key) =>
     Map<String, dynamic>.from(arguments)[key];
 
-Map<String, dynamic> serializeServiceType(String serviceType) =>
-    {'service.type': serviceType};
+Map<String, dynamic> serializeServiceType(String value) =>
+    {'service.type': value};
 
-Map<String, dynamic> serializeErrorCause(ErrorCause errorCause) =>
-    {'error.cause': enumValueToString(errorCause)};
+Map<String, dynamic> serializeErrorCause(ErrorCause value) =>
+    {'error.cause': enumValueToString(value)};
 
 ErrorCause? deserializeErrorCause(dynamic arguments) {
   final errorCauseString = deserializeString(arguments, 'error.cause');
@@ -21,8 +21,8 @@ ErrorCause? deserializeErrorCause(dynamic arguments) {
   return enumValueFromString(ErrorCause.values, errorCauseString);
 }
 
-Map<String, dynamic> serializeErrorMessage(String errorMessage) =>
-    {'error.message': errorMessage};
+Map<String, dynamic> serializeErrorMessage(String value) =>
+    {'error.message': value};
 
 String? deserializeErrorMessage(dynamic arguments) {
   return deserializeString(arguments, 'error.message');
@@ -67,10 +67,10 @@ ServiceInfo? deserializeServiceInfo(dynamic arguments) {
   return ServiceInfo(name: name, type: type, host: host, port: port, txt: txt);
 }
 
-Map<String, dynamic> serializeAgentId(String agentId) => {
-      'agentId': agentId,
+Map<String, dynamic> serializeHandle(String value) => {
+      'handle': value,
     };
 
-String? deserializeAgentId(dynamic arguments) {
-  return deserializeString(arguments, 'agentId');
+String? deserializeHandle(dynamic arguments) {
+  return deserializeString(arguments, 'handle');
 }

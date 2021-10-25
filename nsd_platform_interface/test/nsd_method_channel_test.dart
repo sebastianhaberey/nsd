@@ -14,7 +14,7 @@ void main() {
 
   late MethodChannelNsdPlatform _nsd;
   late MethodChannel _methodChannel;
-  late Map<String, Function(String agentId, dynamic arguments)> _mockHandlers;
+  late Map<String, Function(String handle, dynamic arguments)> _mockHandlers;
 
   setUp(() async {
     _nsd = MethodChannelNsdPlatform();
@@ -25,16 +25,16 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
         .setMockMethodCallHandler(_methodChannel,
             (MethodCall methodCall) async {
-      final agentId = deserializeAgentId(methodCall.arguments)!;
-      _mockHandlers[methodCall.method]?.call(agentId, methodCall.arguments);
+      final handle = deserializeHandle(methodCall.arguments)!;
+      _mockHandlers[methodCall.method]?.call(handle, methodCall.arguments);
     });
   });
 
   group('$MethodChannelNsdPlatform discovery', () {
     test('Start succeeds if native code reports success', () async {
       // simulate success callback by native code
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
-        mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       await _nsd.startDiscovery('foo');
@@ -42,9 +42,9 @@ void main() {
 
     test('Start fails if native code reports failure', () async {
       // simulate failure callback by native code
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartFailed', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
           ...serializeErrorMessage('some error')
         });
@@ -58,12 +58,12 @@ void main() {
     });
 
     test('Stop succeeds if native code reports success', () async {
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
-        mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      _mockHandlers['stopDiscovery'] = (agentId, arguments) {
-        mockReply('onDiscoveryStopSuccessful', serializeAgentId(agentId));
+      _mockHandlers['stopDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStopSuccessful', serializeHandle(handle));
       };
 
       final discovery = await _nsd.startDiscovery('foo');
@@ -71,13 +71,13 @@ void main() {
     });
 
     test('Stop fails if native code reports failure', () async {
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
-        mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      _mockHandlers['stopDiscovery'] = (agentId, arguments) {
+      _mockHandlers['stopDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStopFailed', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
           ...serializeErrorMessage('some error')
         });
@@ -93,18 +93,18 @@ void main() {
     });
 
     test('Client is notified if service is discovered', () async {
-      late String capturedAgentId;
+      late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
-        capturedAgentId = agentId;
-        mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
 
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
       await mockReply('onServiceDiscovered', {
-        ...serializeAgentId(capturedAgentId),
+        ...serializeHandle(capturedHandle),
         ...serializeServiceInfo(serviceInfo)
       });
 
@@ -112,11 +112,11 @@ void main() {
     });
 
     test('Client is notified if service is lost', () async {
-      late String capturedAgentId;
+      late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (agentId, arguments) {
-        capturedAgentId = agentId;
-        mockReply('onDiscoveryStartSuccessful', serializeAgentId(agentId));
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
@@ -124,14 +124,14 @@ void main() {
       const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
 
       await mockReply('onServiceDiscovered', {
-        ...serializeAgentId(capturedAgentId),
+        ...serializeHandle(capturedHandle),
         ...serializeServiceInfo(serviceInfo)
       });
 
       expect(discovery.serviceInfos.length, 1);
 
       await mockReply('onServiceLost', {
-        ...serializeAgentId(capturedAgentId),
+        ...serializeHandle(capturedHandle),
         ...serializeServiceInfo(serviceInfo)
       });
 
@@ -141,10 +141,10 @@ void main() {
 
   group('$MethodChannelNsdPlatform resolver', () {
     test('Resolver succeeds if native code reports success', () async {
-      _mockHandlers['resolve'] = (agentId, arguments) {
+      _mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveSuccessful', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeServiceInfo(const ServiceInfo(
               name: 'Some name', type: 'foo', host: 'bar', port: 42))
         });
@@ -161,10 +161,10 @@ void main() {
     });
 
     test('Resolver fails if native code reports failure', () async {
-      _mockHandlers['resolve'] = (agentId, arguments) {
+      _mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveFailed', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
           ...serializeErrorMessage('some error')
         });
@@ -182,10 +182,10 @@ void main() {
 
   group('$MethodChannelNsdPlatform registration', () {
     test('Registration succeeds if native code reports success', () async {
-      _mockHandlers['register'] = (agentId, arguments) {
+      _mockHandlers['register'] = (handle, arguments) {
         // return service info with name only
         mockReply('onRegistrationSuccessful', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeServiceInfo(const ServiceInfo(name: 'Some name (2)'))
         });
       };
@@ -202,9 +202,9 @@ void main() {
 
     test('Registration fails if native code reports failure', () async {
       // simulate failure callback by native code
-      _mockHandlers['register'] = (agentId, arguments) {
+      _mockHandlers['register'] = (handle, arguments) {
         mockReply('onRegistrationFailed', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
           ...serializeErrorMessage('some error')
         });
@@ -221,17 +221,15 @@ void main() {
 
     test('Unregistration succeeds if native code reports success', () async {
       // simulate success callback by native code
-      _mockHandlers['register'] = (agentId, arguments) {
+      _mockHandlers['register'] = (handle, arguments) {
         const serviceInfo = ServiceInfo(name: 'Some name (2)', type: 'foo');
-        mockReply('onRegistrationSuccessful', {
-          ...serializeAgentId(agentId),
-          ...serializeServiceInfo(serviceInfo)
-        });
+        mockReply('onRegistrationSuccessful',
+            {...serializeHandle(handle), ...serializeServiceInfo(serviceInfo)});
       };
 
-      _mockHandlers['unregister'] = (agentId, arguments) {
+      _mockHandlers['unregister'] = (handle, arguments) {
         mockReply('onUnregistrationSuccessful', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
         });
       };
 
@@ -243,17 +241,15 @@ void main() {
 
     test('Unregistration fails if native code reports failure', () async {
       // simulate success callback by native code
-      _mockHandlers['register'] = (agentId, arguments) {
+      _mockHandlers['register'] = (handle, arguments) {
         const serviceInfo = ServiceInfo(name: 'Some name (2)', type: 'foo');
-        mockReply('onRegistrationSuccessful', {
-          ...serializeAgentId(agentId),
-          ...serializeServiceInfo(serviceInfo)
-        });
+        mockReply('onRegistrationSuccessful',
+            {...serializeHandle(handle), ...serializeServiceInfo(serviceInfo)});
       };
 
-      _mockHandlers['unregister'] = (agentId, arguments) {
+      _mockHandlers['unregister'] = (handle, arguments) {
         mockReply('onUnregistrationFailed', {
-          ...serializeAgentId(agentId),
+          ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
           ...serializeErrorMessage('some error')
         });
@@ -275,7 +271,7 @@ void main() {
       final matcher = isA<PlatformException>()
           .having((e) => e.message, 'error message', contains('No handler'));
 
-      expect(mockReply('onDiscoveryStopSuccessful', serializeAgentId('bar')),
+      expect(mockReply('onDiscoveryStopSuccessful', serializeHandle('bar')),
           throwsA(matcher));
     });
   });
