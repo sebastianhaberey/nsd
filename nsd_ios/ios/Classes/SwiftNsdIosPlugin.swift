@@ -1,5 +1,4 @@
 import Flutter
-import UIKit
 
 private let channelName = "com.haberey/nsd"
 
@@ -49,8 +48,8 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
 
     private func startDiscovery(_ arguments: Any?, _ result: FlutterResult) {
 
-        guard let agentId = deserializeAgentId(arguments) else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Agent ID cannot be null", details: nil))
+        guard let handle = deserializeHandle(arguments) else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Handle cannot be null", details: nil))
             return
         }
 
@@ -61,19 +60,19 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
 
         let serviceBrowser = NetServiceBrowser()
         serviceBrowser.delegate = self
-        serviceBrowsers[agentId] = serviceBrowser // set before invoking search so that callback methods can access it
+        serviceBrowsers[handle] = serviceBrowser // set before invoking search so that callback methods can access it
         serviceBrowser.searchForServices(ofType: serviceType, inDomain: "local.")
         result(nil)
     }
 
     private func stopDiscovery(_ arguments: Any?, _ result: FlutterResult) {
-        guard let agentId = deserializeAgentId(arguments) else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Agent ID cannot be null", details: nil))
+        guard let handle = deserializeHandle(arguments) else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Handle cannot be null", details: nil))
             return
         }
 
-        guard let serviceBrowser = serviceBrowsers[agentId] else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Unknown agent ID: \(agentId)", details: nil))
+        guard let serviceBrowser = serviceBrowsers[handle] else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Unknown handle: \(handle)", details: nil))
             return
         }
 
@@ -82,8 +81,8 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
     }
 
     private func resolve(_ arguments: Any?, _ result: FlutterResult) {
-        guard let agentId = deserializeAgentId(arguments) else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Agent ID cannot be null", details: nil))
+        guard let handle = deserializeHandle(arguments) else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Handle cannot be null", details: nil))
             return
         }
 
@@ -93,14 +92,14 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
         }
 
         service.delegate = self
-        services[agentId] = service // set before invoking search so that callback methods can access it
+        services[handle] = service // set before invoking search so that callback methods can access it
         service.resolve(withTimeout: 10)
         result(nil)
     }
 
     private func register(_ arguments: Any?, _ result: FlutterResult) {
-        guard let agentId = deserializeAgentId(arguments) else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Agent ID cannot be null", details: nil))
+        guard let handle = deserializeHandle(arguments) else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Handle cannot be null", details: nil))
             return
         }
 
@@ -110,134 +109,134 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
         }
 
         service.delegate = self
-        services[agentId] = service // set before invoking search so that callback methods can access it
+        services[handle] = service // set before invoking search so that callback methods can access it
         service.publish(options: [.listenForConnections])
         result(nil)
     }
 
     private func unregister(_ arguments: Any?, _ result: FlutterResult) {
-        guard let agentId = deserializeAgentId(arguments) else {
-            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Agent ID cannot be null", details: nil))
+        guard let handle = deserializeHandle(arguments) else {
+            result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Handle cannot be null", details: nil))
             return
         }
 
-        let service: NetService? = services[agentId];
+        let service: NetService? = services[handle];
         service?.stop();
         result(nil);
     }
 
     public func netServiceBrowserWillSearch(_ serviceBrowser: NetServiceBrowser) {
-        guard let agentId = getAgentId(serviceBrowser) else {
+        guard let handle = getHandle(serviceBrowser) else {
             return
         }
 
-        methodChannel.invokeMethod("onDiscoveryStartSuccessful", arguments: serializeAgentId(agentId))
+        methodChannel.invokeMethod("onDiscoveryStartSuccessful", arguments: serializeHandle(handle))
     }
 
     public func netServiceBrowser(_ serviceBrowser: NetServiceBrowser, didNotSearch errorDict: [String: NSNumber]) {
-        guard let agentId = getAgentId(serviceBrowser) else {
+        guard let handle = getHandle(serviceBrowser) else {
             return
         }
 
-        methodChannel.invokeMethod("onDiscoveryStartFailed", arguments: serializeAgentId(agentId))
+        methodChannel.invokeMethod("onDiscoveryStartFailed", arguments: serializeHandle(handle))
         serviceBrowser.delegate = nil
-        serviceBrowsers[agentId] = nil
+        serviceBrowsers[handle] = nil
     }
 
     public func netServiceBrowserDidStopSearch(_ serviceBrowser: NetServiceBrowser) {
-        guard let agentId = getAgentId(serviceBrowser) else {
+        guard let handle = getHandle(serviceBrowser) else {
             return
         }
 
-        methodChannel.invokeMethod("onDiscoveryStopSuccessful", arguments: serializeAgentId(agentId))
+        methodChannel.invokeMethod("onDiscoveryStopSuccessful", arguments: serializeHandle(handle))
         serviceBrowser.delegate = nil
-        serviceBrowsers[agentId] = nil
+        serviceBrowsers[handle] = nil
     }
 
     public func netServiceBrowser(_ serviceBrowser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
-        guard let agentId = getAgentId(serviceBrowser) else {
+        guard let handle = getHandle(serviceBrowser) else {
             return
         }
 
-        let arguments = serializeAgentId(agentId).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
         methodChannel.invokeMethod("onServiceDiscovered", arguments: arguments)
     }
 
     public func netServiceBrowser(_ serviceBrowser: NetServiceBrowser, didRemove service: NetService, moreComing: Bool) {
-        guard let agentId = getAgentId(serviceBrowser) else {
+        guard let handle = getHandle(serviceBrowser) else {
             return
         }
 
-        let arguments = serializeAgentId(agentId).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
         methodChannel.invokeMethod("onServiceLost", arguments: arguments)
     }
 
     public func netServiceDidPublish(_ service: NetService) {
-        guard let agentId = getAgentId(service) else {
+        guard let handle = getHandle(service) else {
             return
         }
 
-        let arguments = serializeAgentId(agentId).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
         methodChannel.invokeMethod("onRegistrationSuccessful", arguments: arguments)
     }
 
     public func netService(_ service: NetService, didNotPublish errorDict: [String: NSNumber]) {
-        guard let agentId = getAgentId(service) else {
+        guard let handle = getHandle(service) else {
             return
         }
 
         let errorCode = getErrorCode(errorDict["NSNetServicesErrorCode"])
 
-        let arguments = serializeAgentId(agentId)
+        let arguments = serializeHandle(handle)
                 .merging(serializeErrorCause(getErrorCause(errorCode)))
                 .merging(serializeErrorMessage(getErrorMessage(errorCode)))
         methodChannel.invokeMethod("onRegistrationFailed", arguments: arguments)
     }
 
     public func netServiceDidStop(_ service: NetService) {
-        guard let agentId = getAgentId(service) else {
+        guard let handle = getHandle(service) else {
             return
         }
 
         service.delegate = nil
-        services[agentId] = nil
+        services[handle] = nil
 
-        methodChannel.invokeMethod("onUnregistrationSuccessful", arguments: serializeAgentId(agentId))
+        methodChannel.invokeMethod("onUnregistrationSuccessful", arguments: serializeHandle(handle))
     }
 
     public func netServiceDidResolveAddress(_ service: NetService) {
-        guard let agentId = getAgentId(service) else {
+        guard let handle = getHandle(service) else {
             return
         }
 
         service.delegate = nil
-        services[agentId] = nil
+        services[handle] = nil
 
-        let arguments = serializeAgentId(agentId).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
         methodChannel.invokeMethod("onResolveSuccessful", arguments: arguments)
     }
 
     public func netServiceDidNotResolve(_ service: NetService, didNotResolve errorDict: [String: NSNumber]) {
-        guard let agentId = getAgentId(service) else {
+        guard let handle = getHandle(service) else {
             return
         }
 
         service.delegate = nil
-        services[agentId] = nil
+        services[handle] = nil
 
         let errorCode = getErrorCode(errorDict["NSNetServicesErrorCode"])
 
-        let arguments = serializeAgentId(agentId)
+        let arguments = serializeHandle(handle)
                 .merging(serializeErrorCause(getErrorCause(errorCode)))
                 .merging(serializeErrorMessage(getErrorMessage(errorCode)))
         methodChannel.invokeMethod("onResolveFailed", arguments: arguments)
     }
 
-    private func getAgentId(_ serviceBrowser: NetServiceBrowser) -> String? {
+    private func getHandle(_ serviceBrowser: NetServiceBrowser) -> String? {
         serviceBrowsers.first(where: { $1 === serviceBrowser })?.key
     }
 
-    private func getAgentId(_ service: NetService) -> String? {
+    private func getHandle(_ service: NetService) -> String? {
         services.first(where: { $1 === service })?.key
     }
 }
