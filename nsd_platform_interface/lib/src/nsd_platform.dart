@@ -23,10 +23,10 @@ abstract class NsdPlatform extends PlatformInterface {
 
   /// Starts a discovery for the specified service type.
   ///
-  /// The Android documentation proposes resolving services just before connecting
-  /// to them, but in many use cases the service host will be cruicial to decide
-  /// on a service. For this reason, [autoResolve] is on by default and
-  /// discovered services will be fully resolved.
+  /// The Android documentation proposes resolving services just before
+  /// connecting to them, but in many use cases the service host will be
+  /// cruicial to decide on a service. For this reason, [autoResolve] is on by
+  /// default and discovered services will be fully resolved.
   Future<Discovery> startDiscovery(String serviceType,
       {bool autoResolve = true});
 
@@ -34,17 +34,15 @@ abstract class NsdPlatform extends PlatformInterface {
   ///
   /// Discoveries must be stopped to free their resources. According to Android
   /// documentation, service discovery is an expensive operation, so it should
-  /// be stopped when it's not needed any more, or when the application is paused.
-  ///
-  /// On macOS / iOS (NetService), this will always succeed, while
-  /// Android (NsdManager) may throw an error but doesn't offer a recovery path.
+  /// be stopped when it's not needed any more, or when the application is
+  /// paused.
   Future<void> stopDiscovery(Discovery discovery);
 
   /// Resolves the specified service.
   ///
   /// Unlike registration, resolving is usually quite fast.
   ///
-  /// This method returns a new [ServiceInfo] instance; they are immutable.
+  /// This method always returns a fresh [ServiceInfo] instance.
   Future<ServiceInfo> resolve(ServiceInfo serviceInfo);
 
   /// Registers a service as described by the service info.
@@ -53,8 +51,8 @@ abstract class NsdPlatform extends PlatformInterface {
   /// conflicts in the local network: "Service Name" -> "Service Name (2)" ->
   /// "Service Name (3)" etc, depending on availability.
   ///
-  /// Registering might take a long time (observed on macOS / iOS) if the number
-  /// of these retries is high. In this case, consider first discovering
+  /// Registering might take a long time (observed on macOS / iOS) if the
+  /// number of these retries is high. In this case, consider first discovering
   /// services, then pre-choosing an available name.
   Future<Registration> register(ServiceInfo serviceInfo);
 
@@ -63,12 +61,13 @@ abstract class NsdPlatform extends PlatformInterface {
   /// Unregistering your application when it closes down also helps prevent
   /// other applications from thinking it's still active and attempting to
   /// connect to it.
-  ///
-  /// On macOS / iOS (NetService), this will always succeed, Android (NsdManager)
-  /// may throw an error (but doesn't offer a recovery path).
   Future<void> unregister(Registration registration);
+
+  /// Enables logging for the specified topic.
+  void enableLogging(LogTopic logTopic);
 }
 
+/// Represents
 class ServiceInfo {
   const ServiceInfo({this.name, this.type, this.host, this.port, this.txt});
 
@@ -77,21 +76,14 @@ class ServiceInfo {
   final String? host;
   final int? port;
 
-  // TODO: some APIs (e.g. Android) only take Strings for keys AND values
-
-  // From http://files.dns-sd.org/draft-cheshire-dnsext-dns-sd.txt:
-  //
-  // - The characters of "Key" MUST be printable US-ASCII values (0x20-0x7E) [RFC 20], excluding '=' (0x3D).
-  // - The value is opaque binary data. Often the value for a particular attribute will be US-ASCII [RFC 20] (or UTF-8 [RFC 3629]) text, but it is legal for a value to be any binary data.
-  //
-  // - Case is ignored when interpreting a key, so "papersize=A4", "PAPERSIZE=A4" and "Papersize=A4" are all identical.
-  // - If there is no '=', then it is a boolean attribute, and is simply identified as being present, with no value.
-  // - A given key may appear at most once in a TXT record."
-  // - When examining a TXT record for a given key, there are therefore four categories of results which may be returned:
-  //   - Attribute not present (Absent)
-  //   - Attribute present, with no value (e.g. "passreq" -- password required for this service)
-  //   - Attribute present, with empty value (e.g. "PlugIns=" -- server supports plugins, but none are presently installed)
-  //   - Attribute present, with non-empty value (e.g. "PlugIns=JPEG,MPEG2,MPEG4")
+  /// Represents DNS TXT records.
+  ///
+  /// Keys MUST be printable US-ASCII values excluding '=', MUST be minimum 1
+  /// and SHOULD be maximum 9 characters long.
+  ///
+  /// Values are opaque binary data (macOS, iOS) but some OS require the data
+  /// to be convertible to UTF-8 (Android). Null is a valid value.
+  /// Empty lists will be interpreted as null (macOS, iOS, Android).
   final Map<String, Uint8List?>? txt;
 
   @override
@@ -99,10 +91,13 @@ class ServiceInfo {
       'name: $name, service type: $type, hostname: $host, port: $port';
 }
 
+/// Returns true if the two [ServiceInfo] refer to the same service.
 bool isSameService(ServiceInfo a, ServiceInfo b) {
   return a.name == b.name && a.type == b.type;
 }
 
+/// Merges two [ServiceInfo] by overwriting existing attributes where new
+/// values are incoming.
 ServiceInfo merge(ServiceInfo existing, ServiceInfo incoming) {
   return ServiceInfo(
       name: incoming.name ?? existing.name,
@@ -113,21 +108,28 @@ ServiceInfo merge(ServiceInfo existing, ServiceInfo incoming) {
 }
 
 enum ErrorCause {
-  /// Indicates missing or invalid service name, type, host, port etc, may be corrected by the client.
+  /// Indicates missing or invalid service name, type, host, port etc,
+  /// may be corrected by the client.
   illegalArgument,
 
-  /// This error occurs on Android (30) if too many resolve operations are requested simultanously.
-  /// It should be prevented by the semaphore on the native side.
+  /// This error occurs on Android (30) if too many resolve operations are
+  /// requested simultanously. It should be prevented by the semaphore on the
+  /// native side.
   alreadyActive,
 
-  /// Indicates too many "outstanding requests" - on Android (30) this seems to be
-  /// 10 operations (running discoveries and active registrations together).
+  /// Indicates too many "outstanding requests" - on Android (30) this seems
+  /// to be 10 operations (running discoveries and active registrations
+  /// together).
   maxLimit,
 
   /// An error in platform or native code that cannot be adressed by the client.
   internalError,
 }
 
+/// Represents an error that occurred during an NSD operation.
+///
+/// NSD operations may throw an error that may or may not be adressed by the
+/// client, depending on the cause.
 class NsdError extends Error {
   final ErrorCause cause;
   final String message;
@@ -139,7 +141,6 @@ class NsdError extends Error {
 }
 
 /// Represents an ongoing discovery.
-///
 class Discovery with ChangeNotifier {
   final String id;
 
@@ -160,9 +161,16 @@ class Discovery with ChangeNotifier {
   }
 }
 
+/// Represents an active registration.
 class Registration {
   final String id;
   final ServiceInfo serviceInfo;
 
   Registration(this.id, this.serviceInfo);
 }
+
+/// List of available log topics.
+///
+/// The error topic is enabled by default, all others may be enabled by
+/// the user.
+enum LogTopic { calls, errors }

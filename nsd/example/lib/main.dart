@@ -32,7 +32,9 @@ class MyAppState extends State<MyApp> {
 
   int get nextPort => _nextPort++; // TODO ensure ports are not taken
 
-  MyAppState();
+  MyAppState() {
+    nsd.enableLogging(LogTopic.calls);
+  }
 
   Future<void> addDiscovery() async {
     final discovery = await nsd.startDiscovery(serviceType).catchError((error) {
@@ -269,8 +271,8 @@ String shorten(String? id) {
 /// Creates a txt attribute object that showcases the most common use cases.
 Map<String, Uint8List?> createTxt() {
   return <String, Uint8List?>{
-    'attribute-a': utf8encoder.convert('κόσμε'),
-    'attribute-b': Uint8List(0),
-    'attribute-c': null,
+    'a-string': utf8encoder.convert('κόσμε'),
+    'a-blank': Uint8List(0),
+    'a-null': null,
   };
 }

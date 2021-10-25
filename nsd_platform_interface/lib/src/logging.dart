@@ -1,23 +1,23 @@
 import 'dart:developer' as developer;
 
-void log(Object source, String message, {StackTrace? stackTrace}) {
+import 'nsd_platform.dart';
+import 'utilities.dart';
+
+final _logTopics = <LogTopic>{LogTopic.errors};
+
+void _log(Object source, String message, {StackTrace? stackTrace}) {
   final name = source.runtimeType.toString();
   final datetime = DateTime.now();
   developer.log('[$datetime] $message', name: name, stackTrace: stackTrace);
 }
 
-void logDebug(Object source, String message, {StackTrace? stackTrace}) {
-  log(source, '[DEBUG] $message');
+void log(Object source, LogTopic logTopic, String Function() messageFunc,
+    {StackTrace? stackTrace}) {
+  if (_logTopics.contains(logTopic)) {
+    _log(source, '[${enumValueToString(logTopic)}] ${messageFunc()}');
+  }
 }
 
-void logInfo(Object source, String message, {StackTrace? stackTrace}) {
-  log(source, '[INFO] $message');
-}
-
-void logWarning(Object source, String message, {StackTrace? stackTrace}) {
-  log(source, '[WARNING] $message');
-}
-
-void logError(Object source, String message, {StackTrace? stackTrace}) {
-  log(source, '[ERROR] $message');
+void enableLogTopic(LogTopic logTopic) {
+  _logTopics.add(logTopic);
 }

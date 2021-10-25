@@ -86,9 +86,9 @@ void main() {
     final blankValue = Uint8List(0);
 
     final txt = <String, Uint8List?>{
-      'attribute-a': stringValue,
-      'attribute-b': blankValue,
-      'attribute-c': null,
+      'a-string': stringValue,
+      'a-blank': blankValue,
+      'a-null': null,
     };
 
     // these bytes cannot appear in a correct UTF-8 string,
@@ -98,7 +98,7 @@ void main() {
     // Android's NsdManager doesn't support binary txt data due to signature of
     // NsdServiceInfo.setAttribute(String key, String value)
     if (!Platform.isAndroid) {
-      txt['attribute-d'] = binaryValue;
+      txt['a-binary'] = binaryValue;
     }
 
     final serviceInfo =
@@ -114,22 +114,22 @@ void main() {
     final receivedTxt = receivedServiceInfo.txt!;
 
     // string values are most common
-    expect(receivedTxt['attribute-a'], stringValue);
+    expect(receivedTxt['a-string'], stringValue);
 
     // should be present even though it is blank
-    expect(receivedTxt.containsKey('attribute-b'), true);
+    expect(receivedTxt.containsKey('a-blank'), true);
 
     // should theoretically be a blank list but Android / macOS / iOS return null here
-    expect(receivedTxt['attribute-b'], null);
+    expect(receivedTxt['a-blank'], null);
 
     // should be present even though it is null
-    expect(receivedTxt.containsKey('attribute-c'), true);
+    expect(receivedTxt.containsKey('a-null'), true);
 
     // null values are supported
-    expect(receivedTxt['attribute-c'], null);
+    expect(receivedTxt['a-null'], null);
 
     if (!Platform.isAndroid) {
-      expect(receivedTxt['attribute-d'], binaryValue);
+      expect(receivedTxt['a-binary'], binaryValue);
     }
 
     await nsd.unregister(registration);

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:nsd_platform_interface/src/logging.dart';
 import 'package:uuid/uuid.dart';
 
+import 'logging.dart';
 import 'nsd_platform.dart';
 import 'serialization.dart';
 
@@ -151,7 +151,7 @@ class MethodChannelNsdPlatform extends NsdPlatform {
     final method = methodCall.method;
     final arguments = methodCall.arguments;
 
-    logDebug(this, 'Callback: $method $arguments');
+    log(this, LogTopic.calls, () => 'Callback: $method $arguments');
 
     final handle = deserializeHandle(arguments);
     if (handle == null) {
@@ -171,7 +171,7 @@ class MethodChannelNsdPlatform extends NsdPlatform {
   }
 
   Future<void> invoke(String method, [dynamic arguments]) {
-    logDebug(this, 'Call: $method $arguments');
+    log(this, LogTopic.calls, () => 'Call: $method $arguments');
     return _methodChannel.invokeMethod(method, arguments);
   }
 
@@ -181,5 +181,10 @@ class MethodChannelNsdPlatform extends NsdPlatform {
 
   void discardHandlers(String handle) {
     _handlers.remove(handle);
+  }
+
+  @override
+  void enableLogging(LogTopic logTopic) {
+    enableLogTopic(logTopic);
   }
 }

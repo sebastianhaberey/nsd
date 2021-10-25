@@ -2,22 +2,20 @@
 
 ## Current
 
-- all: clean up agent id
 - macos: unit tests for helper methods
 - android: unit tests for helper methods
 - initial release: documentation / changelogs / clean up pubspec files / publish
 
 ## Unsorted
 
-- use proper logging library and let user configure log level for plugin
 - platform: replace dynamic arguments / return values with more concrete types where possible
 - clean up code according to flutter coding guidelines
 - dart code: cleanup visibility (add _ where needed)
-- figure out how to deal with logging spam on console
-- speed up name allocation by using running discoveries
 
 ## Dustbin
 
+- speed up name allocation by using running discoveries
+- figure out how to deal with logging spam on console
 - platform: introduce timeouts to prevent stale objects & stale futures
 - platform: discriminate errors into client errors and programming errors
 - platform: unit tests for DiscoveryAgent / RegistrationAgent
@@ -25,6 +23,8 @@
 
 ## Done
 
+- use proper logging library and let user configure log level for plugin
+- all: clean up agent id
 - all: test (& fix) txt resolution
 - ios: copy from macos & test it
 - platform: tests for resolve method
