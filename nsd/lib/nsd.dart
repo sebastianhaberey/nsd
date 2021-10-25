@@ -1,9 +1,7 @@
-library nsd;
-
 import 'package:nsd_platform_interface/nsd_platform_interface.dart';
 
 export 'package:nsd_platform_interface/nsd_platform_interface.dart'
-    show ServiceInfo;
+    show Service;
 export 'package:nsd_platform_interface/nsd_platform_interface.dart'
     show Discovery;
 export 'package:nsd_platform_interface/nsd_platform_interface.dart'
@@ -22,10 +20,9 @@ export 'package:nsd_platform_interface/nsd_platform_interface.dart'
 /// cruicial to decide on a service. For this reason, [autoResolve] is on by
 /// default and discovered services will be fully resolved.
 Future<Discovery> startDiscovery(String serviceType,
-    {bool autoResolve = true}) {
-  return NsdPlatformInterface.instance
-      .startDiscovery(serviceType, autoResolve: autoResolve);
-}
+        {bool autoResolve = true}) async =>
+    NsdPlatformInterface.instance
+        .startDiscovery(serviceType, autoResolve: autoResolve);
 
 /// Stops the specified discovery.
 ///
@@ -37,16 +34,15 @@ Future<void> stopDiscovery(Discovery discovery) {
   return NsdPlatformInterface.instance.stopDiscovery(discovery);
 }
 
-/// Resolves the specified service.
+/// Resolves a service.
 ///
 /// Unlike registration, resolving is usually quite fast.
 ///
-/// This method always returns a fresh [ServiceInfo] instance.
-Future<ServiceInfo> resolve(ServiceInfo serviceInfo) {
-  return NsdPlatformInterface.instance.resolve(serviceInfo);
-}
+/// This method always returns a fresh [Service] instance.
+Future<Service> resolve(Service service) async =>
+    NsdPlatformInterface.instance.resolve(service);
 
-/// Registers a service as described by the service info.
+/// Registers a service.
 ///
 /// The requested name may be updated by the native side if there are name
 /// conflicts in the local network: "Service Name" -> "Service Name (2)" ->
@@ -55,22 +51,19 @@ Future<ServiceInfo> resolve(ServiceInfo serviceInfo) {
 /// Registering might take a long time (observed on macOS / iOS) if the
 /// number of these retries is high. In this case, consider first discovering
 /// services, then pre-choosing an available name.
-Future<Registration> register(ServiceInfo serviceInfo) {
-  return NsdPlatformInterface.instance.register(serviceInfo);
-}
+Future<Registration> register(Service service) async =>
+    NsdPlatformInterface.instance.register(service);
 
 /// Unregisters a service.
 ///
 /// Services must be unregistered to free their resources. Unregistering a
 /// service when it closes down also helps prevent other applications from
 /// thinking it's still active and attempting to connect to it.
-Future<void> unregister(Registration registration) {
-  return NsdPlatformInterface.instance.unregister(registration);
-}
+Future<void> unregister(Registration registration) async =>
+    NsdPlatformInterface.instance.unregister(registration);
 
 /// Enables logging for the specified topic.
 ///
 /// Error logging is enabled by default, all other topics must be enabled by the user.
-void enableLogging(LogTopic logTopic) {
-  return NsdPlatformInterface.instance.enableLogging(logTopic);
-}
+void enableLogging(LogTopic logTopic) =>
+    NsdPlatformInterface.instance.enableLogging(logTopic);

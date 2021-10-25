@@ -25,7 +25,7 @@ await stopDiscovery(discovery);
 import 'package:nsd/nsd.dart';
 
 final registration = await register(
-  const ServiceInfo(name: 'My Service', type: '_http._tcp', port: 56310));
+  const Service(name: 'Foo', type: '_http._tcp', port: 56000));
 
 // ...
 

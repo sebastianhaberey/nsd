@@ -56,13 +56,13 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> addRegistration() async {
-    final serviceInfo = ServiceInfo(
+    final service = Service(
         name: 'Some Service',
         type: serviceType,
         port: nextPort,
         txt: createTxt());
 
-    final registration = await register(serviceInfo).catchError((error) {
+    final registration = await register(service).catchError((error) {
       logError(this, error);
     });
 
@@ -235,7 +235,7 @@ class RegistrationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final serviceInfo = registration.serviceInfo;
+    final service = registration.service;
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
       child: Column(
@@ -245,10 +245,10 @@ class RegistrationWidget extends StatelessWidget {
             leading: const Icon(Icons.wifi_tethering),
             title: Text('Registration ${shorten(registration.id)}'),
             subtitle: Text(
-              'Name: ${serviceInfo.name} ▪️ '
-              'Type: ${serviceInfo.type} ▪️ '
-              'Host: ${serviceInfo.host} ▪️ '
-              'Port: ${serviceInfo.port}',
+              'Name: ${service.name} ▪️ '
+              'Type: ${service.type} ▪️ '
+              'Host: ${service.host} ▪️ '
+              'Port: ${service.port}',
               style: const TextStyle(color: Colors.black, fontSize: 12),
             ),
           ),

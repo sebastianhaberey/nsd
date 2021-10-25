@@ -102,11 +102,9 @@ void main() {
 
       final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
-      await mockReply('onServiceDiscovered', {
-        ...serializeHandle(capturedHandle),
-        ...serializeServiceInfo(serviceInfo)
-      });
+      const service = Service(name: 'Some name', type: 'foo');
+      await mockReply('onServiceDiscovered',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
 
       expect(discovery.services.length, 1);
     });
@@ -121,19 +119,15 @@ void main() {
 
       final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: 'foo');
 
-      await mockReply('onServiceDiscovered', {
-        ...serializeHandle(capturedHandle),
-        ...serializeServiceInfo(serviceInfo)
-      });
+      await mockReply('onServiceDiscovered',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
 
       expect(discovery.services.length, 1);
 
-      await mockReply('onServiceLost', {
-        ...serializeHandle(capturedHandle),
-        ...serializeServiceInfo(serviceInfo)
-      });
+      await mockReply('onServiceLost',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
 
       expect(discovery.services.length, 0);
     });
@@ -145,13 +139,13 @@ void main() {
         // return service info with name only
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
-          ...serializeServiceInfo(const ServiceInfo(
+          ...serializeService(const Service(
               name: 'Some name', type: 'foo', host: 'bar', port: 42))
         });
       };
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
-      final result = await _nsd.resolve(serviceInfo);
+      const service = Service(name: 'Some name', type: 'foo');
+      final result = await _nsd.resolve(service);
 
       // result should contain the original fields plus the updated host / port
       expect(result.name, 'Some name');
@@ -170,13 +164,13 @@ void main() {
         });
       };
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: 'foo');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.resolve(serviceInfo), throwsA(matcher));
+      expect(_nsd.resolve(service), throwsA(matcher));
     });
   });
 
@@ -186,18 +180,18 @@ void main() {
         // return service info with name only
         mockReply('onRegistrationSuccessful', {
           ...serializeHandle(handle),
-          ...serializeServiceInfo(const ServiceInfo(name: 'Some name (2)'))
+          ...serializeService(const Service(name: 'Some name (2)'))
         });
       };
 
-      final registration = await _nsd
-          .register(const ServiceInfo(name: 'Some name', type: 'foo'));
+      final registration =
+          await _nsd.register(const Service(name: 'Some name', type: 'foo'));
 
-      final serviceInfo = registration.serviceInfo;
+      final service = registration.service;
 
       // new service info should contain both the original service type and the updated name
-      expect(serviceInfo.name, 'Some name (2)');
-      expect(serviceInfo.type, 'foo');
+      expect(service.name, 'Some name (2)');
+      expect(service.type, 'foo');
     });
 
     test('Registration fails if native code reports failure', () async {
@@ -210,21 +204,21 @@ void main() {
         });
       };
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: 'foo');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.register(serviceInfo), throwsA(matcher));
+      expect(_nsd.register(service), throwsA(matcher));
     });
 
     test('Unregistration succeeds if native code reports success', () async {
       // simulate success callback by native code
       _mockHandlers['register'] = (handle, arguments) {
-        const serviceInfo = ServiceInfo(name: 'Some name (2)', type: 'foo');
+        const service = Service(name: 'Some name (2)', type: 'foo');
         mockReply('onRegistrationSuccessful',
-            {...serializeHandle(handle), ...serializeServiceInfo(serviceInfo)});
+            {...serializeHandle(handle), ...serializeService(service)});
       };
 
       _mockHandlers['unregister'] = (handle, arguments) {
@@ -233,18 +227,18 @@ void main() {
         });
       };
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: 'foo');
 
-      final registration = await _nsd.register(serviceInfo);
+      final registration = await _nsd.register(service);
       await _nsd.unregister(registration);
     });
 
     test('Unregistration fails if native code reports failure', () async {
       // simulate success callback by native code
       _mockHandlers['register'] = (handle, arguments) {
-        const serviceInfo = ServiceInfo(name: 'Some name (2)', type: 'foo');
+        const service = Service(name: 'Some name (2)', type: 'foo');
         mockReply('onRegistrationSuccessful',
-            {...serializeHandle(handle), ...serializeServiceInfo(serviceInfo)});
+            {...serializeHandle(handle), ...serializeService(service)});
       };
 
       _mockHandlers['unregister'] = (handle, arguments) {
@@ -255,8 +249,8 @@ void main() {
         });
       };
 
-      const serviceInfo = ServiceInfo(name: 'Some name', type: 'foo');
-      final registration = await _nsd.register(serviceInfo);
+      const service = Service(name: 'Some name', type: 'foo');
+      final registration = await _nsd.register(service);
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)

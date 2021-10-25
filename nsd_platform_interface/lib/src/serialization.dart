@@ -24,9 +24,8 @@ ErrorCause? deserializeErrorCause(dynamic arguments) {
 Map<String, dynamic> serializeErrorMessage(String value) =>
     {'error.message': value};
 
-String? deserializeErrorMessage(dynamic arguments) {
-  return deserializeString(arguments, 'error.message');
-}
+String? deserializeErrorMessage(dynamic arguments) =>
+    deserializeString(arguments, 'error.message');
 
 NsdError? deserializeError(arguments) {
   final cause = deserializeErrorCause(arguments);
@@ -37,15 +36,15 @@ NsdError? deserializeError(arguments) {
   return NsdError(cause, message);
 }
 
-Map<String, dynamic> serializeServiceInfo(ServiceInfo serviceInfo) => {
-      'service.name': serviceInfo.name,
-      'service.type': serviceInfo.type,
-      'service.host': serviceInfo.host,
-      'service.port': serviceInfo.port,
-      'service.txt': serviceInfo.txt
+Map<String, dynamic> serializeService(Service service) => {
+      'service.name': service.name,
+      'service.type': service.type,
+      'service.host': service.host,
+      'service.port': service.port,
+      'service.txt': service.txt
     };
 
-ServiceInfo? deserializeServiceInfo(dynamic arguments) {
+Service? deserializeService(dynamic arguments) {
   final data = Map<String, dynamic>.from(arguments);
 
   final name = data['service.name'] as String?;
@@ -64,13 +63,12 @@ ServiceInfo? deserializeServiceInfo(dynamic arguments) {
     return null;
   }
 
-  return ServiceInfo(name: name, type: type, host: host, port: port, txt: txt);
+  return Service(name: name, type: type, host: host, port: port, txt: txt);
 }
 
 Map<String, dynamic> serializeHandle(String value) => {
       'handle': value,
     };
 
-String? deserializeHandle(dynamic arguments) {
-  return deserializeString(arguments, 'handle');
-}
+String? deserializeHandle(dynamic arguments) =>
+    deserializeString(arguments, 'handle');

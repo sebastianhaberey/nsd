@@ -27,9 +27,9 @@ abstract class NsdPlatformInterface extends PlatformInterface {
 
   Future<void> stopDiscovery(Discovery discovery);
 
-  Future<ServiceInfo> resolve(ServiceInfo serviceInfo);
+  Future<Service> resolve(Service service);
 
-  Future<Registration> register(ServiceInfo serviceInfo);
+  Future<Registration> register(Service service);
 
   Future<void> unregister(Registration registration);
 
@@ -37,8 +37,8 @@ abstract class NsdPlatformInterface extends PlatformInterface {
 }
 
 /// Represents a network service.
-class ServiceInfo {
-  const ServiceInfo({this.name, this.type, this.host, this.port, this.txt});
+class Service {
+  const Service({this.name, this.type, this.host, this.port, this.txt});
 
   final String? name;
   final String? type;
@@ -60,21 +60,17 @@ class ServiceInfo {
       'name: $name, service type: $type, hostname: $host, port: $port';
 }
 
-/// Returns true if the two [ServiceInfo] refer to the same service.
-bool isSameService(ServiceInfo a, ServiceInfo b) {
-  return a.name == b.name && a.type == b.type;
-}
+/// Returns true if the two [Service] instances refer to the same service.
+bool isSame(Service a, Service b) => a.name == b.name && a.type == b.type;
 
-/// Merges two [ServiceInfo] by overwriting existing attributes where new
+/// Merges two [Service] by overwriting existing attributes where new
 /// values are incoming.
-ServiceInfo merge(ServiceInfo existing, ServiceInfo incoming) {
-  return ServiceInfo(
-      name: incoming.name ?? existing.name,
-      type: incoming.type ?? existing.type,
-      host: incoming.host ?? existing.host,
-      port: incoming.port ?? existing.port,
-      txt: incoming.txt ?? existing.txt);
-}
+Service merge(Service existing, Service incoming) => Service(
+    name: incoming.name ?? existing.name,
+    type: incoming.type ?? existing.type,
+    host: incoming.host ?? existing.host,
+    port: incoming.port ?? existing.port,
+    txt: incoming.txt ?? existing.txt);
 
 /// Indicates the cause of an [NsdError].
 enum ErrorCause {
@@ -103,6 +99,7 @@ class NsdError extends Error {
   final ErrorCause cause;
   final String message;
 
+  // TODO hide this
   NsdError(this.cause, this.message);
 
   @override
@@ -119,19 +116,26 @@ class NsdError extends Error {
 class Discovery with ChangeNotifier {
   final String id;
 
+  final List<Service> _services = [];
+
+  /// The discovered services.
+  ///
+  /// This is updated when a new service is discovered or when a service
+  /// is lost, as long as the discovery is running.
+  List<Service> get services => List.unmodifiable(_services);
+
+  // TODO hide this
   Discovery(this.id);
 
-  final List<ServiceInfo> _serviceInfos = [];
-
-  List<ServiceInfo> get services => List.unmodifiable(_serviceInfos);
-
-  void add(ServiceInfo serviceInfo) {
-    _serviceInfos.add(serviceInfo);
+  // TODO hide this
+  void add(Service service) {
+    _services.add(service);
     notifyListeners();
   }
 
-  void remove(ServiceInfo serviceInfo) {
-    _serviceInfos.removeWhere((e) => isSameService(e, serviceInfo));
+  // TODO hide this
+  void remove(Service service) {
+    _services.removeWhere((e) => isSame(e, service));
     notifyListeners();
   }
 }
@@ -139,12 +143,17 @@ class Discovery with ChangeNotifier {
 /// Represents a registration.
 class Registration {
   final String id;
-  final ServiceInfo serviceInfo;
+  final Service service;
 
-  Registration(this.id, this.serviceInfo);
+  // TODO hide this
+  Registration(this.id, this.service);
 }
 
-/// Available log topics.
-///
-/// The error topic is enabled by default, all others may be enabled by the user.
-enum LogTopic { calls, errors }
+/// Represents available log topics.
+enum LogTopic {
+  /// Logs calls to the native side and callbacks to the platform side.
+  calls,
+
+  /// Logs errors (enabled by default).
+  errors
+}

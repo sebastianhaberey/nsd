@@ -44,12 +44,12 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
     setHandler(handle, 'onServiceDiscovered', (arguments) async {
       discovery.add(autoResolve
-          ? await resolve(deserializeServiceInfo(arguments)!)
-          : deserializeServiceInfo(arguments)!);
+          ? await resolve(deserializeService(arguments)!)
+          : deserializeService(arguments)!);
     });
 
     setHandler(handle, 'onServiceLost',
-        (arguments) => discovery.remove(deserializeServiceInfo(arguments)!));
+        (arguments) => discovery.remove(deserializeService(arguments)!));
 
     return invoke('startDiscovery', {
       ...serializeHandle(handle),
@@ -78,10 +78,10 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   }
 
   @override
-  Future<ServiceInfo> resolve(ServiceInfo serviceInfo) async {
+  Future<Service> resolve(Service service) async {
     final handle = _uuid.v4();
 
-    final completer = Completer<ServiceInfo>();
+    final completer = Completer<Service>();
     _attachDummyCallback(completer.future);
 
     setHandler(handle, 'onResolveSuccessful', (arguments) {
@@ -89,7 +89,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       // merge received service info into requested service info b/c some
       // properties may have been updated, but the received service info isn't
       // always complete, e.g. NetService only returns the name
-      final merged = merge(serviceInfo, deserializeServiceInfo(arguments)!);
+      final merged = merge(service, deserializeService(arguments)!);
       completer.complete(merged);
     });
 
@@ -100,12 +100,12 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
     return invoke('resolve', {
       ...serializeHandle(handle),
-      ...serializeServiceInfo(serviceInfo),
+      ...serializeService(service),
     }).then((value) => completer.future);
   }
 
   @override
-  Future<Registration> register(ServiceInfo serviceInfo) async {
+  Future<Registration> register(Service service) async {
     final handle = _uuid.v4();
     final completer = Completer<Registration>();
     _attachDummyCallback(completer.future);
@@ -114,7 +114,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       // merge received service info into requested service info b/c some
       // properties may have been updated, but the received service info isn't
       // always complete, e.g. NetService only returns the name
-      final merged = merge(serviceInfo, deserializeServiceInfo(arguments)!);
+      final merged = merge(service, deserializeService(arguments)!);
       completer.complete(Registration(handle, merged));
     });
 
@@ -125,7 +125,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
     return invoke('register', {
       ...serializeHandle(handle),
-      ...serializeServiceInfo(serviceInfo),
+      ...serializeService(service),
     }).then((value) => completer.future);
   }
 

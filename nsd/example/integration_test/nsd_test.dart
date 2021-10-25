@@ -25,7 +25,7 @@ void main() {
 
     // register simultaneously for a bit of stress
     final futures = Iterable<int>.generate(serviceCount)
-        .map((e) => createServiceInfo(name, basePort + e))
+        .map((e) => createService(name, basePort + e))
         .map((e) => register(e));
 
     final registrations = await Future.wait(futures);
@@ -52,19 +52,18 @@ void main() {
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
 
-    final serviceInfo =
-        ServiceInfo(name: name, type: serviceType, port: basePort);
-    final registration = await register(serviceInfo);
+    final service = Service(name: name, type: serviceType, port: basePort);
+    final registration = await register(service);
 
     await waitForCondition(
         () => findNameStartingWith(discovery.services, name).length == 1);
 
-    final receivedServiceInfo =
+    final receivedService =
         findNameStartingWith(discovery.services, name).elementAt(0);
 
-    expect(receivedServiceInfo.name, name);
-    expect(receivedServiceInfo.type, serviceType);
-    expect(receivedServiceInfo.port, basePort);
+    expect(receivedService.name, name);
+    expect(receivedService.type, serviceType);
+    expect(receivedService.port, basePort);
 
     await unregister(registration);
     await stopDiscovery(discovery);
@@ -95,17 +94,17 @@ void main() {
       txt['a-binary'] = binaryValue;
     }
 
-    final serviceInfo =
-        ServiceInfo(name: name, type: serviceType, port: basePort, txt: txt);
-    final registration = await register(serviceInfo);
+    final service =
+        Service(name: name, type: serviceType, port: basePort, txt: txt);
+    final registration = await register(service);
 
     await waitForCondition(
         () => findNameStartingWith(discovery.services, name).length == 1);
 
-    final receivedServiceInfo =
+    final receivedService =
         findNameStartingWith(discovery.services, name).elementAt(0);
 
-    final receivedTxt = receivedServiceInfo.txt!;
+    final receivedTxt = receivedService.txt!;
 
     // string values are most common
     expect(receivedTxt['a-string'], stringValue);
@@ -131,17 +130,13 @@ void main() {
   });
 }
 
-isBlankOrNull(Uint8List? value) {
-  return value == null || value.isEmpty;
-}
+isBlankOrNull(Uint8List? value) async => value == null || value.isEmpty;
 
-ServiceInfo createServiceInfo(String name, int port) {
-  return ServiceInfo(name: name + ' $port', type: serviceType, port: port);
-}
+Service createService(String name, int port) =>
+    Service(name: name + ' $port', type: serviceType, port: port);
 
-Iterable<ServiceInfo> findNameStartingWith(
-        List<ServiceInfo> serviceInfos, String name) =>
-    serviceInfos.where((serviceInfo) => serviceInfo.name!.startsWith(name));
+Iterable<Service> findNameStartingWith(List<Service> services, String name) =>
+    services.where((service) => service.name!.startsWith(name));
 
 Future<void> waitForCondition(bool Function() condition,
     {Duration minWait = const Duration(),
