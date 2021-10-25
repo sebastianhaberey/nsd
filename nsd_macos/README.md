@@ -4,6 +4,6 @@ The macOS implementation of the [`nsd`][1] plugin
 
 ## Usage
 
-This package will be automatically included in your app when you use the plugin.
+[Documentation][1].
 
 [1]: https://github.com/sebastianhaberey/nsd

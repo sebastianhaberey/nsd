@@ -1,9 +1,9 @@
 # nsd_platform_interface
 
-A common platform interface for the [`nsd`][1] plugin
+Platform interface for the [`nsd`][1] plugin
 
 ## Usage
 
-This package will be automatically included in your app when you use the plugin.
+[Documentation][1].
 
 [1]: https://github.com/sebastianhaberey/nsd
