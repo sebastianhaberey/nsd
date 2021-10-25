@@ -13,28 +13,28 @@ func cleanServiceType(_ serviceType: String?) -> String? {
     }
 }
 
-func serializeServiceInfo(_ service: NetService) -> [String: Any?] {
-    var serviceInfo: [String: Any?] = [
-        "service.name": service.name,
-        "service.type": cleanServiceType(service.type),
-        "service.host": service.hostName,
+func serializeService(_ netService: NetService) -> [String: Any?] {
+    var service: [String: Any?] = [
+        "service.name": netService.name,
+        "service.type": cleanServiceType(netService.type),
+        "service.host": netService.hostName,
     ]
 
-    let port = service.port;
+    let port = netService.port;
     if (port >= 0) {
-        serviceInfo["service.port"] = port
+        service["service.port"] = port
     }
 
-    if let recordData = service.txtRecordData() {
+    if let recordData = netService.txtRecordData() {
         if let txt = nativeTxtToFlutterTxt(recordData) {
-            serviceInfo["service.txt"] = txt;
+            service["service.txt"] = txt;
         }
     }
 
-    return serviceInfo
+    return service
 }
 
-func deserializeServiceInfo(_ arguments: Any?, domain: String = "local.") -> NetService? {
+func deserializeService(_ arguments: Any?, domain: String = "local.") -> NetService? {
     let args = arguments as? [String: Any]
 
     guard let type = args?["service.type"] as? String else {

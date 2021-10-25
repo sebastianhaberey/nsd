@@ -86,7 +86,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
             return
         }
 
-        guard let service = deserializeServiceInfo(arguments) else {
+        guard let service = deserializeService(arguments) else {
             result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Invalid service info", details: nil))
             return
         }
@@ -103,7 +103,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
             return
         }
 
-        guard let service = deserializeServiceInfo(arguments) else {
+        guard let service = deserializeService(arguments) else {
             result(FlutterError(code: ErrorCause.illegalArgument.code, message: "Invalid service info", details: nil))
             return
         }
@@ -158,7 +158,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
             return
         }
 
-        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeService(service))
         methodChannel.invokeMethod("onServiceDiscovered", arguments: arguments)
     }
 
@@ -167,7 +167,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
             return
         }
 
-        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeService(service))
         methodChannel.invokeMethod("onServiceLost", arguments: arguments)
     }
 
@@ -176,7 +176,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
             return
         }
 
-        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeService(service))
         methodChannel.invokeMethod("onRegistrationSuccessful", arguments: arguments)
     }
 
@@ -212,7 +212,7 @@ public class SwiftNsdIosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelega
         service.delegate = nil
         services[handle] = nil
 
-        let arguments = serializeHandle(handle).merging(serializeServiceInfo(service))
+        let arguments = serializeHandle(handle).merging(serializeService(service))
         methodChannel.invokeMethod("onResolveSuccessful", arguments: arguments)
     }
 
