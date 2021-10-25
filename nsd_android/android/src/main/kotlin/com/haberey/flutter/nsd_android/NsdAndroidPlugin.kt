@@ -64,13 +64,13 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 "Cannot start discovery: expected service type"
             )
 
-        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
+        val handle = deserializeHandle(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
-            "Cannot start discovery: expected agent id"
+            "Cannot start discovery: expected handle"
         )
 
-        val discoveryListener = createDiscoveryListener(agentId)
-        discoveryListeners[agentId] = discoveryListener
+        val discoveryListener = createDiscoveryListener(handle)
+        discoveryListeners[handle] = discoveryListener
 
         nsdManager.discoverServices(
             serviceType,
@@ -82,12 +82,12 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun stopDiscovery(methodCall: MethodCall, result: Result) {
-        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
+        val handle = deserializeHandle(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
-            "Cannot stop discovery: expected agent id"
+            "Cannot stop discovery: expected handle"
         )
 
-        nsdManager.stopServiceDiscovery(discoveryListeners[agentId])
+        nsdManager.stopServiceDiscovery(discoveryListeners[handle])
         result.success(null)
     }
 
@@ -100,13 +100,13 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             )
         }
 
-        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
+        val handle = deserializeHandle(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
-            "Cannot register service: expected agent id"
+            "Cannot register service: expected handle"
         )
 
-        val registrationListener = createRegistrationListener(agentId)
-        registrationListeners[agentId] = registrationListener
+        val registrationListener = createRegistrationListener(handle)
+        registrationListeners[handle] = registrationListener
 
         nsdManager.registerService(
             serviceInfo, NsdManager.PROTOCOL_DNS_SD, registrationListener
@@ -124,13 +124,13 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             )
         }
 
-        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
+        val handle = deserializeHandle(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
-            "Cannot resolve service: expected agent id"
+            "Cannot resolve service: expected handle"
         )
 
-        val resolveListener = createResolveListener(agentId)
-        resolveListeners[agentId] = resolveListener
+        val resolveListener = createResolveListener(handle)
+        resolveListeners[handle] = resolveListener
 
         result.success(null)
 
@@ -141,43 +141,43 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun unregister(methodCall: MethodCall, result: Result) {
-        val agentId = deserializeAgentId(methodCall.arguments()) ?: throw NsdError(
+        val handle = deserializeHandle(methodCall.arguments()) ?: throw NsdError(
             ErrorCause.ILLEGAL_ARGUMENT,
-            "Cannot unregister service: agent id expected"
+            "Cannot unregister service: handle expected"
         )
 
-        val registrationListener = registrationListeners[agentId]
+        val registrationListener = registrationListeners[handle]
         nsdManager.unregisterService(registrationListener)
 
         result.success(null)
     }
 
     // NsdManager requires one listener instance per discovery
-    private fun createDiscoveryListener(agentId: String) =
+    private fun createDiscoveryListener(handle: String) =
         object : NsdManager.DiscoveryListener {
 
             val serviceInfos = ArrayList<NsdServiceInfo>()
 
             override fun onDiscoveryStarted(serviceType: String) {
-                invokeMethod("onDiscoveryStartSuccessful", serializeAgentId(agentId))
+                invokeMethod("onDiscoveryStartSuccessful", serializeHandle(handle))
             }
 
             override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                discoveryListeners.remove(agentId)
-                val arguments = serializeAgentId(agentId) +
+                discoveryListeners.remove(handle)
+                val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
                 invokeMethod("onDiscoveryStartFailed", arguments)
             }
 
             override fun onDiscoveryStopped(serviceType: String) {
-                discoveryListeners.remove(agentId)
-                invokeMethod("onDiscoveryStopSuccessful", serializeAgentId(agentId))
+                discoveryListeners.remove(handle)
+                invokeMethod("onDiscoveryStopSuccessful", serializeHandle(handle))
             }
 
             override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
-                discoveryListeners.remove(agentId)
-                val arguments = serializeAgentId(agentId) +
+                discoveryListeners.remove(handle)
+                val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
                 invokeMethod("onDiscoveryStopFailed", arguments)
@@ -189,7 +189,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 // filters out any services on the same machine, but that won't suffice for all use cases.
                 if (serviceInfos.none { isSameService(it, serviceInfo) }) {
                     serviceInfos.add(serviceInfo)
-                    val arguments = serializeAgentId(agentId) + serializeServiceInfo(serviceInfo)
+                    val arguments = serializeHandle(handle) + serializeServiceInfo(serviceInfo)
                     invokeMethod("onServiceDiscovered", arguments)
                 }
             }
@@ -199,7 +199,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 if (existingServiceInfo != null) {
                     serviceInfos.remove(existingServiceInfo)
                     val arguments =
-                        serializeAgentId(agentId) + serializeServiceInfo(existingServiceInfo)
+                        serializeHandle(handle) + serializeServiceInfo(existingServiceInfo)
                     invokeMethod("onServiceLost", arguments)
                 }
             }
@@ -209,50 +209,50 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
         return (a.serviceName == b.serviceName) && (a.serviceType == b.serviceType)
     }
 
-    private fun createResolveListener(agentId: String) =
+    private fun createResolveListener(handle: String) =
         object : NsdManager.ResolveListener {
             override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-                resolveListeners.remove(agentId)
-                val arguments = serializeAgentId(agentId) + serializeServiceInfo(serviceInfo)
+                resolveListeners.remove(handle)
+                val arguments = serializeHandle(handle) + serializeServiceInfo(serviceInfo)
                 resolveSemaphore.release()
                 invokeMethod("onResolveSuccessful", arguments)
             }
 
             override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                val arguments = serializeAgentId(agentId) +
+                val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
-                resolveListeners.remove(agentId)
+                resolveListeners.remove(handle)
                 resolveSemaphore.release()
                 invokeMethod("onResolveFailed", arguments)
             }
         }
 
-    private fun createRegistrationListener(agentId: String) =
+    private fun createRegistrationListener(handle: String) =
         object : NsdManager.RegistrationListener {
 
             override fun onServiceRegistered(registeredServiceInfo: NsdServiceInfo) {
                 val arguments =
-                    serializeAgentId(agentId) + serializeServiceName(registeredServiceInfo.serviceName)
+                    serializeHandle(handle) + serializeServiceName(registeredServiceInfo.serviceName)
                 invokeMethod("onRegistrationSuccessful", arguments)
             }
 
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                registrationListeners.remove(agentId)
-                val arguments = serializeAgentId(agentId) +
+                registrationListeners.remove(handle)
+                val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
                 invokeMethod("onRegistrationFailed", arguments)
             }
 
             override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
-                registrationListeners.remove(agentId)
-                invokeMethod("onUnregistrationSuccessful", serializeAgentId(agentId))
+                registrationListeners.remove(handle)
+                invokeMethod("onUnregistrationSuccessful", serializeHandle(handle))
             }
 
             override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                registrationListeners.remove(agentId)
-                val arguments = serializeAgentId(agentId) +
+                registrationListeners.remove(handle)
+                val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
                 invokeMethod("onUnregistratioFailed", arguments)

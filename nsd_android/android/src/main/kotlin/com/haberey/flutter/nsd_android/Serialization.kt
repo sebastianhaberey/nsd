@@ -1,16 +1,25 @@
 package com.haberey.flutter.nsd_android
 
 import android.net.nsd.NsdServiceInfo
-import java.lang.IllegalArgumentException
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.charset.CharsetDecoder
 import java.nio.charset.CodingErrorAction
-import java.util.*
+
+private enum class Key(val serializeKey: String) {
+    HANDLE("handle"),
+    SERVICE_NAME("service.name"),
+    SERVICE_TYPE("service.type"),
+    SERVICE_HOST("service.host"),
+    SERVICE_PORT("service.port"),
+    SERVICE_TXT("service.txt"),
+    ERROR_CAUSE("error.cause"),
+    ERROR_MESSAGE("error.message"),
+}
 
 val UTF8_DECODER = createUtf8Decoder()
 
-internal fun serializeAgentId(value: String?) = serialize(Key.AGENT_ID, value)
+internal fun serializeHandle(value: String?) = serialize(Key.HANDLE, value)
 
 internal fun serializeServiceName(value: String?) = serialize(Key.SERVICE_NAME, value)
 
@@ -19,8 +28,8 @@ internal fun serializeErrorCause(value: String?) = serialize(Key.ERROR_CAUSE, va
 internal fun serializeErrorMessage(value: String?) =
     serialize(Key.ERROR_MESSAGE, value)
 
-internal fun deserializeAgentId(arguments: Map<String, Any?>?): String? =
-    deserialize(Key.AGENT_ID, arguments)
+internal fun deserializeHandle(arguments: Map<String, Any?>?): String? =
+    deserialize(Key.HANDLE, arguments)
 
 internal fun deserializeServiceName(arguments: Map<String, Any?>?): String? =
     deserialize(Key.SERVICE_NAME, arguments)
@@ -102,17 +111,6 @@ internal fun serializeServiceInfo(nsdServiceInfo: NsdServiceInfo): Map<String, A
         "service.port" to if (nsdServiceInfo.port == 0) null else nsdServiceInfo.port,
         "service.txt" to nsdServiceInfo.attributes,
     )
-}
-
-private enum class Key(val serializeKey: String) {
-    AGENT_ID("agentId"),
-    SERVICE_NAME("service.name"),
-    SERVICE_TYPE("service.type"),
-    SERVICE_HOST("service.host"),
-    SERVICE_PORT("service.port"),
-    SERVICE_TXT("service.txt"),
-    ERROR_CAUSE("error.cause"),
-    ERROR_MESSAGE("error.message"),
 }
 
 // In the specification http://files.dns-sd.org/draft-cheshire-dnsext-dns-sd.txt 4.1.2 / 7.
