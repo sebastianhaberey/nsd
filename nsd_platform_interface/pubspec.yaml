@@ -1,6 +1,7 @@
 name: nsd_platform_interface
 description: Flutter nsd plugin (platform interface).
 version: 0.0.1
+homepage: https://github.com/sebastianhaberey/nsd
 publish_to: none
 
 environment:

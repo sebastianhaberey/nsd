@@ -1,6 +1,7 @@
 name: nsd_ios
 description: Flutter nsd plugin (iOS).
 version: 0.0.1
+homepage: https://github.com/sebastianhaberey/nsd
 publish_to: none
 
 environment:

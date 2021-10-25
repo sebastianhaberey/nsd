@@ -1,6 +1,7 @@
 name: nsd
 description: Flutter nsd plugin.
 version: 0.0.1
+homepage: https://github.com/sebastianhaberey/nsd
 publish_to: none
 
 environment:
