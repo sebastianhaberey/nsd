@@ -92,8 +92,8 @@ public func flutterTxtToNativeTxt(_ flutterTxt: [String: FlutterStandardTypedDat
 
     let nativeTxt = CFNetServiceCreateTXTDataWithDictionary(nil, nativeData as CFDictionary)?.takeRetainedValue() as Data?
 
-    // this is the standard method but it will not take null values at all
-//    let recordData = NetService.data(fromTXTRecord: nativeData)
+    // this is the standard way but it will not take null values at all
+    // let recordData = NetService.data(fromTXTRecord: nativeData)
 
     return nativeTxt;
 }
@@ -104,20 +104,20 @@ func deserializeServiceType(_ arguments: Any?) -> String? {
     return type
 }
 
-func serializeAgentId(_ agentId: String) -> [String: Any?] {
-    ["agentId": agentId]
+func serializeHandle(_ value: String) -> [String: Any?] {
+    ["handle": value]
 }
 
-func deserializeAgentId(_ arguments: Any?) -> String? {
+func deserializeHandle(_ arguments: Any?) -> String? {
     let args = arguments as? [String: Any]
-    let agentId = args?["agentId"] as? String
-    return agentId
+    let handle = args?["handle"] as? String
+    return handle
 }
 
-func serializeErrorCause(_ errorCause: ErrorCause) -> [String: Any?] {
-    ["error.cause": errorCause.code]
+func serializeErrorCause(_ value: ErrorCause) -> [String: Any?] {
+    ["error.cause": value.code]
 }
 
-func serializeErrorMessage(_ errorMessage: String) -> [String: Any?] {
-    ["error.message": errorMessage]
+func serializeErrorMessage(_ value: String) -> [String: Any?] {
+    ["error.message": value]
 }
