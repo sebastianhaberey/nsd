@@ -1,8 +1,6 @@
 # nsd_macos
 
-The macOS implementation of the [`nsd`][1] plugin
-
-## Usage
+The macOS implementation of the [`nsd`][1] plugin.
 
 [Documentation][1]
 

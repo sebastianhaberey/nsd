@@ -1,8 +1,6 @@
 # nsd
 
-The parent module of the [`nsd`][1] plugin
-
-## Usage
+The parent module of the [`nsd`][1] plugin.
 
 [Documentation][1]
 
