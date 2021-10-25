@@ -1,6 +1,6 @@
 import 'dart:developer' as developer;
 
-import 'nsd_platform.dart';
+import 'nsd_platform_interface.dart';
 import 'utilities.dart';
 
 final _logTopics = <LogTopic>{LogTopic.errors};

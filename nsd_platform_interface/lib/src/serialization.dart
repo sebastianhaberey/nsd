@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'nsd_platform.dart';
+import 'nsd_platform_interface.dart';
 import 'utilities.dart';
 
 String? deserializeString(arguments, String key) =>

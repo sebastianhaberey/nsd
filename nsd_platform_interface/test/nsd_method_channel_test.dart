@@ -3,8 +3,8 @@ import 'dart:collection';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nsd_platform_interface/nsd_platform_interface.dart';
 import 'package:nsd_platform_interface/src/method_channel_nsd_platform.dart';
+import 'package:nsd_platform_interface/src/nsd_platform_interface.dart';
 import 'package:nsd_platform_interface/src/serialization.dart';
 
 const channelName = 'com.haberey/nsd';
@@ -108,7 +108,7 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.serviceInfos.length, 1);
+      expect(discovery.services.length, 1);
     });
 
     test('Client is notified if service is lost', () async {
@@ -128,14 +128,14 @@ void main() {
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.serviceInfos.length, 1);
+      expect(discovery.services.length, 1);
 
       await mockReply('onServiceLost', {
         ...serializeHandle(capturedHandle),
         ...serializeServiceInfo(serviceInfo)
       });
 
-      expect(discovery.serviceInfos.length, 0);
+      expect(discovery.services.length, 0);
     });
   });
 

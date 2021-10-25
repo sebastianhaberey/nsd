@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 import 'logging.dart';
-import 'nsd_platform.dart';
+import 'nsd_platform_interface.dart';
 import 'serialization.dart';
 
 typedef _Handler = void Function(dynamic);
@@ -16,8 +16,8 @@ const _uuid = Uuid();
 void _attachDummyCallback<T>(Future<T> future) => unawaited(
     future.then<void>((value) => null).onError((error, stackTrace) => null));
 
-/// Implementation of [NsdPlatform] that uses a method channel to communicate with native side.
-class MethodChannelNsdPlatform extends NsdPlatform {
+/// Implementation of [NsdPlatformInterface] that uses a method channel to communicate with native side.
+class MethodChannelNsdPlatform extends NsdPlatformInterface {
   final _methodChannel = const MethodChannel('com.haberey/nsd');
   final _handlers = <String, Map<String, _Handler>>{};
 

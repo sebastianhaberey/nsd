@@ -19,66 +19,60 @@ void main() {
 
   testWidgets('Registration, discovery and unregistration of multiple services',
       (WidgetTester _) async {
-    final nsd = NsdPlatform.instance;
-
     final name = uuid.v4(); // UUID as service name base ensures test isolation
 
-    final discovery = await nsd.startDiscovery(serviceType);
+    final discovery = await startDiscovery(serviceType);
 
     // register simultaneously for a bit of stress
     final futures = Iterable<int>.generate(serviceCount)
         .map((e) => createServiceInfo(name, basePort + e))
-        .map((e) => nsd.register(e));
+        .map((e) => register(e));
 
     final registrations = await Future.wait(futures);
 
     // wait for a minimum of ten seconds to ensure there are not more registered services than expected
     await waitForCondition(
         () =>
-            findNameStartingWith(discovery.serviceInfos, name).length ==
+            findNameStartingWith(discovery.services, name).length ==
             serviceCount,
         minWait: const Duration(seconds: 10));
 
     // unregister simultaneously for a bit of stress
-    await Future.wait(registrations.map((e) => nsd.unregister(e)));
+    await Future.wait(registrations.map((e) => unregister(e)));
 
     await waitForCondition(
-        () => findNameStartingWith(discovery.serviceInfos, name).isEmpty);
+        () => findNameStartingWith(discovery.services, name).isEmpty);
 
-    await nsd.stopDiscovery(discovery);
+    await stopDiscovery(discovery);
   });
 
   testWidgets('Verify basic attributes of registered service',
       (WidgetTester _) async {
-    final nsd = NsdPlatform.instance;
-
-    final discovery = await nsd.startDiscovery(serviceType);
+    final discovery = await startDiscovery(serviceType);
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
 
     final serviceInfo =
         ServiceInfo(name: name, type: serviceType, port: basePort);
-    final registration = await nsd.register(serviceInfo);
+    final registration = await register(serviceInfo);
 
     await waitForCondition(
-        () => findNameStartingWith(discovery.serviceInfos, name).length == 1);
+        () => findNameStartingWith(discovery.services, name).length == 1);
 
     final receivedServiceInfo =
-        findNameStartingWith(discovery.serviceInfos, name).elementAt(0);
+        findNameStartingWith(discovery.services, name).elementAt(0);
 
     expect(receivedServiceInfo.name, name);
     expect(receivedServiceInfo.type, serviceType);
     expect(receivedServiceInfo.port, basePort);
 
-    await nsd.unregister(registration);
-    await nsd.stopDiscovery(discovery);
+    await unregister(registration);
+    await stopDiscovery(discovery);
   });
 
   testWidgets('Verify txt attribute of registered service',
       (WidgetTester _) async {
-    final nsd = NsdPlatform.instance;
-
-    final discovery = await nsd.startDiscovery(serviceType);
+    final discovery = await startDiscovery(serviceType);
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
 
@@ -103,13 +97,13 @@ void main() {
 
     final serviceInfo =
         ServiceInfo(name: name, type: serviceType, port: basePort, txt: txt);
-    final registration = await nsd.register(serviceInfo);
+    final registration = await register(serviceInfo);
 
     await waitForCondition(
-        () => findNameStartingWith(discovery.serviceInfos, name).length == 1);
+        () => findNameStartingWith(discovery.services, name).length == 1);
 
     final receivedServiceInfo =
-        findNameStartingWith(discovery.serviceInfos, name).elementAt(0);
+        findNameStartingWith(discovery.services, name).elementAt(0);
 
     final receivedTxt = receivedServiceInfo.txt!;
 
@@ -132,8 +126,8 @@ void main() {
       expect(receivedTxt['a-binary'], binaryValue);
     }
 
-    await nsd.unregister(registration);
-    await nsd.stopDiscovery(discovery);
+    await unregister(registration);
+    await stopDiscovery(discovery);
   });
 }
 

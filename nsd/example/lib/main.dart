@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:example/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:nsd/nsd.dart';
-import 'package:nsd_example/logging.dart';
 import 'package:provider/provider.dart';
 
 const String serviceType = '_http._tcp';
@@ -23,8 +23,6 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-  final nsd = NsdPlatform.instance;
-
   final discoveries = <Discovery>[];
   final registrations = <Registration>[];
 
@@ -33,11 +31,11 @@ class MyAppState extends State<MyApp> {
   int get nextPort => _nextPort++; // TODO ensure ports are not taken
 
   MyAppState() {
-    nsd.enableLogging(LogTopic.calls);
+    enableLogging(LogTopic.calls);
   }
 
   Future<void> addDiscovery() async {
-    final discovery = await nsd.startDiscovery(serviceType).catchError((error) {
+    final discovery = await startDiscovery(serviceType).catchError((error) {
       logError(this, error);
     });
 
@@ -52,7 +50,7 @@ class MyAppState extends State<MyApp> {
       discoveries.remove(discovery);
     });
 
-    await nsd.stopDiscovery(discovery).catchError((error) {
+    await stopDiscovery(discovery).catchError((error) {
       logError(this, error);
     });
   }
@@ -64,7 +62,7 @@ class MyAppState extends State<MyApp> {
         port: nextPort,
         txt: createTxt());
 
-    final registration = await nsd.register(serviceInfo).catchError((error) {
+    final registration = await register(serviceInfo).catchError((error) {
       logError(this, error);
     });
 
@@ -79,7 +77,7 @@ class MyAppState extends State<MyApp> {
       registrations.remove(registration);
     });
 
-    await nsd.unregister(registration).catchError((error) {
+    await unregister(registration).catchError((error) {
       logError(this, error);
     });
   }
@@ -217,7 +215,7 @@ class DiscoveryState extends State<DiscoveryWidget> {
   }
 
   List<DataRow> buildDataRows(Discovery discovery) {
-    return discovery.serviceInfos
+    return discovery.services
         .map((e) => DataRow(
               cells: <DataCell>[
                 DataCell(Text(e.name ?? 'unknown')),
