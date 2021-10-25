@@ -6,13 +6,14 @@
 
 ## Unsorted
 
+- ci: set up the "big" integration test for macos / ios / android using github actions
+- android: unit tests for helper methods
 - platform: replace dynamic arguments / return values with more concrete types where possible
 - clean up code according to flutter coding guidelines
 - dart code: cleanup visibility (add _ where needed)
 
 ## Dustbin
 
-- android: unit tests for helper methods
 - speed up name allocation by using running discoveries
 - figure out how to deal with logging spam on console
 - platform: introduce timeouts to prevent stale objects & stale futures
