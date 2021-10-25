@@ -2,8 +2,6 @@
 
 ## Current
 
-- macos: unit tests for helper methods
-- android: unit tests for helper methods
 - initial release: documentation / changelogs / clean up pubspec files / publish
 
 ## Unsorted
@@ -14,6 +12,7 @@
 
 ## Dustbin
 
+- android: unit tests for helper methods
 - speed up name allocation by using running discoveries
 - figure out how to deal with logging spam on console
 - platform: introduce timeouts to prevent stale objects & stale futures
@@ -23,6 +22,7 @@
 
 ## Done
 
+- macos: unit tests for helper methods
 - use proper logging library and let user configure log level for plugin
 - all: clean up agent id
 - all: test (& fix) txt resolution
