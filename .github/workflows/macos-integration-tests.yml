@@ -1,0 +1,31 @@
+# Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
+
+name: macOS Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  macos_integation_tests:
+    name: Run macOS integration tests
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: nsd/example
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter environment
+        uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
+          flutter-version: '2.5.3' # you can also specify exact version of flutter
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run tests with code coverage
+        run: flutter test -d macos integration_test/nsd_test.dart
