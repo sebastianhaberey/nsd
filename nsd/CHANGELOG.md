@@ -10,3 +10,7 @@
 ## 1.0.2
 
 * added documentation as recommended by pub.dev analysis
+
+## 1.0.3
+
+* added documentation for example app
