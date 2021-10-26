@@ -1,3 +1,8 @@
 ## 1.0.0
 
-* Initial release
+* initial release
+
+## 1.0.1
+
+* updated documentation
+* verified publisher
