@@ -31,3 +31,17 @@ final registration = await register(
 
 await unregister(registration);
 ```
+
+## Example App
+
+![Screenshot](https://github.com/sebastianhaberey/nsd/blob/main/screenshot.png)
+
+The plugin includes an example application that can be used to start multiple discoveries 
+and register multiple services. It will discover its own services but also other services of type
+`_http._tcp` in the local network, such as the printer in the screenshot above. 
+
+- Use the action button to add a discovery or register a new service.
+- Swipe the cards left or right to dismiss a discovery or service.
+- The application log will show the calls and callbacks platform side vs. native side.
+- The [example application source code](example/lib/main.dart) demonstrates how to use the 
+  discovery object as a [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
