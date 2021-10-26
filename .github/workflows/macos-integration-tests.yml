@@ -24,8 +24,11 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', default to: 'stable'
           flutter-version: '2.5.3' # you can also specify exact version of flutter
 
+      - name: Show Flutter configuration
+        run: flutter doctor -v
+
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Run tests with code coverage
+      - name: Run integration tests
         run: flutter test -d macos integration_test/nsd_test.dart
