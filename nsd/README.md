@@ -2,7 +2,7 @@
 
 [![Flutter CI](https://github.com/sebastianhaberey/nsd/actions/workflows/flutter-ci.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/flutter-ci.yml)
 
-A Flutter plugin for Network Service Discovery (NSD).
+A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
 ## Service Discovery
 

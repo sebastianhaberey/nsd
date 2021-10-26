@@ -1,6 +1,6 @@
 name: nsd
 description: A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd
 issue_tracker: https://github.com/sebastianhaberey/nsd/issues
 
@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  nsd_android: ^1.0.1
-  nsd_ios: ^1.0.1
-  nsd_macos: ^1.0.1
-  nsd_platform_interface: ^1.0.1
+  nsd_android: ^1.0.2
+  nsd_ios: ^1.0.2
+  nsd_macos: ^1.0.2
+  nsd_platform_interface: ^1.0.2
 
 dev_dependencies:
   flutter_lints: ^1.0.4

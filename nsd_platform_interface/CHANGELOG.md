@@ -6,3 +6,7 @@
 
 * updated documentation
 * verified publisher
+
+## 1.0.2
+
+* added documentation as recommended by pub.dev analysis

@@ -1,6 +1,6 @@
 name: nsd_macos
-description: Flutter network service discovery plugin (macOS submodule).
-version: 1.0.1
+description: Flutter network service discovery plugin (macOS submodule - will be installed with the parent plugin).
+version: 1.0.2
 repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd_macos
 issue_tracker: https://github.com/sebastianhaberey/nsd/issues
 
