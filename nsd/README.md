@@ -34,7 +34,7 @@ await unregister(registration);
 
 ## Example App
 
-![Screenshot](https://github.com/sebastianhaberey/nsd/blob/main/screenshot.png)
+![Screenshot](https://github.com/sebastianhaberey/nsd/blob/main/documentation/images/screenshot.png)
 
 The plugin includes an example application that can be used to start multiple discoveries 
 and register multiple services. It will discover its own services but also other services of type
