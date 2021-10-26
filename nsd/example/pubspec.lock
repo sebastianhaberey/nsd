@@ -151,35 +151,35 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   nsd_android:
     dependency: transitive
     description:
       name: nsd_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   nsd_ios:
     dependency: transitive
     description:
       name: nsd_ios
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   nsd_macos:
     dependency: transitive
     description:
       name: nsd_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   nsd_platform_interface:
     dependency: transitive
     description:
       name: nsd_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   path:
     dependency: transitive
     description:
