@@ -1,4 +1,4 @@
-# Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
+# Taken from https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
 
 name: Android Integration Tests
 
@@ -38,7 +38,7 @@ jobs:
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          working-directory: nsd/example/android
+          working-directory: nsd/example
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: x86_64
