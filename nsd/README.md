@@ -43,5 +43,5 @@ and register multiple services. It will discover its own services but also other
 - Use the action button to add a discovery or register a new service.
 - Swipe the cards left or right to dismiss a discovery or service.
 - The application log will show the calls and callbacks platform side vs. native side.
-- The [example application source code](example/lib/main.dart) demonstrates how to use the 
-  discovery object as a [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
+- The source code demonstrates how to use the discovery object as a 
+  [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
