@@ -136,22 +136,18 @@ private fun removeLeadingAndTrailingDots(serviceType: String?): String? {
     return out
 }
 
-private inline fun <reified T> deserialize(key: Key, arguments: Map<String, Any?>?): T? {
-    return arguments?.get(key.serializeKey) as? T
-}
+private inline fun <reified T> deserialize(key: Key, arguments: Map<String, Any?>?): T? =
+    arguments?.get(key.serializeKey) as? T
 
 private fun <T> serialize(key: Key, value: T?) = mapOf<String, Any?>(
     key.serializeKey to value
 )
 
-private fun isValidUtf8(value: ByteArray): Boolean {
-    return try {
-        UTF8_DECODER.decode(ByteBuffer.wrap(value))
-        true
-    } catch (e: CharacterCodingException) {
-        false
-    }
-
+private fun isValidUtf8(value: ByteArray): Boolean = try {
+    UTF8_DECODER.decode(ByteBuffer.wrap(value))
+    true
+} catch (e: CharacterCodingException) {
+    false
 }
 
 private fun createUtf8Decoder(): CharsetDecoder = Charsets.UTF_8.newDecoder().apply {
