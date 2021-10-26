@@ -29,15 +29,6 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', default to: 'stable'
           flutter-version: '2.5.3' # you can also specify exact version of flutter
 
-      - name: List all simulators
-        run: xcrun xctrace list devices
-
-      - name: Start simulator
-        id: simulator
-        uses: futureware-tech/simulator-action@v1
-        with:
-          model: '${{ matrix.device }}'
-
       - name: Show Flutter configuration
         run: flutter doctor -v
 
@@ -47,8 +38,9 @@ jobs:
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
+          working-directory: nsd/example/android
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: x86_64
-          profile: Nexus 6
+          profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
           script: flutter test --reporter expanded integration_test/nsd_test.dart
