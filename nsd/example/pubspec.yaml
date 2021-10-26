@@ -1,6 +1,5 @@
 name: example
 description: Example application for the Flutter nsd plugin.
-version: 0.0.1
 homepage: https://github.com/sebastianhaberey/nsd
 publish_to: none
 
@@ -16,7 +15,6 @@ dependencies:
   provider: ^6.0.1
   flutter_speed_dial: ^4.5.0
   uuid: 3.0.5
-
 
 dev_dependencies:
   integration_test:

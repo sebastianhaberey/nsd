@@ -1,8 +1,7 @@
 name: nsd
-description: Flutter nsd plugin.
-version: 0.0.1
+description: Flutter nsd plugin (parent).
+version: 1.0.0
 homepage: https://github.com/sebastianhaberey/nsd
-publish_to: none
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -11,14 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  nsd_android:
-    path: ../nsd_android
-  nsd_ios:
-    path: ../nsd_ios
-  nsd_macos:
-    path: ../nsd_macos
-  nsd_platform_interface:
-    path: ../nsd_platform_interface
+  nsd_android: ^1.0.0
+  nsd_ios: ^1.0.0
+  nsd_macos: ^1.0.0
+  nsd_platform_interface: ^1.0.0
 
 dev_dependencies:
   flutter_lints: ^1.0.4
