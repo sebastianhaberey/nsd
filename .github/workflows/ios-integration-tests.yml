@@ -1,6 +1,6 @@
 # Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
 
-name: macOS Integration Tests
+name: iOS Integration Tests
 
 on:
   push:
@@ -8,13 +8,32 @@ on:
       - main
 
 jobs:
-  macos_integation_tests:
-    name: Run macOS integration tests
+
+  drive_ios:
+    name: Run iOS integration tests
+    strategy:
+      matrix:
+        device:
+          - "iPhone 8 (13.3)"
+          - "iPhone 11 Pro (13.3)"
+      fail-fast: false
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: nsd/example
     steps:
+
+      - name: List all simulators
+        run: xcrun instruments -s
+
+      - name: Start Simulator
+        run: |
+          UDID=$(
+            xcrun instruments -s |
+            awk \
+              -F ' *[][]' \
+              -v 'device=${{ matrix.device }}' \
+              '$1 == device { print $2 }'
+          )
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+
       - name: Check out repository
         uses: actions/checkout@v2
 
@@ -34,4 +53,4 @@ jobs:
         run: flutter devices
 
       - name: Run integration tests
-        run: flutter test -d macos integration_test/nsd_test.dart
+        run: flutter test -d ios integration_test/nsd_test.dart
