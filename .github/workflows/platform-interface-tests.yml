@@ -1,6 +1,6 @@
 # Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
 
-name: Platform Interface Tests & Coverage
+name: Platform Integration Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  platform_interface_coverage_report:
+  test:
     name: Generate coverage report (platform interface)
     runs-on: ubuntu-latest
     defaults:
