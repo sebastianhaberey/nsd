@@ -17,14 +17,10 @@ jobs:
           - 'iPhone 8'
       fail-fast: false
     runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: nsd/example
     steps:
-
-      - name: List all simulators
-        run: xcrun xctrace list devices
-
-      - uses: futureware-tech/simulator-action@v1
-        with:
-          model: '${{ matrix.device }}'
 
       - name: Check out repository
         uses: actions/checkout@v2
@@ -40,6 +36,14 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: List all simulators
+        run: xcrun xctrace list devices
+
+      - name: Start simulator
+      - uses: futureware-tech/simulator-action@v1
+        with:
+          model: '${{ matrix.device }}'
 
       - name: Show Flutter devices
         run: flutter devices
