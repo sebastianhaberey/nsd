@@ -40,6 +40,7 @@ jobs:
         run: xcrun xctrace list devices
 
       - name: Start simulator
+        id: simulator
         uses: futureware-tech/simulator-action@v1
         with:
           model: '${{ matrix.device }}'
@@ -48,4 +49,4 @@ jobs:
         run: flutter devices
 
       - name: Run integration tests
-        run: flutter test -d ios integration_test/nsd_test.dart
+        run: flutter test --device-id ${{ steps.simulator.outputs.uuid }} --reporter expand integration_test/nsd_test.dart
