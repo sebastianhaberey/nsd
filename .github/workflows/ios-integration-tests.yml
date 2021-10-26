@@ -8,8 +8,7 @@ on:
       - main
 
 jobs:
-
-  ios_integration_tests:
+  test:
     name: Run iOS integration tests
     runs-on: macos-latest
     defaults:
@@ -49,4 +48,4 @@ jobs:
         run: flutter devices
 
       - name: Run integration tests
-        run: flutter test --device-id ${{ steps.simulator.outputs.uuid }} --reporter expand integration_test/nsd_test.dart
+        run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expand integration_test/nsd_test.dart
