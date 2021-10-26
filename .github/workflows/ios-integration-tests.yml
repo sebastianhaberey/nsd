@@ -9,30 +9,22 @@ on:
 
 jobs:
 
-  drive_ios:
+  ios_integration_tests:
     name: Run iOS integration tests
     strategy:
       matrix:
         device:
-          - "iPhone 8 (13.3)"
-          - "iPhone 11 Pro (13.3)"
+          - 'iPhone 8'
       fail-fast: false
     runs-on: macos-latest
     steps:
 
       - name: List all simulators
-        run: xcrun instruments -s
+        run: xcrun xctrace list devices
 
-      - name: Start Simulator
-        run: |
-          UDID=$(
-            xcrun instruments -s |
-            awk \
-              -F ' *[][]' \
-              -v 'device=${{ matrix.device }}' \
-              '$1 == device { print $2 }'
-          )
-          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+      - uses: futureware-tech/simulator-action@v1
+        with:
+          model: '${{ matrix.device }}'
 
       - name: Check out repository
         uses: actions/checkout@v2
