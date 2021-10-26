@@ -18,6 +18,8 @@ jobs:
       matrix:
         device:
           - 'iPhone 8'
+          - 'iPhone 11'
+          - 'Mac'
       fail-fast: false
     steps:
       - name: Check out repository
