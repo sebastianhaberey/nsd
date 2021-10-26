@@ -11,17 +11,16 @@ jobs:
 
   ios_integration_tests:
     name: Run iOS integration tests
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: nsd/example
     strategy:
       matrix:
         device:
           - 'iPhone 8'
       fail-fast: false
-    runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: nsd/example
     steps:
-
       - name: Check out repository
         uses: actions/checkout@v2
 
@@ -41,7 +40,7 @@ jobs:
         run: xcrun xctrace list devices
 
       - name: Start simulator
-      - uses: futureware-tech/simulator-action@v1
+        uses: futureware-tech/simulator-action@v1
         with:
           model: '${{ matrix.device }}'
 
