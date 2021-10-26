@@ -43,7 +43,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.haberey.flutter.nsd_example"
+        applicationId "com.haberey.flutter.example"
         minSdkVersion 21 // needed for NsdServiceInfo.getAttributes()
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()

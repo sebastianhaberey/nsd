@@ -1,4 +1,4 @@
-package com.haberey.flutter.nsd_example
+package com.haberey.flutter.example
 
 import io.flutter.embedding.android.FlutterActivity
 
