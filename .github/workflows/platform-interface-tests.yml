@@ -1,6 +1,6 @@
 # Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
 
-name: Flutter CI
+name: Platform Interface Tests & Coverage
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         run: flutter analyze .
 
       - name: Run tests with code coverage
-        run: flutter test --coverage
+        run: flutter test --reporter expanded --coverage
 
       - name: Report code coverage # see https://github.com/marketplace/actions/report-lcov
         uses: zgosalvez/github-actions-report-lcov@v1
