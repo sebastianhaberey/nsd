@@ -17,8 +17,7 @@ jobs:
     strategy:
       matrix:
         device:
-          - 'iPhone 8'
-          - 'iPhone 11'
+          - 'iPhone 11' # 'iPhone 8'
       fail-fast: false
     steps:
       - name: Check out repository

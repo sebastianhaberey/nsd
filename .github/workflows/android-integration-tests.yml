@@ -16,7 +16,7 @@ jobs:
         working-directory: nsd/example
     strategy:
       matrix:
-        api-level: [21, 30]
+        api-level: [30]
         target: [default]
       fail-fast: false
     steps:
