@@ -1,6 +1,6 @@
 # Inspired by https://github.com/felangel/bloc/blob/master/.github/workflows/flutter_bloc.yaml
 
-name: Platform Integration Tests
+name: Platform Tests
 
 on:
   push:
@@ -45,8 +45,10 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v1.2.0
         with:
           path: nsd_platform_interface/coverage/lcov.info
+          min_coverage: 80
 
-      - name: Upload coverage to Codecov
+
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
