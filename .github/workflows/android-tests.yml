@@ -94,4 +94,4 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: flutter test --reporter expanded integration_test/nsd_test.dart
+          script: flutter test --no-pub --reporter expanded integration_test/nsd_test.dart
