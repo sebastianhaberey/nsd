@@ -11,14 +11,12 @@ env:
   flutter_version: '2.5.3'
 
 jobs:
-  build:
-    name: Run integration tests & coverage (platform)
-
+  test:
+    name: Run tests & coverage (platform)
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: nsd_platform_interface
-
-    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository

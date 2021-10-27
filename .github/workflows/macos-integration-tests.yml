@@ -12,13 +12,11 @@ env:
 
 jobs:
   test:
-    name: Run integration tests (macOS)
-
+    name: Run tests (macOS)
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: nsd/example
-
-    runs-on: macos-latest
 
     steps:
       - name: Check out repository
