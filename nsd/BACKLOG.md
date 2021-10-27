@@ -2,28 +2,15 @@
 
 ## Current
 
-- initial release: documentation / changelogs / clean up pubspec files / publish
-
 ## Unsorted
 
-- ci: set up the "big" integration test for macos / ios / android using github actions
-- android: unit tests for helper methods
-- platform: replace dynamic arguments / return values with more concrete types where possible
-- clean up code according to flutter coding guidelines
-- dart code: cleanup visibility (add _ where needed)
-
-## Dustbin
-
-- speed up name allocation by using running discoveries
-- figure out how to deal with logging spam on console
-- platform: introduce timeouts to prevent stale objects & stale futures
-- platform: discriminate errors into client errors and programming errors
-- platform: unit tests for DiscoveryAgent / RegistrationAgent
-- platform: id to identify service info when discovered / lost / resolved
+- windows platform
+- linux platform
 
 ## Done
 
-- macos: unit tests for helper methods
+- ci: set up the "big" integration test for macos / ios / android using github actions
+- initial release: documentation / changelogs / clean up pubspec files / publish
 - use proper logging library and let user configure log level for plugin
 - all: clean up agent id
 - all: test (& fix) txt resolution
@@ -39,3 +26,17 @@
 - android: use handler id everywhere
 - macos: register
 - platform: extend example application to support multiple discoveries and multiple registrations
+
+## Trashcan
+
+- platform: replace dynamic arguments / return values with more concrete types where possible
+- clean up code according to flutter coding guidelines -> done for most aspects
+- dart code: cleanup visibility (add _ where needed) -> not sure about readability
+- android: unit tests for helper methods -> not much code and covered by integration tests
+- macos: unit tests for helper methods -> not much code and covered by integration tests
+- speed up name allocation by using running discoveries -> wait until needed
+- figure out how to deal with logging spam on console -> ok now
+- platform: introduce timeouts to prevent stale objects & stale futures -> wait until needed
+- platform: discriminate errors into client errors and programming errors -> wait until neeeded
+- platform: unit tests for DiscoveryAgent / RegistrationAgent -> not needed with new api
+- platform: id to identify service info when discovered / lost / resolved -> not needed with new api
