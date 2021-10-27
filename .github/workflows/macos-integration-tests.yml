@@ -1,0 +1,46 @@
+# Taken from https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
+
+name: iOS Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run integration tests
+
+    defaults:
+      run:
+        working-directory: nsd/example
+
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter environment
+        uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
+          flutter-version: '2.5.3' # you can also specify exact version of flutter
+
+      - name: List all devices
+        run: xcrun xctrace list devices
+
+      - name: Start simulator
+        id: simulator
+        uses: futureware-tech/simulator-action@v1
+        with:
+          model: '${{ matrix.device }}'
+
+      - name: Show Flutter configuration
+        run: flutter doctor -v
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expanded integration_test/nsd_test.dart

@@ -4,10 +4,8 @@ name: Platform Tests
 
 on:
   push:
-#    paths:
-#      - "nsd_platform_interface/**"
-    branches:
-      - main
+    paths:
+      - "nsd_platform_interface/**"
 
 jobs:
   build:
