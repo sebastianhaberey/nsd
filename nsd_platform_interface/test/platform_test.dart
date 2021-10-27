@@ -290,6 +290,15 @@ void main() {
       expect(NsdPlatformInterface.instance, customPlatformInterface);
     });
   });
+
+  group('$Service', () {
+    test('Verify default platform', () async {
+      const service = Service(
+          name: 'Some name (2)', type: 'foo', host: 'localhost', port: 0);
+      expect(service.toString(),
+          stringContainsInOrder(['Some name (2)', 'foo', 'localhost', '0']));
+    });
+  });
 }
 
 Future<dynamic> mockReply(String method, dynamic arguments) async {
