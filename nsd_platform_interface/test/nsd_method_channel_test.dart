@@ -18,6 +18,7 @@ void main() {
 
   setUp(() async {
     _nsd = MethodChannelNsdPlatform();
+    _nsd.enableLogging(LogTopic.calls);
     _methodChannel = const MethodChannel(channelName);
     _mockHandlers = HashMap();
 
@@ -261,11 +262,19 @@ void main() {
   });
 
   group('$MethodChannelNsdPlatform native code api', () {
-    test('Native code receives error if no handler found', () async {
+    test('Native code receives error if no handle was given', () async {
+      final matcher = isA<PlatformException>().having(
+          (e) => e.message, 'error message', contains('Expected handle'));
+
+      expect(mockReply('onDiscoveryStopSuccessful', {}), throwsA(matcher));
+    });
+
+    test('Native code receives error if the handle is unknown', () async {
       final matcher = isA<PlatformException>()
           .having((e) => e.message, 'error message', contains('No handler'));
 
-      expect(mockReply('onDiscoveryStopSuccessful', serializeHandle('bar')),
+      expect(
+          mockReply('onDiscoveryStopSuccessful', serializeHandle('ssafdeaw')),
           throwsA(matcher));
     });
   });
