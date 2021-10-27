@@ -1,6 +1,6 @@
 # nsd
 
-[![Platform Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/platform-interface-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/platform-interface-tests.yml)
+[![macOS Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-integration-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-integration-tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/sebastianhaberey/nsd/branch/main/graph/badge.svg?token=JPGRAMJWV2)](https://codecov.io/gh/sebastianhaberey/nsd)
 

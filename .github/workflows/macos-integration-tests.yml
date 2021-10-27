@@ -21,26 +21,29 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: List all simulators
-        run: xcrun xctrace list devices
-
-      - name: Start simulator
-        id: simulator
-        uses: futureware-tech/simulator-action@v1
-        with:
-          udid: '4203018E-580F-C1B5-9525-B745CECA79EB'
-
-#      - name: Set up Flutter environment
-#        uses: subosito/flutter-action@v1
+#      - name: List all simulators
+#        run: xcrun xctrace list devices
+#
+#      - name: Start simulator
+#        id: simulator
+#        uses: futureware-tech/simulator-action@v1
 #        with:
-#          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
-#          flutter-version: '2.5.3' # you can also specify exact version of flutter
-#
-#      - name: Show Flutter configuration
-#        run: flutter doctor -v
+#          udid: '4203018E-580F-C1B5-9525-B745CECA79EB'
 
-#      - name: Get Flutter dependencies
-#        run: flutter pub get
-#
-#      - name: Run integration tests
-#        run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expanded integration_test/nsd_test.dart
+      - name: Set up Flutter environment
+        uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
+          flutter-version: '2.5.3' # you can also specify exact version of flutter
+
+      - name: Enable Flutter for macOS
+        run: flutter config --enable-macos-desktop
+
+      - name: Show Flutter configuration
+        run: flutter doctor -v
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expanded integration_test/nsd_test.dart
