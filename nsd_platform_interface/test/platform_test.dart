@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:nsd_platform_interface/src/nsd_platform_interface.dart';
 import 'package:nsd_platform_interface/src/serialization.dart';
 
 const channelName = 'com.haberey/nsd';
+const utf8encoder = Utf8Encoder();
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +41,37 @@ void main() {
       };
 
       await _nsd.startDiscovery('foo');
+    });
+
+    test('Autoresolve', () async {
+      late String capturedHandle;
+
+      // simulate success callback by native code
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      // set up mock resolver to answer with "resolved" service
+      _mockHandlers['resolve'] = (handle, arguments) {
+        mockReply('onResolveSuccessful', {
+          ...serializeHandle(handle),
+          ...serializeService(const Service(
+              name: 'Some name', type: 'bar', host: 'baz', port: 56000))
+        });
+      };
+
+      final discovery = await _nsd.startDiscovery('foo');
+
+      // simulate unresolved discovered service
+      await mockReply('onServiceDiscovered', {
+        ...serializeHandle(capturedHandle),
+        ...serializeService(const Service(name: 'Some name', type: 'foo'))
+      });
+
+      final discoveredService = discovery.services.elementAt(0);
+      expect(discoveredService.host, 'baz');
+      expect(discoveredService.port, 56000);
     });
 
     test('Start fails if native code reports failure', () async {
@@ -140,8 +173,12 @@ void main() {
         // return service info with name only
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
-          ...serializeService(const Service(
-              name: 'Some name', type: 'foo', host: 'bar', port: 42))
+          ...serializeService(Service(
+              name: 'Some name',
+              type: 'foo',
+              host: 'bar',
+              port: 42,
+              txt: {'string': utf8encoder.convert('κόσμε')}))
         });
       };
 
@@ -153,6 +190,7 @@ void main() {
       expect(result.type, 'foo');
       expect(result.host, 'bar');
       expect(result.port, 42);
+      expect(result.txt, {'string': utf8encoder.convert('κόσμε')});
     });
 
     test('Resolver fails if native code reports failure', () async {
