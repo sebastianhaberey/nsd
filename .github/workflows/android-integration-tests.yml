@@ -8,7 +8,12 @@ on:
       - main
 
 env:
+  flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
   flutter_version: '2.5.3'
+  api_level: '30'
+  target: default
+  arch: x86_64
+  profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
 
 jobs:
   test:
@@ -31,13 +36,30 @@ jobs:
       - name: Set up Flutter environment
         uses: subosito/flutter-action@v1
         with:
-          channel: 'stable' # 'dev', 'alpha', 'stable'
+          channel: ${{ env.flutter_channel }}
           flutter-version: ${{ env.flutter_version }}
+
+      - name: Set up Gradle cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+      - name: Set up AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.api_level }}
 
       - name: Install Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
 
       - name: Show Flutter configuration
@@ -46,12 +68,28 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Run integration tests
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.api_level }}
+          target: ${{ env.target }}
+          arch: ${{ env.arch }}
+          profile: ${{ env.profile }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           working-directory: nsd/example
-          api-level: 30
-          target: default
-          arch: x86_64
-          profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
+          api-level: ${{ env.api_level }}
+          target: ${{ env.target }}
+          arch: ${{ env.arch }}
+          profile: ${{ env.profile }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           script: flutter test --reporter expanded integration_test/nsd_test.dart
