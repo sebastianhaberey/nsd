@@ -1,6 +1,6 @@
 # Taken from https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
 
-name: macOS Integration Tests
+name: macOS Tests
 
 on:
   push:
