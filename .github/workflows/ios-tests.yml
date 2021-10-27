@@ -6,8 +6,8 @@ name: iOS Tests
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - "nsd_ios/**"
 
 env:
   flutter_version: '2.5.3'

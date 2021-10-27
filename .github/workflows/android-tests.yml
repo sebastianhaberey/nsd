@@ -6,8 +6,8 @@ name: Android Tests
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - "nsd_android/**"
 
 env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
