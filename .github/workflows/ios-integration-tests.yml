@@ -1,4 +1,6 @@
-# Taken from https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
+# see https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
+# see https://github.com/ReactiveCircus/android-emulator-runner
+# see https://github.com/felangel/bloc/blob/master/.github/workflows/flutter_bloc.yaml
 
 name: iOS Tests
 
@@ -49,5 +51,5 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Run integration tests
+      - name: Run tests
         run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expanded integration_test/nsd_test.dart
