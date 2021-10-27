@@ -11,8 +11,13 @@ env:
   flutter_version: '2.5.3'
 
 jobs:
-  setup:
-    name: Setup environment
+  test:
+    name: Run integration tests
+
+    defaults:
+      run:
+        working-directory: nsd/example
+
     runs-on: macos-latest
 
     steps:
@@ -31,15 +36,6 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', 'stable'
           flutter-version: ${{ env.flutter_version }}
 
-  test:
-    name: Run integration tests
-    runs-on: macos-latest
-    needs: setup
-    defaults:
-      run:
-        working-directory: nsd/example
-
-    steps:
       - name: Enable Flutter for macOS
         run: flutter config --enable-macos-desktop
 
