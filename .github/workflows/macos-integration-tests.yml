@@ -7,6 +7,9 @@ on:
     branches:
       - main
 
+env:
+  flutter_version: '2.5.3'
+
 jobs:
   test:
     name: Run integration tests
@@ -30,11 +33,17 @@ jobs:
 #        with:
 #          udid: '4203018E-580F-C1B5-9525-B745CECA79EB'
 
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v2
+        with:
+          path: /Users/runner/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+
       - name: Set up Flutter environment
         uses: subosito/flutter-action@v1
         with:
           channel: 'stable' # 'dev', 'alpha', default to: 'stable'
-          flutter-version: '2.5.3' # you can also specify exact version of flutter
+          flutter-version: ${{ env.flutter_version }} # you can also specify exact version of flutter
 
       - name: Enable Flutter for macOS
         run: flutter config --enable-macos-desktop
@@ -46,4 +55,4 @@ jobs:
         run: flutter pub get
 
       - name: Run integration tests
-        run: flutter test --device-id ${{ steps.simulator.outputs.udid }} --reporter expanded integration_test/nsd_test.dart
+        run: flutter --device-id macos test --reporter expanded integration_test/nsd_test.dart
