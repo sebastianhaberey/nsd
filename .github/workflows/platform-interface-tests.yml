@@ -1,19 +1,24 @@
-# Taken from https://gist.github.com/aagarwal1012/eb2551683d81cf47d60868ab607520b1
+# Inspired by https://github.com/felangel/bloc/blob/master/.github/workflows/flutter_bloc.yaml
 
 name: Platform Integration Tests
 
 on:
   push:
+#    paths:
+#      - "nsd_platform_interface/**"
     branches:
       - main
 
 jobs:
-  test:
+  build:
     name: Generate coverage report (platform interface)
-    runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: nsd_platform_interface
+
+    runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -34,12 +39,14 @@ jobs:
         run: flutter analyze .
 
       - name: Run tests with code coverage
-        run: flutter test --reporter expanded --coverage
+        run: flutter test --no-pub --coverage --reporter expanded
 
-      - name: Report code coverage # see https://github.com/marketplace/actions/report-lcov
-        uses: zgosalvez/github-actions-report-lcov@v1
+      - name: Check Code Coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v1.2.0
         with:
-          coverage-files: nsd_platform_interface/coverage/lcov.info
-          artifact-name: code-coverage-report
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: nsd_platform_interface
+          path: nsd_platform_interface/coverage/lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

@@ -1,6 +1,7 @@
 # nsd
 
-[![Flutter CI](https://github.com/sebastianhaberey/nsd/actions/workflows/flutter-ci.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/flutter-ci.yml)
+[![Platform Integration Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/platform-interface-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/platform-interface-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
