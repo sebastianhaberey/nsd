@@ -1,6 +1,6 @@
 # Taken from https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
 
-name: iOS Integration Tests
+name: macOS Integration Tests
 
 on:
   push:
@@ -21,23 +21,23 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
+      - name: List all simulators
+        run: xcrun xctrace list devices
+
+      - name: Start simulator
+        id: simulator
+        uses: futureware-tech/simulator-action@v1
+        with:
+          udid: '4203018E-580F-C1B5-9525-B745CECA79EB'
+
 #      - name: Set up Flutter environment
 #        uses: subosito/flutter-action@v1
 #        with:
 #          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
 #          flutter-version: '2.5.3' # you can also specify exact version of flutter
-
-      - name: List all simulators
-        run: xcrun xctrace list devices
-
-#      - name: Start simulator
-#        id: simulator
-#        uses: futureware-tech/simulator-action@v1
-#        with:
-#          model: 'Mac.*'
-
-      - name: Show Flutter configuration
-        run: flutter doctor -v
+#
+#      - name: Show Flutter configuration
+#        run: flutter doctor -v
 
 #      - name: Get Flutter dependencies
 #        run: flutter pub get
