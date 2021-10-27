@@ -12,7 +12,7 @@ env:
 
 jobs:
   test:
-    name: Run integration tests
+    name: Run integration tests (macOS)
 
     defaults:
       run:

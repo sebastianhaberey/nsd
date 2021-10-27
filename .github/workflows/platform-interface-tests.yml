@@ -7,9 +7,12 @@ on:
     paths:
       - "nsd_platform_interface/**"
 
+env:
+  flutter_version: '2.5.3'
+
 jobs:
   build:
-    name: Generate coverage report (platform interface)
+    name: Run integration tests & coverage (platform)
 
     defaults:
       run:
@@ -21,11 +24,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v2
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+
       - name: Set up Flutter environment
         uses: subosito/flutter-action@v1
         with:
-          channel: 'stable' # 'dev', 'alpha', default to: 'stable'
-          flutter-version: '2.5.3' # you can also specify exact version of flutter
+          channel: 'stable' # 'dev', 'alpha', 'stable'
+          flutter-version: ${{ env.flutter_version }}
 
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -44,7 +53,6 @@ jobs:
         with:
           path: nsd_platform_interface/coverage/lcov.info
           min_coverage: 80
-
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v1
