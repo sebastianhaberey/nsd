@@ -278,6 +278,18 @@ void main() {
           throwsA(matcher));
     });
   });
+
+  group('$NsdPlatformInterface', () {
+    test('Verify default platform', () async {
+      expect(NsdPlatformInterface.instance, isA<MethodChannelNsdPlatform>());
+    });
+
+    test('Set custom platform interface', () async {
+      final customPlatformInterface = MethodChannelNsdPlatform();
+      NsdPlatformInterface.instance = customPlatformInterface;
+      expect(NsdPlatformInterface.instance, customPlatformInterface);
+    });
+  });
 }
 
 Future<dynamic> mockReply(String method, dynamic arguments) async {
