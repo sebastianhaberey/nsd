@@ -14,3 +14,7 @@
 ## 1.0.3
 
 * added documentation for example app
+
+## 1.0.4
+
+* introduced ci for android, macos and ios 
