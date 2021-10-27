@@ -34,6 +34,11 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', 'stable'
           flutter-version: ${{ env.flutter_version }}
 
+      - name: Install Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
       - name: Show Flutter configuration
         run: flutter doctor -v
 
@@ -49,4 +54,3 @@ jobs:
           arch: x86_64
           profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
           script: flutter test --reporter expanded integration_test/nsd_test.dart
-          java-version: '11'
