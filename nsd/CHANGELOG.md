@@ -18,3 +18,7 @@
 ## 1.0.4
 
 * introduced ci for android, macos and ios 
+
+## 1.0.5
+
+* more tests
