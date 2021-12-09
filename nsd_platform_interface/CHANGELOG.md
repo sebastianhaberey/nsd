@@ -10,3 +10,9 @@
 ## 1.0.2
 
 * added documentation as recommended by pub.dev analysis
+
+## 1.1.0
+
+* enhancement #3: proper client feedback if service type is invalid
+* proper text rendering (toString()) for all classes
+* error logging is not enabled per default any more to give the client the choice

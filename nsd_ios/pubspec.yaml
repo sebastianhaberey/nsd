@@ -1,6 +1,6 @@
 name: nsd_ios
 description: Flutter network service discovery plugin (iOS submodule - will be installed with the parent plugin).
-version: 1.0.2
+version: 1.0.3
 repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd_ios
 issue_tracker: https://github.com/sebastianhaberey/nsd/issues
 

@@ -10,3 +10,7 @@
 ## 1.0.2
 
 * added documentation as recommended by pub.dev analysis
+
+## 1.0.3
+
+* fix #1: macos, ios: register() throws internalError if the port is in use

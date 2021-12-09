@@ -22,3 +22,11 @@
 ## 1.0.5
 
 * more tests
+
+## 1.1.0
+
+* enhancement #3: proper client feedback if service type is invalid
+* fix #1: macos, ios: register() throws internalError if the port is in use
+* proper text rendering (toString()) for all classes
+* error logging is not enabled per default any more to give the client the choice
+* updated example dependencies
