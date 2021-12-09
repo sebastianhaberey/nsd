@@ -30,3 +30,7 @@
 * proper text rendering (toString()) for all classes
 * error logging is not enabled per default any more to give the client the choice
 * updated example dependencies
+
+## 1.1.1
+
+* updated dependencies
