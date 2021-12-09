@@ -3,6 +3,14 @@ func getErrorMessage(_ errorCode: NetService.ErrorCode?) -> String {
         return "unknown error";
     }
 
+    if errorCode?.rawValue == 48 {
+        // If the publish was done with .listenForConnections and the port is already in use,
+        // didNotPublish will be called with NSNetServicesErrorCode = 48 and NSNetServicesErrorDomain = 1.
+        // This should not happen any more since publish is always called without .listenForConnections now (issue #1).
+        // see https://stackoverflow.com/a/34880698/8707976
+        return "port is already in use"
+    }
+
     switch (unwrapped) {
     case .collisionError:
         return "service could not be published: name already in use"

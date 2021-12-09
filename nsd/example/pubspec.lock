@@ -63,7 +63,7 @@ packages:
       name: cupertino_icons
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.4"
   fake_async:
     dependency: transitive
     description:
@@ -101,7 +101,7 @@ packages:
       name: flutter_speed_dial
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.5.0"
+    version: "4.6.6"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -112,6 +112,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  http_parser:
+    dependency: transitive
+    description:
+      name: http_parser
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.0.0"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -162,16 +169,16 @@ packages:
   nsd_ios:
     dependency: transitive
     description:
-      name: nsd_ios
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_ios"
+      relative: true
+    source: path
     version: "1.0.2"
   nsd_macos:
     dependency: transitive
     description:
-      name: nsd_macos
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_macos"
+      relative: true
+    source: path
     version: "1.0.2"
   nsd_platform_interface:
     dependency: transitive
@@ -215,6 +222,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.0.1"
+  shelf:
+    dependency: "direct main"
+    description:
+      name: shelf
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.0"
   sky_engine:
     dependency: transitive
     description: flutter
