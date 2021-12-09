@@ -9,6 +9,9 @@
 
 ## Done
 
+- platform: add toString() for discovery and registration
+- platform: onUnregistrationSuccessful: discard handlers
+- android: serialization: serializeServiceInfo: use serializeKey instead of string constants
 - ci: set up the "big" integration test for macos / ios / android using github actions
 - initial release: documentation / changelogs / clean up pubspec files / publish
 - use proper logging library and let user configure log level for plugin
@@ -29,6 +32,7 @@
 
 ## Trashcan
 
+- platform: add enableLogTopics -> would be api change ("enableLogging" + "enableLoggings"?)
 - platform: replace dynamic arguments / return values with more concrete types where possible
 - clean up code according to flutter coding guidelines -> done for most aspects
 - dart code: cleanup visibility (add _ where needed) -> not sure about readability

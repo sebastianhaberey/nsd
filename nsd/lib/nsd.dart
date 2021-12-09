@@ -64,6 +64,5 @@ Future<void> unregister(Registration registration) async =>
 
 /// Enables logging for the specified topic.
 ///
-/// Error logging is enabled by default, all other topics must be enabled by the user.
 void enableLogging(LogTopic logTopic) =>
     NsdPlatformInterface.instance.enableLogging(logTopic);

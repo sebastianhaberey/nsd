@@ -368,6 +368,45 @@ void main() {
           stringContainsInOrder(
               ['Some name (2)', '_foo._tcp', 'localhost', '0']));
     });
+
+    test('Attributes are contained in text rendering', () async {
+      final service = Service(
+          name: 'Some name',
+          type: '_foo._tcp',
+          host: 'bar',
+          port: 42,
+          txt: {'string': utf8encoder.convert('κόσμε')});
+
+      expect(service.toString(), contains('Some name'));
+      expect(service.toString(), contains('_foo._tcp'));
+      expect(service.toString(), contains('bar'));
+      expect(service.toString(), contains(42.toString()));
+      expect(service.toString(),
+          contains(utf8encoder.convert('κόσμε').toString()));
+    });
+  });
+
+  group('$Discovery', () {
+    test('Attributes are contained in text rendering', () async {
+      const service = Service(name: 'Some name', type: '_foo._tcp');
+      final discovery = Discovery('bar');
+      discovery.add(service);
+
+      expect(discovery.toString(), contains('bar'));
+      expect(discovery.toString(), contains('Some name'));
+      expect(discovery.toString(), contains('_foo._tcp'));
+    });
+  });
+
+  group('$Registration', () {
+    test('Attributes are contained in text rendering', () async {
+      const service = Service(name: 'Some name', type: '_foo._tcp');
+      final registration = Registration('bar', service);
+
+      expect(registration.toString(), contains('bar'));
+      expect(registration.toString(), contains('Some name'));
+      expect(registration.toString(), contains('_foo._tcp'));
+    });
   });
 }
 

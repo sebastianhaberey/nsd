@@ -136,8 +136,10 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     _attachDummyCallback(completer.future);
     final handle = registration.id;
 
-    setHandler(handle, 'onUnregistrationSuccessful',
-        (arguments) => completer.complete());
+    setHandler(handle, 'onUnregistrationSuccessful', (arguments) {
+      discardHandlers(handle);
+      completer.complete();
+    });
 
     setHandler(handle, 'onUnregistrationFailed', (arguments) {
       discardHandlers(handle);

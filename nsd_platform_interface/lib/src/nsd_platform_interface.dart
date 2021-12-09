@@ -57,7 +57,7 @@ class Service {
 
   @override
   String toString() =>
-      'name: $name, service type: $type, hostname: $host, port: $port';
+      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt)';
 }
 
 /// Returns true if the two [Service] instances refer to the same service.
@@ -103,7 +103,8 @@ class NsdError extends Error {
   NsdError(this.cause, this.message);
 
   @override
-  String toString() => 'NsdError: $message (${enumValueToString(cause)})';
+  String toString() =>
+      'NsdError (message: "$message", cause: ${enumValueToString(cause)})';
 }
 
 /// Represents a discovery.
@@ -138,6 +139,9 @@ class Discovery with ChangeNotifier {
     _services.removeWhere((e) => isSame(e, service));
     notifyListeners();
   }
+
+  @override
+  String toString() => 'Discovery (id: $id, services: $services)';
 }
 
 /// Represents a registration.
@@ -147,6 +151,9 @@ class Registration {
 
   // TODO hide this
   Registration(this.id, this.service);
+
+  @override
+  String toString() => 'Registration (id: $id, service: $service)';
 }
 
 /// Represents available log topics.

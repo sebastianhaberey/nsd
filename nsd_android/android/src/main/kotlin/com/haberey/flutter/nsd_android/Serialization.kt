@@ -105,11 +105,11 @@ private fun assertValidUtf8(key: String, value: ByteArray) {
 
 internal fun serializeServiceInfo(nsdServiceInfo: NsdServiceInfo): Map<String, Any?> {
     return mapOf(
-        "service.name" to nsdServiceInfo.serviceName,
-        "service.type" to removeLeadingAndTrailingDots(serviceType = nsdServiceInfo.serviceType),
-        "service.host" to nsdServiceInfo.host?.canonicalHostName,
-        "service.port" to if (nsdServiceInfo.port == 0) null else nsdServiceInfo.port,
-        "service.txt" to nsdServiceInfo.attributes,
+        Key.SERVICE_NAME.serializeKey to nsdServiceInfo.serviceName,
+        Key.SERVICE_TYPE.serializeKey to removeLeadingAndTrailingDots(serviceType = nsdServiceInfo.serviceType),
+        Key.SERVICE_HOST.serializeKey to nsdServiceInfo.host?.canonicalHostName,
+        Key.SERVICE_PORT.serializeKey to if (nsdServiceInfo.port == 0) null else nsdServiceInfo.port,
+        Key.SERVICE_TXT.serializeKey to nsdServiceInfo.attributes,
     )
 }
 

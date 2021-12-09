@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'nsd_platform_interface.dart';
 import 'utilities.dart';
 
-final _logTopics = <LogTopic>{LogTopic.errors};
+final _logTopics = <LogTopic>[];
 
 void _log(Object source, String message, {StackTrace? stackTrace}) {
   final name = source.runtimeType.toString();
