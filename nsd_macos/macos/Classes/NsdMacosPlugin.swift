@@ -110,7 +110,7 @@ public class NsdMacosPlugin: NSObject, FlutterPlugin, NetServiceBrowserDelegate,
 
         service.delegate = self
         services[handle] = service // set before invoking search so that callback methods can access it
-        service.publish(options: [.listenForConnections])
+        service.publish(options: [])
         result(nil)
     }
 

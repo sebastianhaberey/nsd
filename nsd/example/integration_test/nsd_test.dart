@@ -6,6 +6,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nsd/nsd.dart';
+import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:uuid/uuid.dart';
 
 const serviceCount = 9; // 1 discovery + 9 services <= Android limit (10)
@@ -128,6 +130,17 @@ void main() {
     await unregister(registration);
     await stopDiscovery(discovery);
   });
+
+  testWidgets('Verify that registration works if port is in use',
+      (WidgetTester _) async {
+    final server = await startServer(); // start server on port
+    final service =
+        Service(name: uuid.v4(), type: serviceType, port: server.port);
+    final registration = await register(service);
+
+    await unregister(registration);
+    await server.close();
+  });
 }
 
 isBlankOrNull(Uint8List? value) async => value == null || value.isEmpty;
@@ -160,4 +173,12 @@ Future<void> waitForCondition(bool Function() condition,
 
     await Future.delayed(const Duration(milliseconds: 500));
   }
+}
+
+Future<HttpServer> startServer() async {
+  final handler = const Pipeline()
+      .addHandler((request) => Response.ok('Request for "${request.url}"'));
+  return shelf_io
+      .serve(handler, InternetAddress.anyIPv4, 0)
+      .then((server) => server);
 }
