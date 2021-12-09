@@ -11,11 +11,6 @@ typedef _Handler = void Function(dynamic);
 
 const _uuid = Uuid();
 
-// prevent the future from throwing uncaught error due to missing callback
-// https://stackoverflow.com/a/66481566/8707976
-void _attachDummyCallback<T>(Future<T> future) => unawaited(
-    future.then<void>((value) => null).onError((error, stackTrace) => null));
-
 /// Implementation of [NsdPlatformInterface] that uses a method channel to communicate with native side.
 class MethodChannelNsdPlatform extends NsdPlatformInterface {
   final _methodChannel = const MethodChannel('com.haberey/nsd');
@@ -28,6 +23,8 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   @override
   Future<Discovery> startDiscovery(String serviceType,
       {bool autoResolve = true}) async {
+    assertValidServiceType(serviceType);
+
     final handle = _uuid.v4();
     final discovery = Discovery(handle);
 
@@ -79,6 +76,8 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
   @override
   Future<Service> resolve(Service service) async {
+    assertValidServiceType(service.type);
+
     final handle = _uuid.v4();
 
     final completer = Completer<Service>();
@@ -106,6 +105,8 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
   @override
   Future<Registration> register(Service service) async {
+    assertValidServiceType(service.type);
+
     final handle = _uuid.v4();
     final completer = Completer<Registration>();
     _attachDummyCallback(completer.future);
@@ -187,4 +188,36 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   void enableLogging(LogTopic logTopic) {
     enableLogTopic(logTopic);
   }
+}
+
+// prevent the future from throwing uncaught error due to missing callback
+// https://stackoverflow.com/a/66481566/8707976
+void _attachDummyCallback<T>(Future<T> future) => unawaited(
+    future.then<void>((value) => null).onError((error, stackTrace) => null));
+
+void assertValidServiceType(String? serviceType) {
+  if (!isValidServiceType(serviceType)) {
+    throw NsdError(ErrorCause.illegalArgument,
+        'Service type must be in format _<Service>._<Proto>: $serviceType');
+  }
+}
+
+bool isValidServiceType(String? type) {
+  // <Service> portion
+  //
+  // first label see https://www.rfc-editor.org/rfc/rfc6335.html (5.1):
+  //
+  // - MUST be at least 1 character and no more than 15 characters long
+  // - MUST contain only  'A' - 'Z', 'a' - 'z', '0' - '9', hyphens
+  // - MUST contain at least one letter
+  //
+  // second label see https://datatracker.ietf.org/doc/html/rfc6763 (4.1.2):
+  //
+  //  -  either "_tcp" or "_udp"
+
+  if (type == null) {
+    return false;
+  }
+
+  return RegExp(r'^_[a-zA-Z0-9-]{1,15}._(tcp|udp)').hasMatch(type);
 }
