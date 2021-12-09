@@ -4,10 +4,7 @@
 
 name: macOS Tests
 
-on:
-  push:
-    branches:
-      - main # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
+on: push # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
 
 env:
   flutter_version: '2.5.3'
