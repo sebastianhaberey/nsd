@@ -11,18 +11,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  nsd_android: ^1.0.2
-#  nsd_android:
-#    path: ../nsd_android
+#  nsd_android: ^1.0.2
+  nsd_android:
+    path: ../nsd_android
 #  nsd_ios: ^1.0.2
   nsd_ios:
     path: ../nsd_ios
 #  nsd_macos: ^1.0.2
   nsd_macos:
     path: ../nsd_macos
-  nsd_platform_interface: ^1.0.2
-#  nsd_platform_interface:
-#    path: ../nsd_platform_interface
+#  nsd_platform_interface: ^1.0.2
+  nsd_platform_interface:
+    path: ../nsd_platform_interface
 
 dev_dependencies:
   flutter_lints: ^1.0.4

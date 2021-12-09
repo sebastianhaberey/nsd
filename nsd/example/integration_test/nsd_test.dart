@@ -131,7 +131,7 @@ void main() {
     await stopDiscovery(discovery);
   });
 
-  testWidgets('Verify that registration works if port is in use',
+  testWidgets('Registration is possible if port is in use',
       (WidgetTester _) async {
     final server = await startServer(); // start server on port
     final service =

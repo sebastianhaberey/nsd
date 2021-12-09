@@ -162,9 +162,9 @@ packages:
   nsd_android:
     dependency: transitive
     description:
-      name: nsd_android
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_android"
+      relative: true
+    source: path
     version: "1.0.2"
   nsd_ios:
     dependency: transitive
@@ -183,9 +183,9 @@ packages:
   nsd_platform_interface:
     dependency: transitive
     description:
-      name: nsd_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_platform_interface"
+      relative: true
+    source: path
     version: "1.0.2"
   path:
     dependency: transitive

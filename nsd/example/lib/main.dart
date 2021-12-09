@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:example/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:nsd/nsd.dart';
@@ -35,9 +34,7 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> addDiscovery() async {
-    final discovery = await startDiscovery(serviceType).catchError((error) {
-      logError(this, error);
-    });
+    final discovery = await startDiscovery(serviceType);
 
     setState(() {
       discoveries.add(discovery);
@@ -50,9 +47,7 @@ class MyAppState extends State<MyApp> {
       discoveries.remove(discovery);
     });
 
-    await stopDiscovery(discovery).catchError((error) {
-      logError(this, error);
-    });
+    await stopDiscovery(discovery);
   }
 
   Future<void> addRegistration() async {
@@ -62,9 +57,7 @@ class MyAppState extends State<MyApp> {
         port: nextPort,
         txt: createTxt());
 
-    final registration = await register(service).catchError((error) {
-      logError(this, error);
-    });
+    final registration = await register(service);
 
     setState(() {
       registrations.add(registration);
@@ -77,9 +70,7 @@ class MyAppState extends State<MyApp> {
       registrations.remove(registration);
     });
 
-    await unregister(registration).catchError((error) {
-      logError(this, error);
-    });
+    await unregister(registration);
   }
 
   @override
