@@ -103,7 +103,7 @@ class NsdError extends Error {
   NsdError(this.cause, this.message);
 
   @override
-  String toString() => '$message (${enumValueToString(cause)})';
+  String toString() => 'NsdError: $message (${enumValueToString(cause)})';
 }
 
 /// Represents a discovery.

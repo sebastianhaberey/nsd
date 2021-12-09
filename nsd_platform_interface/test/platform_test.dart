@@ -40,7 +40,7 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      await _nsd.startDiscovery('foo');
+      await _nsd.startDiscovery('_foo._tcp');
     });
 
     test('Autoresolve', () async {
@@ -61,12 +61,12 @@ void main() {
         });
       };
 
-      final discovery = await _nsd.startDiscovery('foo');
+      final discovery = await _nsd.startDiscovery('_foo._tcp');
 
       // simulate unresolved discovered service
       await mockReply('onServiceDiscovered', {
         ...serializeHandle(capturedHandle),
-        ...serializeService(const Service(name: 'Some name', type: 'foo'))
+        ...serializeService(const Service(name: 'Some name', type: '_foo._tcp'))
       });
 
       final discoveredService = discovery.services.elementAt(0);
@@ -88,6 +88,14 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
+      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+    });
+
+    test('Start fails if service type is invalid', () async {
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
+          .having((e) => e.message, 'error message', contains('format'));
+
       expect(_nsd.startDiscovery('foo'), throwsA(matcher));
     });
 
@@ -100,7 +108,7 @@ void main() {
         mockReply('onDiscoveryStopSuccessful', serializeHandle(handle));
       };
 
-      final discovery = await _nsd.startDiscovery('foo');
+      final discovery = await _nsd.startDiscovery('_foo._tcp');
       await _nsd.stopDiscovery(discovery);
     });
 
@@ -117,7 +125,7 @@ void main() {
         });
       };
 
-      final discovery = await _nsd.startDiscovery('foo');
+      final discovery = await _nsd.startDiscovery('_foo._tcp');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
@@ -134,9 +142,10 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
+      final discovery =
+          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
       await mockReply('onServiceDiscovered',
           {...serializeHandle(capturedHandle), ...serializeService(service)});
 
@@ -151,9 +160,10 @@ void main() {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      final discovery = await _nsd.startDiscovery('foo', autoResolve: false);
+      final discovery =
+          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
 
       await mockReply('onServiceDiscovered',
           {...serializeHandle(capturedHandle), ...serializeService(service)});
@@ -167,33 +177,33 @@ void main() {
     });
   });
 
-  group('$MethodChannelNsdPlatform resolver', () {
-    test('Resolver succeeds if native code reports success', () async {
+  group('$MethodChannelNsdPlatform resolve', () {
+    test('Resolve succeeds if native code reports success', () async {
       _mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
           ...serializeService(Service(
               name: 'Some name',
-              type: 'foo',
+              type: '_foo._tcp',
               host: 'bar',
               port: 42,
               txt: {'string': utf8encoder.convert('κόσμε')}))
         });
       };
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
       final result = await _nsd.resolve(service);
 
       // result should contain the original fields plus the updated host / port
       expect(result.name, 'Some name');
-      expect(result.type, 'foo');
+      expect(result.type, '_foo._tcp');
       expect(result.host, 'bar');
       expect(result.port, 42);
       expect(result.txt, {'string': utf8encoder.convert('κόσμε')});
     });
 
-    test('Resolver fails if native code reports failure', () async {
+    test('Resolve fails if native code reports failure', () async {
       _mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveFailed', {
@@ -203,11 +213,21 @@ void main() {
         });
       };
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
+
+      expect(_nsd.resolve(service), throwsA(matcher));
+    });
+
+    test('Resolve fails if service type is invalid', () async {
+      const service = Service(name: 'Some name', type: 'foo');
+
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
+          .having((e) => e.message, 'error message', contains('format'));
 
       expect(_nsd.resolve(service), throwsA(matcher));
     });
@@ -223,14 +243,14 @@ void main() {
         });
       };
 
-      final registration =
-          await _nsd.register(const Service(name: 'Some name', type: 'foo'));
+      final registration = await _nsd
+          .register(const Service(name: 'Some name', type: '_foo._tcp'));
 
       final service = registration.service;
 
       // new service info should contain both the original service type and the updated name
       expect(service.name, 'Some name (2)');
-      expect(service.type, 'foo');
+      expect(service.type, '_foo._tcp');
     });
 
     test('Registration fails if native code reports failure', () async {
@@ -243,7 +263,7 @@ void main() {
         });
       };
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
@@ -252,10 +272,20 @@ void main() {
       expect(_nsd.register(service), throwsA(matcher));
     });
 
+    test('Registration fails if service type is invalid', () async {
+      const service = Service(name: 'Some name', type: 'foo');
+
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
+          .having((e) => e.message, 'error message', contains('format'));
+
+      expect(_nsd.register(service), throwsA(matcher));
+    });
+
     test('Unregistration succeeds if native code reports success', () async {
       // simulate success callback by native code
       _mockHandlers['register'] = (handle, arguments) {
-        const service = Service(name: 'Some name (2)', type: 'foo');
+        const service = Service(name: 'Some name (2)', type: '_foo._tcp');
         mockReply('onRegistrationSuccessful',
             {...serializeHandle(handle), ...serializeService(service)});
       };
@@ -266,7 +296,7 @@ void main() {
         });
       };
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
 
       final registration = await _nsd.register(service);
       await _nsd.unregister(registration);
@@ -275,7 +305,7 @@ void main() {
     test('Unregistration fails if native code reports failure', () async {
       // simulate success callback by native code
       _mockHandlers['register'] = (handle, arguments) {
-        const service = Service(name: 'Some name (2)', type: 'foo');
+        const service = Service(name: 'Some name (2)', type: '_foo._tcp');
         mockReply('onRegistrationSuccessful',
             {...serializeHandle(handle), ...serializeService(service)});
       };
@@ -288,7 +318,7 @@ void main() {
         });
       };
 
-      const service = Service(name: 'Some name', type: 'foo');
+      const service = Service(name: 'Some name', type: '_foo._tcp');
       final registration = await _nsd.register(service);
 
       final matcher = isA<NsdError>()
@@ -332,9 +362,11 @@ void main() {
   group('$Service', () {
     test('Verify default platform', () async {
       const service = Service(
-          name: 'Some name (2)', type: 'foo', host: 'localhost', port: 0);
-      expect(service.toString(),
-          stringContainsInOrder(['Some name (2)', 'foo', 'localhost', '0']));
+          name: 'Some name (2)', type: '_foo._tcp', host: 'localhost', port: 0);
+      expect(
+          service.toString(),
+          stringContainsInOrder(
+              ['Some name (2)', '_foo._tcp', 'localhost', '0']));
     });
   });
 }
