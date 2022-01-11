@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -38,12 +39,14 @@ abstract class NsdPlatformInterface extends PlatformInterface {
 
 /// Represents a network service.
 class Service {
-  const Service({this.name, this.type, this.host, this.port, this.txt});
+  const Service(
+      {this.name, this.type, this.host, this.port, this.txt, this.addresses});
 
   final String? name;
   final String? type;
   final String? host;
   final int? port;
+  final List<InternetAddress?>? addresses;
 
   /// Represents DNS TXT records.
   ///
@@ -57,7 +60,7 @@ class Service {
 
   @override
   String toString() =>
-      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt)';
+      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt, addresses: $addresses)';
 }
 
 /// Returns true if the two [Service] instances refer to the same service.
@@ -70,7 +73,8 @@ Service merge(Service existing, Service incoming) => Service(
     type: incoming.type ?? existing.type,
     host: incoming.host ?? existing.host,
     port: incoming.port ?? existing.port,
-    txt: incoming.txt ?? existing.txt);
+    txt: incoming.txt ?? existing.txt,
+    addresses: incoming.addresses ?? existing.addresses);
 
 /// Indicates the cause of an [NsdError].
 enum ErrorCause {

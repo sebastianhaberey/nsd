@@ -18,6 +18,17 @@ func serializeService(_ netService: NetService) -> [String: Any?] {
         "service.name": netService.name,
         "service.type": cleanServiceType(netService.type),
         "service.host": netService.hostName,
+        "service.addresses": netService.addresses?.map({ address -> NSString? in
+          var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+          let err = address.withUnsafeBytes { buf -> Int32 in
+              let sa = buf.baseAddress!.assumingMemoryBound(to: sockaddr.self)
+              let saLen = socklen_t(buf.count)
+              return getnameinfo(sa, saLen, &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST | NI_NUMERICSERV)
+          }
+          guard err == 0 else { return "" }
+          let hostString = NSString(cString: host, encoding: String.Encoding.utf8.rawValue)?.components(separatedBy: "%").first
+          return hostString as NSString?
+        }),
     ]
 
     let port = netService.port;
