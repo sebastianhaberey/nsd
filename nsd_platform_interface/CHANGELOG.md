@@ -16,3 +16,7 @@
 * enhancement #3: proper client feedback if service type is invalid
 * proper text rendering (toString()) for all classes
 * error logging is not enabled per default any more to give the client the choice
+
+## 1.2.0
+
+* enhancement #8: find all available service types
