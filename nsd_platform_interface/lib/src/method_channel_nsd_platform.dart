@@ -213,12 +213,16 @@ bool isValidServiceType(String? type) {
   // - MUST contain only  'A' - 'Z', 'a' - 'z', '0' - '9', hyphens
   // - MUST contain at least one letter
   //
-  // second label see https://datatracker.ietf.org/doc/html/rfc6763 (4.1.2):
+  // second label see https://datatracker.ietf.org/doc/html/rfc6763#section-4.1.2:
   //
   //  -  either "_tcp" or "_udp"
 
   if (type == null) {
     return false;
+  }
+
+  if (type == '_services._dns-sd._udp') {
+    return true; // special type for enumeration of services, see https://datatracker.ietf.org/doc/html/rfc6763#section-9 (issue #8)
   }
 
   return RegExp(r'^_[a-zA-Z0-9-]{1,15}._(tcp|udp)').hasMatch(type);

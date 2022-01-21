@@ -141,6 +141,28 @@ void main() {
     await unregister(registration);
     await server.close();
   });
+
+  testWidgets('Find all available service types', (WidgetTester _) async {
+    final serviceA =
+        Service(name: uuid.v4(), type: '_foo._tcp', port: basePort + 0);
+    final registrationA = await register(serviceA);
+
+    final serviceB =
+        Service(name: uuid.v4(), type: '_bar._tcp', port: basePort + 1);
+    final registrationB = await register(serviceB);
+
+    final discovery =
+        await startDiscovery('_services._dns-sd._udp', autoResolve: false);
+
+    await waitForCondition(() =>
+        findNameStartingWith(discovery.services, '_foo').length == 1 &&
+        findNameStartingWith(discovery.services, '_bar').length == 1);
+
+    await stopDiscovery(discovery);
+
+    await unregister(registrationB);
+    await unregister(registrationA);
+  });
 }
 
 isBlankOrNull(Uint8List? value) async => value == null || value.isEmpty;

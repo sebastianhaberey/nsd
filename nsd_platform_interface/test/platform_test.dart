@@ -43,6 +43,15 @@ void main() {
       await _nsd.startDiscovery('_foo._tcp');
     });
 
+    test('Start succeeds for special service enumeration type', () async {
+      // simulate success callback by native code
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      await _nsd.startDiscovery('_services._dns-sd._udp');
+    });
+
     test('Autoresolve', () async {
       late String capturedHandle;
 

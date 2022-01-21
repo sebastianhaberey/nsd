@@ -162,30 +162,30 @@ packages:
   nsd_android:
     dependency: transitive
     description:
-      name: nsd_android
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_android"
+      relative: true
+    source: path
     version: "1.0.3"
   nsd_ios:
     dependency: transitive
     description:
-      name: nsd_ios
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_ios"
+      relative: true
+    source: path
     version: "1.0.3"
   nsd_macos:
     dependency: transitive
     description:
-      name: nsd_macos
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_macos"
+      relative: true
+    source: path
     version: "1.0.3"
   nsd_platform_interface:
     dependency: transitive
     description:
-      name: nsd_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../nsd_platform_interface"
+      relative: true
+    source: path
     version: "1.1.0"
   path:
     dependency: transitive
