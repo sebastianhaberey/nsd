@@ -19,4 +19,9 @@
 
 ## 1.2.0
 
-* enhancement #8: find all available service types
+* enhancement #8: find all available service type
+
+## 1.3.0
+
+* enhancement #7: support for ip addresses
+
