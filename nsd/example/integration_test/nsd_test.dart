@@ -57,11 +57,8 @@ void main() {
     final service = Service(name: name, type: serviceType, port: basePort);
     final registration = await register(service);
 
-    await waitForCondition(
-        () => findNameStartingWith(discovery.services, name).length == 1);
-
-    final receivedService =
-        findNameStartingWith(discovery.services, name).elementAt(0);
+    final receivedService = await waitForValue(
+        () => firstOrNull(findNameStartingWith(discovery.services, name)));
 
     expect(receivedService.name, name);
     expect(receivedService.type, serviceType);
@@ -100,11 +97,8 @@ void main() {
         Service(name: name, type: serviceType, port: basePort, txt: txt);
     final registration = await register(service);
 
-    await waitForCondition(
-        () => findNameStartingWith(discovery.services, name).length == 1);
-
-    final receivedService =
-        findNameStartingWith(discovery.services, name).elementAt(0);
+    final Service receivedService = await waitForValue(
+        () => firstOrNull(findNameStartingWith(discovery.services, name)));
 
     final receivedTxt = receivedService.txt!;
 
@@ -143,6 +137,9 @@ void main() {
   });
 
   testWidgets('Find all available service types', (WidgetTester _) async {
+    final discovery =
+        await startDiscovery('_services._dns-sd._udp', autoResolve: false);
+
     final serviceA =
         Service(name: uuid.v4(), type: '_foo._tcp', port: basePort + 0);
     final registrationA = await register(serviceA);
@@ -150,9 +147,6 @@ void main() {
     final serviceB =
         Service(name: uuid.v4(), type: '_bar._tcp', port: basePort + 1);
     final registrationB = await register(serviceB);
-
-    final discovery =
-        await startDiscovery('_services._dns-sd._udp', autoResolve: false);
 
     await waitForCondition(() =>
         findNameStartingWith(discovery.services, '_foo').length == 1 &&
@@ -162,6 +156,24 @@ void main() {
 
     await unregister(registrationB);
     await unregister(registrationA);
+  });
+
+  testWidgets('Look up IP addresses for service', (WidgetTester _) async {
+    final discovery = await startDiscovery(serviceType,
+        autoResolve: true, ipLookupType: IpLookupType.any);
+
+    final name = uuid.v4();
+
+    final registration =
+        await register(Service(name: name, type: serviceType, port: basePort));
+
+    final Service discoveredService = await waitForValue(
+        () => firstOrNull(findNameStartingWith(discovery.services, name)));
+
+    expect(discoveredService.addresses, isNotEmpty);
+
+    await stopDiscovery(discovery);
+    await unregister(registration);
   });
 }
 
@@ -176,6 +188,13 @@ Iterable<Service> findNameStartingWith(List<Service> services, String name) =>
 Future<void> waitForCondition(bool Function() condition,
     {Duration minWait = const Duration(),
     Duration maxWait = const Duration(minutes: 1)}) async {
+  await waitForValue(() => condition() ? true : null,
+      minWait: minWait, maxWait: maxWait);
+}
+
+Future<T> waitForValue<T>(T? Function() valueFunc,
+    {Duration minWait = const Duration(),
+    Duration maxWait = const Duration(minutes: 1)}) async {
   final start = DateTime.now();
   final min = start.add(minWait);
   final max = start.add(maxWait);
@@ -184,12 +203,13 @@ Future<void> waitForCondition(bool Function() condition,
     final now = DateTime.now();
 
     if (min.isBefore(now)) {
-      if (condition()) {
-        return;
+      final value = valueFunc();
+      if (value != null) {
+        return value;
       }
 
       if (now.isAfter(max)) {
-        throw TimeoutException('Timeout while waiting for condition', maxWait);
+        throw TimeoutException('Timeout while waiting for value', maxWait);
       }
     }
 
@@ -203,4 +223,8 @@ Future<HttpServer> startServer() async {
   return shelf_io
       .serve(handler, InternetAddress.anyIPv4, 0)
       .then((server) => server);
+}
+
+T? firstOrNull<T>(Iterable<T> iterable) {
+  return iterable.length == 1 ? iterable.first : null;
 }

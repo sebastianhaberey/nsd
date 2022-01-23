@@ -83,6 +83,37 @@ void main() {
       expect(discoveredService.port, 56000);
     });
 
+    test('IP lookup', () async {
+      late String capturedHandle;
+
+      // simulate success callback by native code
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      // set up mock resolver to answer with "resolved" service
+      _mockHandlers['resolve'] = (handle, arguments) {
+        mockReply('onResolveSuccessful', {
+          ...serializeHandle(handle),
+          ...serializeService(const Service(
+              name: 'Some name', type: 'bar', host: 'localhost', port: 56000))
+        });
+      };
+
+      final discovery = await _nsd.startDiscovery('_foo._tcp',
+          ipLookupType: IpLookupType.any);
+
+      // simulate unresolved discovered service
+      await mockReply('onServiceDiscovered', {
+        ...serializeHandle(capturedHandle),
+        ...serializeService(const Service(name: 'Some name', type: '_foo._tcp'))
+      });
+
+      final discoveredService = discovery.services.elementAt(0);
+      expect(discoveredService.addresses, isNotEmpty);
+    });
+
     test('Start fails if native code reports failure', () async {
       // simulate failure callback by native code
       _mockHandlers['startDiscovery'] = (handle, arguments) {
@@ -106,6 +137,18 @@ void main() {
           .having((e) => e.message, 'error message', contains('format'));
 
       expect(_nsd.startDiscovery('foo'), throwsA(matcher));
+    });
+
+    test('Start fails if IP lookup is enabled without auto resolve', () async {
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
+          .having((e) => e.message, 'error message',
+              contains('Auto resolve must be enabled'));
+
+      expect(
+          _nsd.startDiscovery('_foo._tcp',
+              autoResolve: false, ipLookupType: IpLookupType.v4),
+          throwsA(matcher));
     });
 
     test('Stop succeeds if native code reports success', () async {

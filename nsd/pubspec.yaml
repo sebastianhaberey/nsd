@@ -12,21 +12,21 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # production
-  nsd_android: ^1.0.3
-  nsd_ios: ^1.0.3
-  nsd_macos: ^1.0.3
-  nsd_platform_interface: ^1.2.0
+#  # production
+#  nsd_android: ^1.0.3
+#  nsd_ios: ^1.0.3
+#  nsd_macos: ^1.0.3
+#  nsd_platform_interface: ^1.2.0
 
-#  # development
-#  nsd_android:
-#    path: ../nsd_android
-#  nsd_ios:
-#    path: ../nsd_ios
-#  nsd_macos:
-#    path: ../nsd_macos
-#  nsd_platform_interface:
-#    path: ../nsd_platform_interface
+  # development
+  nsd_android:
+    path: ../nsd_android
+  nsd_ios:
+    path: ../nsd_ios
+  nsd_macos:
+    path: ../nsd_macos
+  nsd_platform_interface:
+    path: ../nsd_platform_interface
 
 
 dev_dependencies:

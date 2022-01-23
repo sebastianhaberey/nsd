@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -23,7 +24,7 @@ abstract class NsdPlatformInterface extends PlatformInterface {
   }
 
   Future<Discovery> startDiscovery(String serviceType,
-      {bool autoResolve = true});
+      {bool autoResolve = true, IpLookupType ipLookupType = IpLookupType.none});
 
   Future<void> stopDiscovery(Discovery discovery);
 
@@ -38,12 +39,14 @@ abstract class NsdPlatformInterface extends PlatformInterface {
 
 /// Represents a network service.
 class Service {
-  const Service({this.name, this.type, this.host, this.port, this.txt});
+  const Service(
+      {this.name, this.type, this.host, this.port, this.txt, this.addresses});
 
   final String? name;
   final String? type;
   final String? host;
   final int? port;
+  final List<InternetAddress>? addresses;
 
   /// Represents DNS TXT records.
   ///
@@ -57,7 +60,7 @@ class Service {
 
   @override
   String toString() =>
-      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt)';
+      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt, addresses: $addresses)';
 }
 
 /// Returns true if the two [Service] instances refer to the same service.
@@ -70,7 +73,8 @@ Service merge(Service existing, Service incoming) => Service(
     type: incoming.type ?? existing.type,
     host: incoming.host ?? existing.host,
     port: incoming.port ?? existing.port,
-    txt: incoming.txt ?? existing.txt);
+    txt: incoming.txt ?? existing.txt,
+    addresses: incoming.addresses ?? existing.addresses);
 
 /// Indicates the cause of an [NsdError].
 enum ErrorCause {
@@ -163,4 +167,22 @@ enum LogTopic {
 
   /// Logs errors (enabled by default).
   errors
+}
+
+/// Configures IP lookup.
+///
+/// Since IP lookup is performed using the service host name,
+/// auto resolving must be enabled for IP lookup.
+enum IpLookupType {
+  /// Don't perform IP lookup
+  none,
+
+  /// Look up IP v4 addresses only
+  v4,
+
+  /// Look up IP v6 addresses only
+  v6,
+
+  /// Look up all types of IP addresses
+  any,
 }

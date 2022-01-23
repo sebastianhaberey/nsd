@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +12,13 @@ typedef _Handler = void Function(dynamic);
 
 const _uuid = Uuid();
 
+const _ipLookupTypeToInternetAddressType = {
+  IpLookupType.none: null,
+  IpLookupType.v4: InternetAddressType.IPv4,
+  IpLookupType.v6: InternetAddressType.IPv6,
+  IpLookupType.any: InternetAddressType.any,
+};
+
 /// Implementation of [NsdPlatformInterface] that uses a method channel to communicate with native side.
 class MethodChannelNsdPlatform extends NsdPlatformInterface {
   final _methodChannel = const MethodChannel('com.haberey/nsd');
@@ -22,8 +30,14 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
   @override
   Future<Discovery> startDiscovery(String serviceType,
-      {bool autoResolve = true}) async {
+      {bool autoResolve = true,
+      IpLookupType ipLookupType = IpLookupType.none}) async {
     assertValidServiceType(serviceType);
+
+    if (isIpLookupEnabled(ipLookupType) && autoResolve == false) {
+      throw NsdError(ErrorCause.illegalArgument,
+          'Auto resolve must be enabled for IP lookup');
+    }
 
     final handle = _uuid.v4();
     final discovery = Discovery(handle);
@@ -40,9 +54,15 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     });
 
     setHandler(handle, 'onServiceDiscovered', (arguments) async {
-      discovery.add(autoResolve
-          ? await resolve(deserializeService(arguments)!)
-          : deserializeService(arguments)!);
+      var service = deserializeService(arguments)!;
+      if (autoResolve) {
+        service = await resolve(service);
+
+        if (isIpLookupEnabled(ipLookupType)) {
+          service = await performIpLookup(service, ipLookupType);
+        }
+      }
+      discovery.add(service);
     });
 
     setHandler(handle, 'onServiceLost',
@@ -192,6 +212,19 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   }
 }
 
+Future<Service> performIpLookup(
+    Service service, IpLookupType ipLookupType) async {
+  final host = service.host;
+
+  if (host == null) {
+    return service;
+  }
+
+  final addresses = await InternetAddress.lookup(host,
+      type: getInternetAddressType(ipLookupType)!);
+  return merge(service, Service(addresses: addresses));
+}
+
 // prevent the future from throwing uncaught error due to missing callback
 // https://stackoverflow.com/a/66481566/8707976
 void _attachDummyCallback<T>(Future<T> future) => unawaited(
@@ -226,4 +259,12 @@ bool isValidServiceType(String? type) {
   }
 
   return RegExp(r'^_[a-zA-Z0-9-]{1,15}._(tcp|udp)').hasMatch(type);
+}
+
+InternetAddressType? getInternetAddressType(IpLookupType ipLookupType) {
+  return _ipLookupTypeToInternetAddressType[ipLookupType];
+}
+
+bool isIpLookupEnabled(IpLookupType ipLookupType) {
+  return ipLookupType != IpLookupType.none;
 }

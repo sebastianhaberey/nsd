@@ -12,6 +12,8 @@ export 'package:nsd_platform_interface/nsd_platform_interface.dart'
     show NsdError;
 export 'package:nsd_platform_interface/nsd_platform_interface.dart'
     show LogTopic;
+export 'package:nsd_platform_interface/nsd_platform_interface.dart'
+    show IpLookupType;
 
 /// Starts a discovery for the specified service type.
 ///
@@ -20,9 +22,10 @@ export 'package:nsd_platform_interface/nsd_platform_interface.dart'
 /// cruicial to decide on a service. For this reason, [autoResolve] is on by
 /// default and discovered services will be fully resolved.
 Future<Discovery> startDiscovery(String serviceType,
-        {bool autoResolve = true}) async =>
-    NsdPlatformInterface.instance
-        .startDiscovery(serviceType, autoResolve: autoResolve);
+        {bool autoResolve = true,
+        IpLookupType ipLookupType = IpLookupType.none}) async =>
+    NsdPlatformInterface.instance.startDiscovery(serviceType,
+        autoResolve: autoResolve, ipLookupType: ipLookupType);
 
 /// Stops the specified discovery.
 ///
