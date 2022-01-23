@@ -5,6 +5,7 @@
 name: iOS Tests
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "nsd_ios/**"

@@ -5,6 +5,7 @@
 name: Platform Tests
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "nsd_platform_interface/**"

@@ -4,7 +4,9 @@
 
 name: macOS Tests
 
-on: push # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
+on:
+  workflow_dispatch:
+  push: # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
 
 env:
   flutter_version: '2.5.3'
