@@ -5,9 +5,11 @@
 name: Android Tests
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "nsd_android/**"
+      
 
 env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
