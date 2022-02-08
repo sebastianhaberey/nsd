@@ -38,3 +38,8 @@
 ## 1.3.0
 
 * enhancement #7: support for ip addresses
+
+## 1.3.1
+
+* issue #11: added faq to documentation
+
