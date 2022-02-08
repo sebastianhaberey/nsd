@@ -69,7 +69,7 @@ Each discovered service will now have a list of IP addresses attached to it.
 
 ### How to find all services on the local network, regardless of type
 
-The current way to do this is would be:
+The current way to do this would be:
 
 1. Start discovery using special service type `_services._dns-sd._udp` 
 2. Receive list of all service types in network 
@@ -93,7 +93,7 @@ The first component of the service type (e.g. `_foo`) is contained in the servic
 the second component of the service type (e.g. `_tcp`) is contained in the service type attribute.
 
 Even though using a service structure to represent a service type feels like a hack, it seems to be 
-consistent on Android / macOS / iOS platform APIs. Since they are both doing it, 
+consistent on Android / macOS / iOS platform APIs. Since they are all doing it, 
 the plugin has the same behavior.
 
 ### How to enable logging for diagnostic purposes
@@ -104,5 +104,4 @@ In order to help debugging, logging can be enabled for individual topics. For ex
 enableLogging(LogTopic.calls);
 ```
 
-will log all calls to the native side (and their callbacks), which often contain useful 
-information.
+will log all calls to the native side (and their callbacks), which often yields useful information.
