@@ -43,3 +43,7 @@
 
 * issue #11: added faq to documentation
 
+## 1.3.2
+
+* improved readme structure
+
