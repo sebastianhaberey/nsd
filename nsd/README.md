@@ -9,7 +9,7 @@
 
 A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
-## Service Discovery
+## Service discovery
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -24,7 +24,7 @@ discovery.addListener(() {
 await stopDiscovery(discovery);
 ```
 
-## Service Registration
+## Service registration
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -37,7 +37,7 @@ final registration = await register(
 await unregister(registration);
 ```
 
-## Example App
+## Example application
 
 <img src="https://raw.githubusercontent.com/sebastianhaberey/nsd/main/documentation/images/screenshot.png" width=100%>
 
@@ -51,15 +51,14 @@ and register multiple services. It will discover its own services but also other
 - The source code demonstrates how to use the discovery object as a 
   [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
   
-## FAQ
-
-### How to get the IP address for a discovered service?
+## Get IP addresses for service
 
 First, do you really _need_ the IP address? If you just want to connect to the service, 
 the host name that is supplied with the service should do just fine. In fact, connecting by 
 host name is recommended on the [Apple Developer Forums](https://developer.apple.com/forums/thread/673771?answerId=662293022#662293022).
 
-If you _do_ need the IP address, you can configure your discovery like this:
+If you _do_ need the IP address, you can configure automatic ip lookup for your discovery
+like this:
 
 ```dart
 final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.any);
@@ -67,7 +66,7 @@ final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.a
 
 Each discovered service will now have a list of IP addresses attached to it.
 
-### How to find all services on the local network, regardless of type
+## Discover all services on local network (regardless of type)
 
 The current way to do this would be:
 
@@ -82,11 +81,11 @@ final discovery = await startDiscovery('_services._dns-sd._udp', autoResolve: fa
 ```
 
 The `autoResolve` flag is important because the results are not real services and cannot be resolved. The `discovery.services` list will then be populated with the answers. 
-The answers look like this:
+The `Service` instances returned will contain service type info, like so:
 
 ```
-{service.type: _tcp.local, service.host: null, service.name: _foo, handle: a353ff28-40dd-425d-a5a0-9966eea0c708}
-{service.type: _tcp.local, service.host: null, service.name: _bar, handle: a353ff28-40dd-425d-a5a0-9966eea0c708}
+{service.type: _tcp.local, service.name: _foo, ...}
+{service.type: _tcp.local, service.name: _bar, ...}
 ```
 
 The first component of the service type (e.g. `_foo`) is contained in the service name attribute, 
@@ -96,7 +95,7 @@ Even though using a service structure to represent a service type feels like a h
 consistent on Android / macOS / iOS platform APIs. Since they are all doing it, 
 the plugin has the same behavior.
 
-### How to enable logging for diagnostic purposes
+## Enable debug logging
 
 In order to help debugging, logging can be enabled for individual topics. For example
 
