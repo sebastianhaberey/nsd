@@ -14,3 +14,7 @@
 ## 1.0.3
 
 * various cleanups
+
+## 1.1.0
+
+* updated to flutter 2.10.0 (also gradle, android api updates) 

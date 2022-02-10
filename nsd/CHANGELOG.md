@@ -47,3 +47,7 @@
 
 * improved readme structure
 
+## 1.4.0
+
+* updated to flutter 2.10.0 (also gradle, android api updates)
+
