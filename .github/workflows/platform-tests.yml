@@ -11,7 +11,7 @@ on:
       - "nsd_platform_interface/**"
 
 env:
-  flutter_version: '2.5.3'
+  flutter_version: '2.10.0'
 
 jobs:
   test:
