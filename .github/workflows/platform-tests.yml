@@ -1,5 +1,4 @@
 # see https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
-# see https://github.com/ReactiveCircus/android-emulator-runner
 # see https://github.com/felangel/bloc/blob/master/.github/workflows/flutter_bloc.yaml
 
 name: Platform Tests

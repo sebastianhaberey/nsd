@@ -17,6 +17,7 @@ dependencies:
   nsd_ios: ^1.0.3
   nsd_macos: ^1.0.3
   nsd_platform_interface: ^1.3.0
+  nsd_windows: ^1.0.0
 
 #  # development
 #  nsd_android:

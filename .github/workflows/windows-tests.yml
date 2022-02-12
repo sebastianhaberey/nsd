@@ -1,19 +1,18 @@
 # see https://www.linkedin.com/pulse/github-actions-flutter-app-moataz-nabil
 # see https://github.com/felangel/bloc/blob/master/.github/workflows/flutter_bloc.yaml
 
-name: macOS Tests
+name: Windows Tests
 
 on:
-  workflow_dispatch:
-  push: # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
+  workflow_dispatch: # since nsd_windows is an endorsed plugin, ci is triggered on demand
 
 env:
   flutter_version: '2.10.0'
 
 jobs:
   test:
-    name: Run tests (macOS)
-    runs-on: macos-latest
+    name: Run tests (Windows)
+    runs-on: windows-latest
     defaults:
       run:
         working-directory: nsd/example
@@ -34,14 +33,8 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', 'stable'
           flutter-version: ${{ env.flutter_version }}
 
-      - name: Enable Flutter for macOS
-        run: flutter config --enable-macos-desktop
-
       - name: Show Flutter configuration
         run: flutter doctor -v
 
       - name: Get Flutter dependencies
         run: flutter pub get
-
-      - name: Run tests
-        run: flutter test --no-pub --device-id macos --reporter expanded integration_test/nsd_test.dart
