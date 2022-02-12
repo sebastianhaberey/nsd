@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.tool_cache }}/flutter
-          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          key: ${{ runner.OS }}-flutter-install-cache-v2-${{ env.flutter_version }}
 
       - name: Set up Flutter environment
         uses: subosito/flutter-action@v1
@@ -39,5 +39,5 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Run tests
-        run: flutter test --no-pub --device-id windows --reporter expanded integration_test/nsd_test.dart
+#      - name: Run tests
+#        run: flutter test --no-pub --device-id windows --reporter expanded integration_test/nsd_test.dart
