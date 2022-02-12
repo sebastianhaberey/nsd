@@ -38,3 +38,6 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Run tests
+        run: flutter test --no-pub --device-id windows --reporter expanded integration_test/nsd_test.dart
