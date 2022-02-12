@@ -24,7 +24,7 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v2
         with:
-          path: /Users/runner/hostedtoolcache/flutter
+          path: C:hostedtoolcache\flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
 
       - name: Set up Flutter environment
@@ -43,4 +43,4 @@ jobs:
         run: flutter devices
 
       - name: Run tests
-        run: flutter test --no-pub --device-id windows-x64 --reporter expanded integration_test/nsd_test.dart
+        run: flutter test --no-pub --device-id windows --reporter expanded integration_test/nsd_test.dart
