@@ -27,7 +27,7 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v2
         with:
-          path: /Users/runner/hostedtoolcache/flutter
+          path: ${{ runner.tool_cache }}/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
 
       - name: Set up Flutter environment
