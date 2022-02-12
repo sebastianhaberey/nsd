@@ -33,6 +33,9 @@ jobs:
           channel: 'stable' # 'dev', 'alpha', 'stable'
           flutter-version: ${{ env.flutter_version }}
 
+      - name: Enable Flutter for Windows
+        run: flutter config --enable-windows-desktop
+
       - name: Show Flutter configuration
         run: flutter doctor -v
 
