@@ -43,4 +43,4 @@ jobs:
         run: flutter devices
 
       - name: Run tests
-        run: flutter test --no-pub --device-id windows --reporter expanded integration_test/nsd_test.dart
+        run: flutter test --no-pub --device-id windows-x64 --reporter expanded integration_test/nsd_test.dart
