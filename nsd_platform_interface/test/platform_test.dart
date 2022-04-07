@@ -29,7 +29,8 @@ void main() {
         .setMockMethodCallHandler(_methodChannel,
             (MethodCall methodCall) async {
       final handle = deserializeHandle(methodCall.arguments)!;
-      return _mockHandlers[methodCall.method]?.call(handle, methodCall.arguments);
+      return _mockHandlers[methodCall.method]
+          ?.call(handle, methodCall.arguments);
     });
   });
 
