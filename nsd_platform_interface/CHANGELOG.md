@@ -25,3 +25,6 @@
 
 * enhancement #7: support for ip addresses
 
+## 1.3.1
+
+* fixed dart analysis errors

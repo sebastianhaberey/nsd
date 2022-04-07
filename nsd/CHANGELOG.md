@@ -55,3 +55,7 @@
 
 * issue #14: harmonized android deserialization method signatures
 * updated various dependencies (gradle, android api)
+
+## 1.4.2
+
+* fixed dart analysis errors
