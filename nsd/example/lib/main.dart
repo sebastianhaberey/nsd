@@ -35,8 +35,6 @@ class MyAppState extends State<MyApp> {
 
   Future<void> addDiscovery() async {
     final discovery = await startDiscovery(serviceType);
-    print('$discovery');
-
     setState(() {
       discoveries.add(discovery);
     });
@@ -58,11 +56,7 @@ class MyAppState extends State<MyApp> {
         port: nextPort,
         txt: createTxt());
 
-    print('$service');
-
     final registration = await register(service);
-    print('$registration');
-
     setState(() {
       registrations.add(registration);
     });
