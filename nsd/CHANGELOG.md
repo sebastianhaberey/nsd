@@ -51,3 +51,7 @@
 
 * updated to flutter 2.10.0 (also gradle, android api updates)
 
+## 1.4.1
+
+* issue #14: harmonized android deserialization method signatures
+* updated various dependencies (gradle, android api)
