@@ -59,3 +59,7 @@
 ## 1.4.2
 
 * fixed dart analysis errors
+
+## 1.4.3
+
+* fixed formatting
