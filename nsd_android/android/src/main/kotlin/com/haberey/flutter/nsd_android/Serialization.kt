@@ -46,18 +46,16 @@ internal fun deserializeServicePort(arguments: Map<String, Any?>?): Int? =
 internal fun deserializeServiceTxt(arguments: Map<String, Any?>?): Map<String, ByteArray?>? =
     deserialize(Key.SERVICE_TXT, arguments)
 
-internal fun deserializeServiceInfo(
-    arguments: Map<String, Any?>
-): NsdServiceInfo? {
+internal fun deserializeServiceInfo(arguments: Map<String, Any?>?): NsdServiceInfo? {
+
+    if (arguments == null) {
+        return null
+    }
 
     val name = deserializeServiceName(arguments)
     val type = deserializeServiceType(arguments)
     val port = deserializeServicePort(arguments)
-
-    // resolves to localhost if not set
-    val host = InetAddress.getByName(deserializeServiceHost(arguments))
-
-    // see below
+    val host = deserializeServiceHost(arguments)
     val txt = deserializeServiceTxt(arguments)
 
     if (name == null &&
@@ -69,11 +67,15 @@ internal fun deserializeServiceInfo(
         return null
     }
 
+    // If the host is null then an InetAddress representing an address of the loopback interface is returned.
+    // https://docs.oracle.com/javase/7/docs/api/java/net/InetAddress.html#getByName(java.lang.String)
+    val address = InetAddress.getByName(host)
+
     return NsdServiceInfo().apply {
         serviceName = name
         serviceType = type
         port?.let { setPort(port) }
-        setHost(host)
+        setHost(address)
         setAttributesFromTxt(txt)
     }
 }
