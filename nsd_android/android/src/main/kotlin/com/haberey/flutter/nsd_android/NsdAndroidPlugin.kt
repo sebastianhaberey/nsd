@@ -2,6 +2,7 @@ package com.haberey.flutter.nsd_android
 
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
+import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
@@ -20,6 +21,8 @@ private const val CHANNEL_NAME = "com.haberey/nsd"
 class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
 
     private lateinit var nsdManager: NsdManager
+    private lateinit var wifiManager: WifiManager
+    private var multicastLock: WifiManager.MulticastLock? = null
     private lateinit var methodChannel: MethodChannel
 
     private val discoveryListeners = HashMap<String, NsdManager.DiscoveryListener>()
@@ -31,6 +34,9 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         nsdManager =
             getSystemService(flutterPluginBinding.applicationContext, NsdManager::class.java)!!
+        wifiManager =
+            getSystemService(flutterPluginBinding.applicationContext, WifiManager::class.java)!!
+
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         methodChannel.setMethodCallHandler(this)
     }
@@ -69,6 +75,10 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot start discovery: expected handle"
         )
 
+        multicastLock = wifiManager?.createMulticastLock("nsdMulticastLock")
+        multicastLock?.setReferenceCounted(true)
+        multicastLock?.acquire()
+
         val discoveryListener = createDiscoveryListener(handle)
         discoveryListeners[handle] = discoveryListener
 
@@ -87,6 +97,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot stop discovery: expected handle"
         )
 
+        multicastLock?.release()
         nsdManager.stopServiceDiscovery(discoveryListeners[handle])
         result.success(null)
     }
