@@ -23,3 +23,7 @@
 
 * issue #14: harmonized android deserialization method signatures
 * updated various dependencies (gradle, android api)
+
+## 1.1.2
+
+* add multicast lock required by some android devices

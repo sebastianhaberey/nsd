@@ -63,3 +63,7 @@
 ## 1.4.3
 
 * fixed formatting
+
+## 1.4.4
+
+* add multicast lock required by some android devices
