@@ -12,6 +12,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.lang.Error
 import java.util.concurrent.Semaphore
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
@@ -22,7 +23,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
 
     private lateinit var nsdManager: NsdManager
     private lateinit var wifiManager: WifiManager
-    private var multicastLock: WifiManager.MulticastLock? = null
+    private lateinit var multicastLock: WifiManager.MulticastLock
     private lateinit var methodChannel: MethodChannel
 
     private val discoveryListeners = HashMap<String, NsdManager.DiscoveryListener>()
@@ -36,6 +37,9 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             getSystemService(flutterPluginBinding.applicationContext, NsdManager::class.java)!!
         wifiManager =
             getSystemService(flutterPluginBinding.applicationContext, WifiManager::class.java)!!
+
+        multicastLock = wifiManager.createMulticastLock("nsdMulticastLock")
+        multicastLock.setReferenceCounted(true)
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         methodChannel.setMethodCallHandler(this)
@@ -75,20 +79,26 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot start discovery: expected handle"
         )
 
-        multicastLock = wifiManager?.createMulticastLock("nsdMulticastLock")
-        multicastLock?.setReferenceCounted(true)
-        multicastLock?.acquire()
+        multicastLock.acquire()
 
-        val discoveryListener = createDiscoveryListener(handle)
-        discoveryListeners[handle] = discoveryListener
+        try {
 
-        nsdManager.discoverServices(
-            serviceType,
-            NsdManager.PROTOCOL_DNS_SD,
-            discoveryListener
-        )
+            val discoveryListener = createDiscoveryListener(handle)
+            discoveryListeners[handle] = discoveryListener
 
-        result.success(null)
+            nsdManager.discoverServices(
+                serviceType,
+                NsdManager.PROTOCOL_DNS_SD,
+                discoveryListener
+            )
+
+            result.success(null)
+
+        } catch (e: Throwable) {
+            multicastLock.release()
+            throw e
+        }
+
     }
 
     private fun stopDiscovery(methodCall: MethodCall, result: Result) {
@@ -97,7 +107,8 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot stop discovery: expected handle"
         )
 
-        multicastLock?.release()
+        multicastLock.release()
+
         nsdManager.stopServiceDiscovery(discoveryListeners[handle])
         result.success(null)
     }
