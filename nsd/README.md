@@ -104,3 +104,12 @@ enableLogging(LogTopic.calls);
 ```
 
 will log all calls to the native side (and their callbacks), which often yields useful information.
+
+
+## For Android
+
+Add the permission to the manifest:
+```Xml
+<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+```
+
