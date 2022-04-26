@@ -5,11 +5,14 @@
 [![iOS Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/ios-tests.yml)
 [![macOS Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-tests.yml)
 [![codecov](https://codecov.io/gh/sebastianhaberey/nsd/branch/main/graph/badge.svg?token=JPGRAMJWV2)](https://codecov.io/gh/sebastianhaberey/nsd)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![pub package](https://img.shields.io/pub/v/nsd.svg)](https://pub.dev/packages/nsd)
 
 A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
-## Service discovery
+## Basic usage
+
+### Service discovery
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -24,7 +27,7 @@ discovery.addListener(() {
 await stopDiscovery(discovery);
 ```
 
-## Service registration
+### Service registration
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -35,6 +38,29 @@ final registration = await register(
 // ...
 
 await unregister(registration);
+```
+
+## Permissions
+
+### Android
+
+Add the following permission to your manifest:
+
+```Xml
+<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+```
+
+### iOS
+
+Add the following permissions to your Info.plist (replace service type with your own):
+
+```Xml
+<key>NSLocalNetworkUsageDescription</key>
+<string>Required to discover local network devices</string>
+<key>NSBonjourServices</key>
+<array>
+    <string>_http._tcp</string>
+</array>
 ```
 
 ## Example application
@@ -50,8 +76,10 @@ and register multiple services. It will discover its own services but also other
 - The application log will show the calls and callbacks platform side vs. native side.
 - The source code demonstrates how to use the discovery object as a 
   [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
-  
-## Get IP addresses for service
+
+## Advanced usage
+
+### Get IP addresses for service
 
 First, do you really _need_ the IP address? If you just want to connect to the service, 
 the host name that is supplied with the service should do just fine. In fact, connecting by 
@@ -66,7 +94,7 @@ final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.a
 
 Each discovered service will now have a list of IP addresses attached to it.
 
-## Discover all services on local network (regardless of type)
+### Discover all services on local network (regardless of type)
 
 The current way to do this would be:
 
@@ -95,7 +123,7 @@ Even though using a service structure to represent a service type feels like a h
 consistent on Android / macOS / iOS platform APIs. Since they are all doing it, 
 the plugin has the same behavior.
 
-## Enable debug logging
+### Enable debug logging
 
 In order to help debugging, logging can be enabled for individual topics. For example
 
@@ -104,12 +132,3 @@ enableLogging(LogTopic.calls);
 ```
 
 will log all calls to the native side (and their callbacks), which often yields useful information.
-
-
-## For Android
-
-Add the permission to the manifest:
-```Xml
-<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-```
-

@@ -41,5 +41,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Permission is required to discover network devices via mDNS</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_http._tcp</string>
+    </array>
 </dict>
 </plist>
