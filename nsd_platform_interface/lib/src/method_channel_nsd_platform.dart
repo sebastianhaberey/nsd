@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:nsd_platform_interface/src/utilities.dart';
 import 'package:uuid/uuid.dart';
 
 import 'logging.dart';
@@ -195,7 +196,9 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 
   Future<void> invoke(String method, [dynamic arguments]) {
     log(this, LogTopic.calls, () => 'Call: $method $arguments');
-    return _methodChannel.invokeMethod(method, arguments);
+    return _methodChannel
+        .invokeMethod(method, arguments)
+        .catchError((e) => throw toNsdError(e));
   }
 
   void setHandler(String handle, String method, _Handler handler) {
@@ -267,4 +270,19 @@ InternetAddressType? getInternetAddressType(IpLookupType ipLookupType) {
 
 bool isIpLookupEnabled(IpLookupType ipLookupType) {
   return ipLookupType != IpLookupType.none;
+}
+
+NsdError toNsdError(Exception e) {
+  if (e is! PlatformException) {
+    return NsdError(ErrorCause.internalError, e.toString());
+  }
+
+  final message = e.message ?? '';
+  final errorCode = enumValueFromString(ErrorCause.values, e.code);
+
+  if (errorCode == null) {
+    return NsdError(ErrorCause.internalError, message);
+  }
+
+  return NsdError(errorCode, message);
 }

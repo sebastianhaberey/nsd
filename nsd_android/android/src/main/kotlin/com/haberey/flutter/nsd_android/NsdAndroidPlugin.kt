@@ -1,18 +1,21 @@
 package com.haberey.flutter.nsd_android
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import java.lang.Error
 import java.util.concurrent.Semaphore
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
@@ -23,8 +26,9 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
 
     private lateinit var nsdManager: NsdManager
     private lateinit var wifiManager: WifiManager
-    private lateinit var multicastLock: WifiManager.MulticastLock
     private lateinit var methodChannel: MethodChannel
+
+    private var multicastLock: WifiManager.MulticastLock? = null
 
     private val discoveryListeners = HashMap<String, NsdManager.DiscoveryListener>()
     private val resolveListeners = HashMap<String, NsdManager.ResolveListener>()
@@ -33,13 +37,15 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     private val resolveSemaphore = Semaphore(1)
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        nsdManager =
-            getSystemService(flutterPluginBinding.applicationContext, NsdManager::class.java)!!
-        wifiManager =
-            getSystemService(flutterPluginBinding.applicationContext, WifiManager::class.java)!!
+        val context = flutterPluginBinding.applicationContext
 
-        multicastLock = wifiManager.createMulticastLock("nsdMulticastLock")
-        multicastLock.setReferenceCounted(true)
+        nsdManager = getSystemService(context, NsdManager::class.java)!!
+        wifiManager = getSystemService(context, WifiManager::class.java)!!
+
+        if (multicastPermissionGranted(context)) {
+            multicastLock = wifiManager.createMulticastLock("nsdMulticastLock")
+            multicastLock?.setReferenceCounted(true)
+        }
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         methodChannel.setMethodCallHandler(this)
@@ -79,7 +85,14 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot start discovery: expected handle"
         )
 
-        multicastLock.acquire()
+        if (multicastLock == null) {
+            throw NsdError(
+                ErrorCause.SECURITY_ISSUE,
+                "Missing required permission CHANGE_WIFI_MULTICAST_STATE"
+            );
+        }
+
+        multicastLock?.acquire()
 
         try {
 
@@ -95,7 +108,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             result.success(null)
 
         } catch (e: Throwable) {
-            multicastLock.release()
+            multicastLock?.release()
             throw e
         }
 
@@ -107,7 +120,14 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             "Cannot stop discovery: expected handle"
         )
 
-        multicastLock.release()
+        if (multicastLock == null) {
+            throw NsdError(
+                ErrorCause.SECURITY_ISSUE,
+                "Missing required permission CHANGE_WIFI_MULTICAST_STATE"
+            );
+        }
+
+        multicastLock?.release()
 
         nsdManager.stopServiceDiscovery(discoveryListeners[handle])
         result.success(null)
@@ -290,4 +310,10 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
     }
+
+    private fun multicastPermissionGranted(context: Context) =
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CHANGE_WIFI_MULTICAST_STATE
+        ) == PackageManager.PERMISSION_GRANTED
 }

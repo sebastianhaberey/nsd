@@ -27,6 +27,7 @@ internal enum class ErrorCause(val code: String) {
     ALREADY_ACTIVE("alreadyActive"),
     MAX_LIMIT("maxLimit"),
     INTERNAL_ERROR("internalError"),
+    SECURITY_ISSUE("securityIssue"),
 }
 
 internal class NsdError(val errorCause: ErrorCause, val errorMessage: String) :

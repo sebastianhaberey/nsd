@@ -88,17 +88,20 @@ enum ErrorCause {
   maxLimit,
 
   /// This error occurs on Android (seen on API 30) if too many resolve
-  /// operations are requested simultanously. It should be prevented by the
+  /// operations are requested simultaneously. It should be prevented by the
   /// semaphore on the native side.
   alreadyActive,
 
-  /// An error in platform or native code that cannot be adressed by the client.
+  /// An error in platform or native code that cannot be addressed by the client.
   internalError,
+
+  /// A security issue, for example a missing permission.
+  securityIssue,
 }
 
 /// Represents an error that occurred during an NSD operation.
 ///
-/// Examine the [ErrorCause] to see wether or not the error can be adressed by the client.
+/// Examine the [ErrorCause] to see whether or not the error can be addressed by the client.
 class NsdError extends Error {
   final ErrorCause cause;
   final String message;
