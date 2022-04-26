@@ -27,3 +27,8 @@
 ## 1.1.2
 
 * add multicast lock required by some android devices
+
+## 1.2.0
+
+* proper error if wifi multicast permission is missing
+* updated dependencies (kotlin / gradle)

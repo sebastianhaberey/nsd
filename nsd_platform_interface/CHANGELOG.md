@@ -32,3 +32,8 @@
 ## 1.3.2
 
 * fixed formatting
+
+## 1.4.0
+
+* more user friendly error handling
+* documentation

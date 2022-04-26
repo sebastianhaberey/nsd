@@ -67,3 +67,11 @@
 ## 1.4.4
 
 * add multicast lock required by some android devices
+
+## 1.5.0
+
+* issue #16: added required ios permissions to readme and example app
+* android: proper error if wifi multicast permission is missing
+* android: updated dependencies (kotlin / gradle)
+* platform: more user friendly error handling and output
+* updated documentation
