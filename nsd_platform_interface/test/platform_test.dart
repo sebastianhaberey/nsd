@@ -152,6 +152,50 @@ void main() {
           throwsA(matcher));
     });
 
+    test('Platform exceptions are converted to nsd errors', () async {
+
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        throw PlatformException(
+            code: ErrorCause.securityIssue.name, message: 'platform');
+      };
+
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.securityIssue)
+          .having((e) => e.message, 'error message', contains('platform'));
+
+      // platform exceptions are propagated to the flutter side
+      // and should be converted to nsd errors
+      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+    });
+
+    test('Missing plugin exceptions are converted to nsd errors', () async {
+
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        throw MissingPluginException();
+      };
+
+      // platform exceptions are propagated to the flutter side
+      // and should be converted to nsd errors (internal)
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.internalError);
+
+      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+    });
+
+    test('Generic exceptions are converted to nsd errors', () async {
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        throw Exception('generic');
+      };
+
+      final matcher = isA<NsdError>()
+          .having((e) => e.cause, 'error cause', ErrorCause.internalError)
+          .having((e) => e.message, 'error message', contains('generic'));
+
+      // all other exceptions are converted to platform exceptions by flutter
+      // and should be converted to nsd errors (internal)
+      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+    });
+
     test('Stop succeeds if native code reports success', () async {
       _mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
