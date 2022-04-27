@@ -153,7 +153,6 @@ void main() {
     });
 
     test('Platform exceptions are converted to nsd errors', () async {
-
       _mockHandlers['startDiscovery'] = (handle, arguments) {
         throw PlatformException(
             code: ErrorCause.securityIssue.name, message: 'platform');
@@ -169,7 +168,6 @@ void main() {
     });
 
     test('Missing plugin exceptions are converted to nsd errors', () async {
-
       _mockHandlers['startDiscovery'] = (handle, arguments) {
         throw MissingPluginException();
       };
