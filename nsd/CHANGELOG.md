@@ -75,3 +75,9 @@
 * android: updated dependencies (kotlin / gradle)
 * platform: more user friendly error handling and output
 * updated documentation
+
+## 1.5.1
+
+* more unit tests for error handling
+* added minimum os requirements to readme
+* ci: updated flutter version to 3.0.0

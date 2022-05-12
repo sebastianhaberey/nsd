@@ -37,3 +37,7 @@
 
 * more user friendly error handling
 * documentation
+
+## 1.4.1
+
+* more unit tests for error handling
