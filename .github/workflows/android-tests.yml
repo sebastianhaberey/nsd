@@ -16,7 +16,7 @@ env:
   flutter_version: '2.10.4'
   api_level: '32'
   target: default
-  arch: x86_64
+  arch: arm64-v8a
   profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
 
 jobs:
