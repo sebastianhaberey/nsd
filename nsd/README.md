@@ -10,9 +10,11 @@
 
 A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
-## Basic usage
+<br></br>
 
-### Service discovery
+## Basic Usage
+
+### Service Discovery
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -27,7 +29,7 @@ discovery.addListener(() {
 await stopDiscovery(discovery);
 ```
 
-### Service registration
+### Service Registration
 
 ```dart
 import 'package:nsd/nsd.dart';
@@ -39,6 +41,7 @@ final registration = await register(
 
 await unregister(registration);
 ```
+<br></br>
 
 ## Permissions
 
@@ -62,6 +65,7 @@ Add the following permissions to your Info.plist (replace service type with your
     <string>_http._tcp</string>
 </array>
 ```
+<br></br>
 
 ## Example application
 
@@ -77,9 +81,19 @@ and register multiple services. It will discover its own services but also other
 - The source code demonstrates how to use the discovery object as a 
   [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
 
-## Advanced usage
+<br></br>
 
-### Get IP addresses for service
+## Minimum OS Requirements
+
+- Android: API level 21 (Android 5.0)
+- iOS: 12.0
+- macOS: 10.1
+
+<br></br>
+
+## Advanced Usage
+
+### Get IP Addresses for Service
 
 First, do you really _need_ the IP address? If you just want to connect to the service, 
 the host name that is supplied with the service should do just fine. In fact, connecting by 
@@ -94,7 +108,7 @@ final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.a
 
 Each discovered service will now have a list of IP addresses attached to it.
 
-### Discover all services on local network (regardless of type)
+### Discover All Services of All Types on Local Network
 
 The current way to do this would be:
 
@@ -104,7 +118,7 @@ The current way to do this would be:
 
 Start the discovery like this:
 
-```Dart
+```dart
 final discovery = await startDiscovery('_services._dns-sd._udp', autoResolve: false);
 ```
 
@@ -123,11 +137,11 @@ Even though using a service structure to represent a service type feels like a h
 consistent on Android / macOS / iOS platform APIs. Since they are all doing it, 
 the plugin has the same behavior.
 
-### Enable debug logging
+### Enable Debug Logging
 
 In order to help debugging, logging can be enabled for individual topics. For example
 
-```Dart
+```dart
 enableLogging(LogTopic.calls);
 ```
 
