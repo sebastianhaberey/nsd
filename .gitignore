@@ -110,3 +110,22 @@ pubspec.lock
 !**/macos/**/default.mode2v3
 !**/macos/**/default.pbxuser
 !**/macos/**/default.perspectivev3
+
+# see https://github.com/flutter/plugins/blob/main/packages/url_launcher/url_launcher_windows/windows/.gitignore
+**/windows/**/flutter/
+
+# Visual Studio user-specific files.
+**/windows/**/*.suo
+**/windows/**/*.user
+**/windows/**/*.userosscache
+**/windows/**/*.sln.docstates
+
+# Visual Studio build-related files.
+**/windows/**/x64/
+**/windows/**/x86/
+
+# Visual Studio cache files
+# files ending in .cache can be ignored
+**/windows/**/*.[Cc]ache
+# but keep track of directories ending in .cache
+**/windows/**/*.[Cc]ache/
