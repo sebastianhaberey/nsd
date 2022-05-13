@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
   # production
-  nsd_android: ^1.2.0
+  nsd_android: ^1.2.1
   nsd_ios: ^1.0.3
   nsd_macos: ^1.0.3
   nsd_platform_interface: ^1.4.1
