@@ -32,3 +32,7 @@
 
 * proper error if wifi multicast permission is missing
 * updated dependencies (kotlin / gradle)
+
+## 1.2.1
+
+* issue #17: synchronized plugin compile sdk version with current flutter compile sdk version

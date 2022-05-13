@@ -81,3 +81,7 @@
 * more unit tests for error handling
 * added minimum os requirements to readme
 * ci: updated flutter version to 3.0.0
+
+## 1.5.2
+
+* issue #17: synchronized plugin compile sdk version with current flutter compile sdk version
