@@ -119,13 +119,16 @@ pubspec.lock
 **/windows/**/*.user
 **/windows/**/*.userosscache
 **/windows/**/*.sln.docstates
+**/windows/**/.vs/
 
 # Visual Studio build-related files.
 **/windows/**/x64/
 **/windows/**/x86/
+**/windows/**/out/
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
 **/windows/**/*.[Cc]ache
 # but keep track of directories ending in .cache
 **/windows/**/*.[Cc]ache/
+
