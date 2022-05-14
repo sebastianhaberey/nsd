@@ -8,52 +8,115 @@
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
-#include <flutter/standard_method_codec.h>
+
+#include "nsd_error.h"
+#include "serialization.h"
 
 #include <memory>
 #include <sstream>
+#include <iostream>
 
 namespace nsd_windows {
 
-// static
-void NsdWindowsPlugin::RegisterWithRegistrar(
-    flutter::PluginRegistrarWindows *registrar) {
-  auto channel =
-      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "nsd_windows",
-          &flutter::StandardMethodCodec::GetInstance());
+	std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> NsdWindowsPlugin::methodChannel;
 
-  auto plugin = std::make_unique<NsdWindowsPlugin>();
+	// static
+	void NsdWindowsPlugin::RegisterWithRegistrar(
+		flutter::PluginRegistrarWindows* registrar) {
+		auto methodChannel =
+			std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+				registrar->messenger(), "com.haberey/nsd",
+				&flutter::StandardMethodCodec::GetInstance());
 
-  channel->SetMethodCallHandler(
-      [plugin_pointer = plugin.get()](const auto &call, auto result) {
-        plugin_pointer->HandleMethodCall(call, std::move(result));
-      });
+		auto nsdWindowsPlugin = std::make_unique<NsdWindowsPlugin>(std::move(methodChannel));
+		registrar->AddPlugin(std::move(nsdWindowsPlugin));
+	}
 
-  registrar->AddPlugin(std::move(plugin));
-}
+	NsdWindowsPlugin::NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) {
+		this->methodChannel = std::move(methodChannel);
+		this->methodChannel->SetMethodCallHandler(
+			[plugin = this](const auto& call, auto result) { plugin->HandleMethodCall(call, std::move(result));
+			});
+	}
 
-NsdWindowsPlugin::NsdWindowsPlugin() {}
+	NsdWindowsPlugin::~NsdWindowsPlugin() {}
 
-NsdWindowsPlugin::~NsdWindowsPlugin() {}
+	void NsdWindowsPlugin::HandleMethodCall(
+		const flutter::MethodCall<flutter::EncodableValue>& methodCall,
+		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
 
-void NsdWindowsPlugin::HandleMethodCall(
-    const flutter::MethodCall<flutter::EncodableValue> &method_call,
-    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
-    }
-    result->Success(flutter::EncodableValue(version_stream.str()));
-  } else {
-    result->NotImplemented();
-  }
-}
+		const auto& method_name = methodCall.method_name();
+
+		try {
+			const flutter::EncodableMap& arguments =
+				std::get<flutter::EncodableMap>(*methodCall.arguments());
+
+			if (method_name == "startDiscovery") {
+				StartDiscovery(arguments, result);
+			}
+			else if (method_name == "stopDiscovery") {
+				StopDiscovery(arguments, result);
+			}
+			else if (method_name == "register") {
+				Register(arguments, result);
+			}
+			else if (method_name == "resolve") {
+				Resolve(arguments, result);
+			}
+			else if (method_name == "unregister") {
+				Unregister(arguments, result);
+			}
+			else {
+				result->NotImplemented();
+			}
+		}
+		catch (std::exception e) {
+			result->Error(toErrorCode(ILLEGAL_ARGUMENT), e.what());
+		}
+	}
+
+	void NsdWindowsPlugin::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		std::optional<std::string> handle = deserializeHandle(arguments);
+		if (!handle.has_value()) {
+			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Handle cannot be null");
+		}
+
+		std::optional<std::string> serviceType = deserializeServiceType(arguments);
+		if (!serviceType.has_value()) {
+			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Service type cannot be null");
+		}
+
+		std::cout << "HANDLE: " << handle.value() << std::endl;
+		std::cout << "SERVICE TYPE: " << serviceType.value() << std::endl;
+		result->Success();
+	}
+
+	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		std::optional<std::string> handle = deserializeHandle(arguments);
+		if (!handle.has_value()) {
+			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Handle cannot be null");
+		}
+
+		std::cout << "HANDLE: " << handle.value() << std::endl;
+
+		result->Success();
+	}
+
+	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		result->Success();
+	}
+
+	void NsdWindowsPlugin::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		result->Success();
+	}
+
+	void NsdWindowsPlugin::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		result->Success();
+	}
 
 }  // namespace nsd_windows
