@@ -87,7 +87,7 @@ and register multiple services. It will discover its own services but also other
 
 - Android: API level 21 (Android 5.0)
 - iOS: 12.0
-- macOS: 10.1
+- macOS: 10.11 (El Capitan)
 
 <br></br>
 
@@ -142,7 +142,8 @@ the plugin has the same behavior.
 In order to help debugging, logging can be enabled for individual topics. For example
 
 ```dart
+enableLogging(LogTopic.errors);
 enableLogging(LogTopic.calls);
 ```
 
-will log all calls to the native side (and their callbacks), which often yields useful information.
+will log errors and all calls to the native side (and their callbacks), which often yields useful information.

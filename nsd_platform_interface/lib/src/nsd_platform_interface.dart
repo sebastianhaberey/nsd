@@ -168,7 +168,7 @@ enum LogTopic {
   /// Logs calls to the native side and callbacks to the platform side.
   calls,
 
-  /// Logs errors (enabled by default).
+  /// Logs errors.
   errors
 }
 
