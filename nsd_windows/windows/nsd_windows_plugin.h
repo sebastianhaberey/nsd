@@ -8,9 +8,14 @@
 #include <flutter/standard_method_codec.h>
 
 #include <memory>
+#include <windns.h>
+
+#pragma comment(lib, "dnsapi.lib")
 
 
 namespace nsd_windows {
+
+	struct BrowseContext;
 
 	class NsdWindowsPlugin : public flutter::Plugin {
 	public:
@@ -23,10 +28,12 @@ namespace nsd_windows {
 		NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
 		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
 
+		void OnStartDiscoveryFinished(const std::string& handle, const DWORD status, DNS_RECORD* records);
+
 	private:
 
-		static std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
-			methodChannel;
+		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
+		std::map<std::string, std::unique_ptr<BrowseContext>> browseContextMap;
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -37,6 +44,19 @@ namespace nsd_windows {
 		void Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+
+	};
+
+	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records);
+
+	struct BrowseContext {
+
+		BrowseContext(NsdWindowsPlugin* const plugin, std::string& handle);
+		virtual ~BrowseContext();
+
+		NsdWindowsPlugin* const plugin;
+		const std::string handle;
+		DNS_SERVICE_CANCEL canceller;
 	};
 
 }  // namespace nsd_windows

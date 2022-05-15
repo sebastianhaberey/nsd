@@ -2,7 +2,7 @@
 
 namespace nsd_windows {
 
-	std::string toErrorCode(const ErrorCause errorCause)
+	std::string ToErrorCode(const ErrorCause errorCause)
 	{
 		switch (errorCause) {
 		case ILLEGAL_ARGUMENT:
@@ -15,9 +15,17 @@ namespace nsd_windows {
 			return "maxLimit";
 
 		case INTERNAL_ERROR:
+		default:
 			return "internalError";
-
 		}
+	}
+
+	NsdError::NsdError(ErrorCause errorCause, std::string message) : std::runtime_error(message), errorCause(errorCause)
+	{
+	}
+
+	NsdError::~NsdError()
+	{
 	}
 }
 

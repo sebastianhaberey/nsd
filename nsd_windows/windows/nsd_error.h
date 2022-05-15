@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
 namespace nsd_windows {
@@ -12,5 +13,13 @@ namespace nsd_windows {
 		INTERNAL_ERROR,
 	};
 
-	std::string toErrorCode(const ErrorCause errorCause);
+	std::string ToErrorCode(const ErrorCause errorCause);
+
+	class NsdError : public std::runtime_error {
+	public:
+		const ErrorCause errorCause;
+		NsdError(ErrorCause errorCause, std::string message);
+		virtual ~NsdError();
+
+	};
 }

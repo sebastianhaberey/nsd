@@ -10,15 +10,13 @@
 #include <flutter/plugin_registrar_windows.h>
 
 #include "nsd_error.h"
-#include "serialization.h"
+#include "utilities.h"
 
 #include <memory>
 #include <sstream>
 #include <iostream>
 
 namespace nsd_windows {
-
-	std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> NsdWindowsPlugin::methodChannel;
 
 	// static
 	void NsdWindowsPlugin::RegisterWithRegistrar(
@@ -70,33 +68,45 @@ namespace nsd_windows {
 				result->NotImplemented();
 			}
 		}
+		catch (NsdError e) {
+			result->Error(ToErrorCode(e.errorCause), e.what());
+		}
 		catch (std::exception e) {
-			result->Error(toErrorCode(ILLEGAL_ARGUMENT), e.what());
+			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), e.what());
 		}
 	}
 
 	void NsdWindowsPlugin::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		std::optional<std::string> handle = deserializeHandle(arguments);
-		if (!handle.has_value()) {
-			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Handle cannot be null");
+		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
+		auto serviceType = UnwrapOrThrow(DeserializeServiceType(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service type cannot be null");
+		auto serviceTypeW = ToUtf16(serviceType);
+		auto browseContext = std::make_unique<BrowseContext>(this, handle);
+
+		DNS_SERVICE_BROWSE_REQUEST request = {
+			.Version = DNS_QUERY_REQUEST_VERSION1,
+			.QueryName = serviceTypeW.c_str(),
+			.pBrowseCallback = &DnsServiceBrowseCallback,
+			.pQueryContext = browseContext.get(),
+		};
+
+		DNS_STATUS status = DnsServiceBrowse(&request, &browseContext->canceller);
+
+		if (status != DNS_REQUEST_PENDING) {
+			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetLastErrorMessage());
+			return;
 		}
 
-		std::optional<std::string> serviceType = deserializeServiceType(arguments);
-		if (!serviceType.has_value()) {
-			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Service type cannot be null");
-		}
-
-		std::cout << "HANDLE: " << handle.value() << std::endl;
-		std::cout << "SERVICE TYPE: " << serviceType.value() << std::endl;
+		browseContextMap[handle] = std::move(browseContext);
+		methodChannel->InvokeMethod("onDiscoveryStartSuccessful", Serialize({ SerializeHandle(handle) }));
 		result->Success();
 	}
 
 	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		std::optional<std::string> handle = deserializeHandle(arguments);
+		std::optional<std::string> handle = DeserializeHandle(arguments);
 		if (!handle.has_value()) {
-			result->Error(toErrorCode(ILLEGAL_ARGUMENT), "Handle cannot be null");
+			result->Error(ToErrorCode(ErrorCause::ILLEGAL_ARGUMENT), "Handle cannot be null");
 		}
 
 		std::cout << "HANDLE: " << handle.value() << std::endl;
@@ -117,6 +127,25 @@ namespace nsd_windows {
 	void NsdWindowsPlugin::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		result->Success();
+	}
+
+	void NsdWindowsPlugin::OnStartDiscoveryFinished(const std::string& handle, const DWORD status, DNS_RECORD* records)
+	{
+		std::cout << "FOUND" << std::endl;
+	}
+
+	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records)
+	{
+		BrowseContext& callbackContext = *static_cast<BrowseContext*>(context);
+		callbackContext.plugin->OnStartDiscoveryFinished(callbackContext.handle, status, records);
+	}
+
+	BrowseContext::BrowseContext(NsdWindowsPlugin* const plugin, std::string& handle) : plugin(plugin), handle(handle), canceller()
+	{
+	}
+
+	BrowseContext::~BrowseContext()
+	{
 	}
 
 }  // namespace nsd_windows
