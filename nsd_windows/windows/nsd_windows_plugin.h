@@ -29,11 +29,13 @@ namespace nsd_windows {
 		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
 
 		void OnServiceDiscovered(const std::string& handle, const DWORD status, DNS_RECORD* records);
+		void OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
 
 	private:
 
 		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
-		std::map<std::string, std::unique_ptr<BrowseContext>> browseContextMap;
+		std::map<std::string, std::unique_ptr<BrowseContext>> discoveryContextMap;
+		std::map<std::string, std::unique_ptr<BrowseContext>> registerContextMap;
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -48,6 +50,7 @@ namespace nsd_windows {
 	};
 
 	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records);
+	void DnsServiceRegisterCallback(const DWORD status, void* context, PDNS_SERVICE_INSTANCE pInstance);
 
 	struct BrowseContext {
 

@@ -12,9 +12,10 @@
 #include "nsd_error.h"
 #include "utilities.h"
 
+#include <iostream>
 #include <memory>
 #include <sstream>
-#include <iostream>
+#include <vector>
 
 namespace nsd_windows {
 
@@ -81,23 +82,23 @@ namespace nsd_windows {
 		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
 		auto serviceType = UnwrapOrThrow(DeserializeServiceType(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service type cannot be null");
 		auto serviceTypeW = ToUtf16(serviceType);
-		auto browseContext = std::make_unique<BrowseContext>(this, handle);
+		auto context = std::make_unique<BrowseContext>(this, handle);
 
 		DNS_SERVICE_BROWSE_REQUEST request = {
 			.Version = DNS_QUERY_REQUEST_VERSION1,
 			.QueryName = serviceTypeW.c_str(),
 			.pBrowseCallback = &DnsServiceBrowseCallback,
-			.pQueryContext = browseContext.get(),
+			.pQueryContext = context.get(),
 		};
 
-		auto status = DnsServiceBrowse(&request, &browseContext->canceller);
+		auto status = DnsServiceBrowse(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetLastErrorMessage());
 			return;
 		}
 
-		browseContextMap[handle] = std::move(browseContext);
+		discoveryContextMap[handle] = std::move(context);
 		methodChannel->InvokeMethod("onDiscoveryStartSuccessful", Serialize({ SerializeHandle(handle) }));
 		result->Success();
 	}
@@ -106,13 +107,14 @@ namespace nsd_windows {
 	{
 		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
 
-		auto it = browseContextMap.find(handle);
-		if (it == browseContextMap.end()) {
+		auto it = discoveryContextMap.find(handle);
+		if (it == discoveryContextMap.end()) {
 			result->Error(ToErrorCode(ErrorCause::ILLEGAL_ARGUMENT), "Unknown handle");
 			return;
 		}
 
 		auto status = DnsServiceBrowseCancel(&it->second.get()->canceller);
+		discoveryContextMap.erase(handle);
 
 		if (status != ERROR_SUCCESS) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetLastErrorMessage());
@@ -124,6 +126,49 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
+		auto serviceName = UnwrapOrThrow(DeserializeServiceName(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service name cannot be null");
+		auto serviceType = UnwrapOrThrow(DeserializeServiceType(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service type cannot be null");
+		auto servicePort = UnwrapOrThrow(DeserializeServicePort(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service port cannot be null");
+
+		auto serviceNameW = ToUtf16(serviceName) + L"." + ToUtf16(serviceType) + L".local";
+		std::wstring hostNameW(L"localhost");
+
+		PDNS_SERVICE_INSTANCE pServiceInstance = DnsServiceConstructInstance(
+			serviceNameW.c_str(), // PCWSTR pServiceName
+			hostNameW.c_str(), // PCWSTR pHostName
+			nullptr, // PIP4_ADDRESS pIp4 (optional)
+			nullptr, // PIP6_ADDRESS pIp6 (optional)
+			static_cast<WORD>(servicePort), // WORD wPort
+			0, // WORD wPriority
+			0, // WORD wWeight
+			0, // DWORD dwPropertiesCount
+			nullptr, // PCWSTR* keys
+			nullptr // PCWSTR* values
+		);
+
+		auto context = std::make_unique<BrowseContext>(this, handle);
+
+		DNS_SERVICE_REGISTER_REQUEST request = {
+			.Version = DNS_QUERY_REQUEST_VERSION1,
+			.InterfaceIndex = 0,
+			.pServiceInstance = pServiceInstance,
+			.pRegisterCompletionCallback = &DnsServiceRegisterCallback,
+			.pQueryContext = context.get(),
+			.unicastEnabled = false,
+		};
+
+		auto status = DnsServiceRegister(&request, &context->canceller);
+		DnsServiceFreeInstance(pServiceInstance);
+
+		if (status != DNS_REQUEST_PENDING) {
+			// apparently DnsServiceRegister doesn't always set the correct error code,
+			// e.g. returns ERROR_INVALID_PARAMETER but GetLastError() returns 0
+			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetErrorMessage(status));
+			return;
+		}
+
+		registerContextMap[handle] = std::move(context);
 		result->Success();
 	}
 
@@ -149,9 +194,9 @@ namespace nsd_windows {
 				continue;
 			}
 
-			auto name = ToUtf8(record->pName); // Name: "_http._tcp.local"
+			auto name = ToUtf8(record->pName); // "_http._tcp.local"
 			auto serviceType = name.substr(0, name.rfind('.'));
-			auto serviceName = ToUtf8(record->Data.PTR.pNameHost); // NameHost: "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+			auto serviceName = ToUtf8(record->Data.PTR.pNameHost); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
 
 			methodChannel->InvokeMethod("onServiceDiscovered", Serialize({
 					SerializeHandle(handle),
@@ -163,10 +208,34 @@ namespace nsd_windows {
 		}
 	}
 
+	void NsdWindowsPlugin::OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+
+		auto serviceName = components.at(0);
+		auto serviceType = components.at(1) + "." + components.at(2);
+		auto servicePort = pInstance->wPort;
+		auto serviceHost = ToUtf8(pInstance->pszHostName);
+
+		methodChannel->InvokeMethod("onRegistrationSuccessful", Serialize({
+				SerializeHandle(handle),
+				SerializeServiceType(serviceType),
+				SerializeServiceName(serviceName),
+				SerializeServicePort(servicePort),
+				SerializeServiceHost(serviceHost),
+			}));
+	}
+
 	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records)
 	{
 		BrowseContext& browseContext = *static_cast<BrowseContext*>(context);
 		browseContext.plugin->OnServiceDiscovered(browseContext.handle, status, records);
+	}
+
+	void DnsServiceRegisterCallback(const DWORD status, void* context, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		BrowseContext& browseContext = *static_cast<BrowseContext*>(context);
+		browseContext.plugin->OnServiceRegistered(browseContext.handle, status, pInstance);
 	}
 
 	BrowseContext::BrowseContext(NsdWindowsPlugin* const plugin, std::string& handle) : plugin(plugin), handle(handle), canceller()

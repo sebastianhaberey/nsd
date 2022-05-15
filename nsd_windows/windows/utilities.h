@@ -2,10 +2,13 @@
 
 #include <flutter/standard_method_codec.h>
 
+#include <windows.h>
+
 #include <functional>
 #include <optional>
 #include <stdexcept>
 #include <variant>
+#include <vector>
 #include <map>
 
 #include "nsd_error.h"
@@ -33,13 +36,20 @@ namespace nsd_windows {
 
 	std::optional<std::string> DeserializeHandle(const flutter::EncodableMap& arguments);
 	std::optional<std::string> DeserializeServiceType(const flutter::EncodableMap& arguments);
+	std::optional<std::string> DeserializeServiceName(const flutter::EncodableMap& arguments);
+	std::optional<int> DeserializeServicePort(const flutter::EncodableMap& arguments);
+	std::optional<std::string> DeserializeServiceHost(const flutter::EncodableMap& arguments);
 
 	std::unique_ptr<flutter::EncodableValue> Serialize(flutter::EncodableMap values);
 	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeHandle(std::string handle);
 	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceType(std::string serviceType);
 	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceName(std::string serviceName);
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceHost(std::string serviceHost);
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServicePort(int servicePort);
 
 	std::wstring ToUtf16(const std::string& string);
 	std::string ToUtf8(const std::wstring& wide_string);
+	std::string GetErrorMessage(DWORD messageId);
 	std::string GetLastErrorMessage();
+	std::vector<std::string> Split(std::string text, const char delimiter);
 }

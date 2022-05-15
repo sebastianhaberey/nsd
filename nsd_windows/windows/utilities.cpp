@@ -1,11 +1,10 @@
 #include "utilities.h"
 
-#include <windows.h>
-
 #include <codecvt>
+#include <iostream>
 #include <stringapiset.h>
 #include <strsafe.h>
-
+#include <sstream>
 
 namespace nsd_windows {
 
@@ -19,6 +18,21 @@ namespace nsd_windows {
 		return Deserialize<std::string>(arguments, "service.type");
 	}
 
+	std::optional<std::string> DeserializeServiceName(const flutter::EncodableMap& arguments)
+	{
+		return Deserialize<std::string>(arguments, "service.name");
+	}
+
+	std::optional<std::string> DeserializeServiceHost(const flutter::EncodableMap& arguments)
+	{
+		return Deserialize<std::string>(arguments, "service.host");
+	}
+
+	std::optional<int> DeserializeServicePort(const flutter::EncodableMap& arguments)
+	{
+		return Deserialize<int>(arguments, "service.port");
+	}
+
 	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeHandle(std::string handle) {
 		return { "handle", handle };
 	}
@@ -29,6 +43,14 @@ namespace nsd_windows {
 
 	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceName(std::string serviceName) {
 		return { "service.name", serviceName };
+	}
+
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceHost(std::string serviceHost) {
+		return { "service.host", serviceHost };
+	}
+
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServicePort(int servicePort) {
+		return { "service.port", servicePort };
 	}
 
 	std::unique_ptr<flutter::EncodableValue> Serialize(flutter::EncodableMap values) {
@@ -77,27 +99,42 @@ namespace nsd_windows {
 		return result;
 	}
 
-	std::string GetLastErrorMessage()
+	std::string GetErrorMessage(DWORD messageId)
 	{
-		// Retrieve the system error message for the last-error code
+		// see https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
 
-		LPVOID lpMsgBuf;
-		DWORD dw = GetLastError();
+		LPVOID pBuffer = nullptr;
 
 		FormatMessage(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER |
 			FORMAT_MESSAGE_FROM_SYSTEM |
 			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			dw,
+			nullptr,
+			messageId,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&lpMsgBuf,
-			0, NULL);
+			(LPTSTR)&pBuffer,
+			0,
+			nullptr
+		);
 
+		std::string message = ToUtf8((LPTSTR)pBuffer);
 
-		std::string message = ToUtf8((LPTSTR)lpMsgBuf);
-
-		LocalFree(lpMsgBuf);
+		LocalFree(pBuffer);
 		return message;
+	}
+
+	std::string GetLastErrorMessage()
+	{
+		return GetErrorMessage(GetLastError());
+	}
+
+	std::vector<std::string> Split(std::string text, const char delimiter) {
+		std::vector<std::string> strings;
+		std::istringstream f(text);
+		std::string s;
+		while (std::getline(f, s, delimiter)) {
+			strings.push_back(s);
+		}
+		return strings;
 	}
 }
