@@ -23,6 +23,14 @@ namespace nsd_windows {
 		return { "handle", handle };
 	}
 
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceType(std::string serviceType) {
+		return { "service.type", serviceType };
+	}
+
+	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceName(std::string serviceName) {
+		return { "service.name", serviceName };
+	}
+
 	std::unique_ptr<flutter::EncodableValue> Serialize(flutter::EncodableMap values) {
 		return std::move(std::make_unique<flutter::EncodableValue>(values));
 	}

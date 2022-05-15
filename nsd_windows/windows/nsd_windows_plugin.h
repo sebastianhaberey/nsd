@@ -28,7 +28,7 @@ namespace nsd_windows {
 		NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
 		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
 
-		void OnStartDiscoveryFinished(const std::string& handle, const DWORD status, DNS_RECORD* records);
+		void OnServiceDiscovered(const std::string& handle, const DWORD status, DNS_RECORD* records);
 
 	private:
 

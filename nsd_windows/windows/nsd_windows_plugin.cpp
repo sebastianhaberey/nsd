@@ -90,7 +90,7 @@ namespace nsd_windows {
 			.pQueryContext = browseContext.get(),
 		};
 
-		DNS_STATUS status = DnsServiceBrowse(&request, &browseContext->canceller);
+		auto status = DnsServiceBrowse(&request, &browseContext->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetLastErrorMessage());
@@ -104,12 +104,20 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		std::optional<std::string> handle = DeserializeHandle(arguments);
-		if (!handle.has_value()) {
-			result->Error(ToErrorCode(ErrorCause::ILLEGAL_ARGUMENT), "Handle cannot be null");
+		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
+
+		auto it = browseContextMap.find(handle);
+		if (it == browseContextMap.end()) {
+			result->Error(ToErrorCode(ErrorCause::ILLEGAL_ARGUMENT), "Unknown handle");
+			return;
 		}
 
-		std::cout << "HANDLE: " << handle.value() << std::endl;
+		auto status = DnsServiceBrowseCancel(&it->second.get()->canceller);
+
+		if (status != ERROR_SUCCESS) {
+			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetLastErrorMessage());
+			return;
+		}
 
 		result->Success();
 	}
@@ -129,15 +137,36 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::OnStartDiscoveryFinished(const std::string& handle, const DWORD status, DNS_RECORD* records)
+	void NsdWindowsPlugin::OnServiceDiscovered(const std::string& handle, const DWORD status, DNS_RECORD* records)
 	{
-		std::cout << "FOUND" << std::endl;
+		if (status != ERROR_SUCCESS) {
+			return;
+		}
+
+		for (auto record = records; record; record = record->pNext) {
+
+			if (record->wType != DNS_TYPE_PTR) {
+				continue;
+			}
+
+			auto name = ToUtf8(record->pName); // Name: "_http._tcp.local"
+			auto serviceType = name.substr(0, name.rfind('.'));
+			auto serviceName = ToUtf8(record->Data.PTR.pNameHost); // NameHost: "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+
+			methodChannel->InvokeMethod("onServiceDiscovered", Serialize({
+					SerializeHandle(handle),
+					SerializeServiceType(serviceType),
+					SerializeServiceName(serviceName),
+				}));
+
+			// TODO TXT
+		}
 	}
 
 	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records)
 	{
-		BrowseContext& callbackContext = *static_cast<BrowseContext*>(context);
-		callbackContext.plugin->OnStartDiscoveryFinished(callbackContext.handle, status, records);
+		BrowseContext& browseContext = *static_cast<BrowseContext*>(context);
+		browseContext.plugin->OnServiceDiscovered(browseContext.handle, status, records);
 	}
 
 	BrowseContext::BrowseContext(NsdWindowsPlugin* const plugin, std::string& handle) : plugin(plugin), handle(handle), canceller()
