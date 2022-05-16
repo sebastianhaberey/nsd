@@ -1,21 +1,21 @@
-#ifndef FLUTTER_PLUGIN_NSD_WINDOWS_PLUGIN_H_
-#define FLUTTER_PLUGIN_NSD_WINDOWS_PLUGIN_H_
-
-#pragma warning(disable : 4458) // declaration hides class member (used 
+#pragma once
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-#include <memory>
 #include <windns.h>
 
+#include <memory>
+
+#pragma warning(disable : 4458) // declaration hides class member (used intentionally in method parameters vs local variables)
 #pragma comment(lib, "dnsapi.lib")
 
 
 namespace nsd_windows {
 
 	struct BrowseContext;
+	struct RegisterContext;
 
 	class NsdWindowsPlugin : public flutter::Plugin {
 	public:
@@ -35,7 +35,7 @@ namespace nsd_windows {
 
 		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
 		std::map<std::string, std::unique_ptr<BrowseContext>> discoveryContextMap;
-		std::map<std::string, std::unique_ptr<BrowseContext>> registerContextMap;
+		std::map<std::string, std::unique_ptr<RegisterContext>> registerContextMap;
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -49,19 +49,31 @@ namespace nsd_windows {
 
 	};
 
-	void DnsServiceBrowseCallback(const DWORD status, void* context, DNS_RECORD* records);
-	void DnsServiceRegisterCallback(const DWORD status, void* context, PDNS_SERVICE_INSTANCE pInstance);
+
+	void DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records);
+	void DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
+
 
 	struct BrowseContext {
 
-		BrowseContext(NsdWindowsPlugin* const plugin, std::string& handle);
-		virtual ~BrowseContext();
-
-		NsdWindowsPlugin* const plugin;
-		const std::string handle;
+		NsdWindowsPlugin* plugin;
+		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
+		std::wstring serviceType;
+		DNS_SERVICE_BROWSE_REQUEST request;
 	};
 
-}  // namespace nsd_windows
 
-#endif  // FLUTTER_PLUGIN_NSD_WINDOWS_PLUGIN_H_
+	struct RegisterContext {
+
+		NsdWindowsPlugin* plugin;
+		std::string handle;
+		std::wstring serviceName;
+		std::wstring hostName;
+		DNS_SERVICE_CANCEL canceller;
+		DNS_SERVICE_REGISTER_REQUEST request;
+	};
+
+
+
+}  // namespace nsd_windows

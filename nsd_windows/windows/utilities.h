@@ -1,17 +1,18 @@
 #pragma once
 
+#include "nsd_error.h"
+
 #include <flutter/standard_method_codec.h>
 
 #include <windows.h>
 
 #include <functional>
+#include <iostream>
 #include <optional>
+#include <map>
 #include <stdexcept>
 #include <variant>
 #include <vector>
-#include <map>
-
-#include "nsd_error.h"
 
 namespace nsd_windows {
 
@@ -52,4 +53,5 @@ namespace nsd_windows {
 	std::string GetErrorMessage(DWORD messageId);
 	std::string GetLastErrorMessage();
 	std::vector<std::string> Split(std::string text, const char delimiter);
+	std::string GetTimeNow();
 }

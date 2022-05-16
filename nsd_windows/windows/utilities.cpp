@@ -1,6 +1,9 @@
 #include "utilities.h"
 
 #include <codecvt>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <stringapiset.h>
 #include <strsafe.h>
@@ -136,5 +139,12 @@ namespace nsd_windows {
 			strings.push_back(s);
 		}
 		return strings;
+	}
+
+	std::string GetTimeNow() {
+		std::time_t const now_c = std::time(nullptr);
+		std::stringstream stringstream;
+		stringstream << std::put_time(std::localtime(&now_c), "%F %T");
+		return stringstream.str();
 	}
 }
