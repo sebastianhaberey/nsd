@@ -134,6 +134,8 @@ namespace nsd_windows {
 		context->serviceName = ToUtf16(serviceName) + L"." + ToUtf16(serviceType) + L".local";  // TODO this is only here so it doesn't get destroyed
 		context->hostName = L"localhost"; // TODO this is only here so it doesn't get destroyed
 
+		// see https://docs.microsoft.com/en-us/windows/win32/api/windns/nf-windns-dnsserviceconstructinstance
+
 		PDNS_SERVICE_INSTANCE pServiceInstance = DnsServiceConstructInstance(
 			context->serviceName.c_str(), // PCWSTR pServiceName
 			context->hostName.c_str(), // PCWSTR pHostName
@@ -191,25 +193,31 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::OnServiceDiscovered(const std::string& handle, const DWORD status, DNS_RECORD* records)
+	void NsdWindowsPlugin::OnServiceDiscovered(const std::string& handle, const DWORD status, PDNS_RECORD records)
 	{
 		std::cout << GetTimeNow() << " " << "OnServiceDiscovered()" << std::endl;
 
 		if (status != ERROR_SUCCESS) {
 			std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): ERROR: " << GetErrorMessage(status) << std::endl;
+			DnsRecordListFree(records, DnsFreeRecordList);
 			return;
 		}
 
 		for (auto record = records; record; record = record->pNext) {
 
 			if (record->wType != DNS_TYPE_PTR) {
+				// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
+				std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): skipping record type 0x" << std::hex << record->wType << std::endl;
 				continue;
 			}
+
+			// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
 
 			auto name = ToUtf8(record->pName); // "_http._tcp.local"
 			auto serviceType = name.substr(0, name.rfind('.'));
 			auto serviceName = ToUtf8(record->Data.PTR.pNameHost); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
-			std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): processing record for " << serviceName << std::endl;
+			std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): processing record for " 
+				<< serviceName << ", flags: " << std::hex << record->Flags.DW << ", TTL: " << record->dwTtl << std::endl;
 
 			methodChannel->InvokeMethod("onServiceDiscovered", Serialize({
 					SerializeHandle(handle),
@@ -219,6 +227,9 @@ namespace nsd_windows {
 
 			// TODO TXT
 		}
+
+		// must be deleted as described here: https://docs.microsoft.com/en-us/windows/win32/api/windns/nc-windns-dns_service_browse_callback
+		DnsRecordListFree(records, DnsFreeRecordList);
 	}
 
 	void NsdWindowsPlugin::OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)

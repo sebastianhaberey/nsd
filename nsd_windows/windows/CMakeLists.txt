@@ -14,8 +14,12 @@ set(PLUGIN_NAME "nsd_windows_plugin")
 
 # Any new source files that you add to the plugin should be added here.
 list(APPEND PLUGIN_SOURCES
-  "nsd_windows_plugin.cpp"
   "nsd_windows_plugin.h"
+  "nsd_windows_plugin.cpp"
+  "nsd_error.h"
+  "nsd_error.cpp"
+  "utilities.h"
+  "utilities.cpp"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment
