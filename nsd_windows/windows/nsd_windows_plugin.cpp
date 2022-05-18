@@ -75,10 +75,10 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
-		auto serviceType = UnwrapOrThrow(DeserializeServiceType(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service type cannot be null");
+		auto handle = Deserialize<std::string>(arguments, "handle");
+		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
-		auto context = std::make_unique<BrowseContext>();
+		auto context = std::make_unique<DiscoveryContext>();
 		context->plugin = this;
 		context->handle = handle;
 		context->serviceType = ToUtf16(serviceType) + L".local";
@@ -96,13 +96,13 @@ namespace nsd_windows {
 		}
 
 		discoveryContextMap[handle] = std::move(context);
-		methodChannel->InvokeMethod("onDiscoveryStartSuccessful", Serialize({ SerializeHandle(handle) }));
+		methodChannel->InvokeMethod("onDiscoveryStartSuccessful", CreateMethodResult({ { "handle", handle } }));
 		result->Success();
 	}
 
 	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
+		auto handle = Deserialize<std::string>(arguments, "handle");
 
 		auto it = discoveryContextMap.find(handle);
 		if (it == discoveryContextMap.end()) {
@@ -123,16 +123,18 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
-		auto serviceName = UnwrapOrThrow(DeserializeServiceName(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service name cannot be null");
-		auto serviceType = UnwrapOrThrow(DeserializeServiceType(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service type cannot be null");
-		auto servicePort = UnwrapOrThrow(DeserializeServicePort(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Service port cannot be null");
+		auto handle = Deserialize<std::string>(arguments, "handle");
+		auto serviceName = Deserialize<std::string>(arguments, "service.name");
+		auto serviceType = Deserialize<std::string>(arguments, "service.type");
+		auto servicePort = Deserialize<int>(arguments, "service.port");
+
+		auto computerName = GetComputerName();
 
 		auto context = std::make_unique<RegisterContext>();
 		context->plugin = this;
 		context->handle = handle;
 		context->serviceName = ToUtf16(serviceName) + L"." + ToUtf16(serviceType) + L".local";  // TODO this is only here so it doesn't get destroyed
-		context->hostName = L"localhost"; // TODO this is only here so it doesn't get destroyed
+		context->hostName = computerName + L".local"; // TODO this is only here so it doesn't get destroyed
 
 		// see https://docs.microsoft.com/en-us/windows/win32/api/windns/nf-windns-dnsserviceconstructinstance
 
@@ -151,6 +153,8 @@ namespace nsd_windows {
 
 		// TODO TXT
 
+		context->pRequestInstance = pServiceInstance;
+
 		context->request.Version = DNS_QUERY_REQUEST_VERSION1;
 		context->request.InterfaceIndex = 0;
 		context->request.pServiceInstance = pServiceInstance;
@@ -161,7 +165,7 @@ namespace nsd_windows {
 		auto status = DnsServiceRegister(&context->request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
-			// apparently DnsServiceRegister doesn't always set the correct error code,
+			// apparently DnsServiceRegister doesn't call SetLastError() as mentioned in the documentation,
 			// e.g. returns ERROR_INVALID_PARAMETER but GetLastError() returns 0
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetErrorMessage(status));
 			DnsServiceFreeInstance(pServiceInstance);
@@ -179,11 +183,15 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = UnwrapOrThrow(DeserializeHandle(arguments), ErrorCause::ILLEGAL_ARGUMENT, "Handle cannot be null");
+		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto& context = registerContextMap.at(handle);
-		auto status = DnsServiceDeRegister(&context->request, nullptr);
+		auto& request = context->request;
 
-		DnsServiceFreeInstance(context->request.pServiceInstance);
+		request.pServiceInstance = context->pReceivedInstance; // received instance can be different, e.g. in case of name conflicts, use more recent instance to deregister
+		auto status = DnsServiceDeRegister(&request, nullptr);
+
+		DnsServiceFreeInstance(context->pRequestInstance);
+		DnsServiceFreeInstance(context->pReceivedInstance);
 
 		if (status != DNS_REQUEST_PENDING) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetErrorMessage(status));
@@ -203,29 +211,40 @@ namespace nsd_windows {
 			return;
 		}
 
-		for (auto record = records; record; record = record->pNext) {
+		auto serviceInfoOptional = GetServiceInfoFromRecords(records);
+		if (serviceInfoOptional.has_value()) {
 
-			if (record->wType != DNS_TYPE_PTR) {
-				// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
-				std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): skipping record type 0x" << std::hex << record->wType << std::endl;
-				continue;
+			ServiceInfo& serviceInfo = serviceInfoOptional.value();
+			std::vector<ServiceInfo>& services = discoveryContextMap.at(handle)->services;
+
+			auto it = FindIf(services, [compare = serviceInfo](ServiceInfo& current) -> bool {
+				return 
+					current.name == compare.name &&
+					current.type == compare.type;
+				});
+
+			if (serviceInfo.status == ServiceInfo::STATUS_FOUND) {
+
+				if (it == services.end()) {
+					services.push_back(serviceInfo);
+					methodChannel->InvokeMethod("onServiceDiscovered", CreateMethodResult({
+							{ "handle", handle },
+							{ "service.name", serviceInfo.name.value() },
+							{ "service.type", serviceInfo.type.value() }
+						}));
+				}
 			}
+			else {
 
-			// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
-
-			auto name = ToUtf8(record->pName); // "_http._tcp.local"
-			auto serviceType = name.substr(0, name.rfind('.'));
-			auto serviceName = ToUtf8(record->Data.PTR.pNameHost); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
-			std::cout << GetTimeNow() << " " << "OnServiceDiscovered(): processing record for " 
-				<< serviceName << ", flags: " << std::hex << record->Flags.DW << ", TTL: " << record->dwTtl << std::endl;
-
-			methodChannel->InvokeMethod("onServiceDiscovered", Serialize({
-					SerializeHandle(handle),
-					SerializeServiceType(serviceType),
-					SerializeServiceName(serviceName),
-				}));
-
-			// TODO TXT
+				if (it != services.end()) {
+					services.erase(it);
+					methodChannel->InvokeMethod("onServiceLost", CreateMethodResult({
+							{ "handle", handle },
+							{ "service.name", serviceInfo.name.value() },
+							{ "service.type", serviceInfo.type.value() }
+						}));
+				}
+			}
 		}
 
 		// must be deleted as described here: https://docs.microsoft.com/en-us/windows/win32/api/windns/nc-windns-dns_service_browse_callback
@@ -236,6 +255,7 @@ namespace nsd_windows {
 	{
 		if (status != ERROR_SUCCESS) {
 			std::cout << "OnServiceRegistered(): ERROR: " << GetErrorMessage(status) << std::endl;
+			DnsServiceFreeInstance(pInstance);
 			return;
 		}
 
@@ -246,25 +266,88 @@ namespace nsd_windows {
 		auto servicePort = pInstance->wPort;
 		auto serviceHost = ToUtf8(pInstance->pszHostName);
 
-		methodChannel->InvokeMethod("onRegistrationSuccessful", Serialize({
-				SerializeHandle(handle),
-				SerializeServiceType(serviceType),
-				SerializeServiceName(serviceName),
-				SerializeServicePort(servicePort),
-				SerializeServiceHost(serviceHost),
+		auto& context = registerContextMap.at(handle);
+
+		context->pReceivedInstance = pInstance;
+
+		methodChannel->InvokeMethod("onRegistrationSuccessful", CreateMethodResult({
+				{ "handle", handle },
+				{ "service.type", serviceType },
+				{ "service.name", serviceName },
+				{ "service.port", servicePort },
+				{ "service.host", serviceHost },
 			}));
 	}
 
-	void DnsServiceBrowseCallback(const DWORD status, PVOID context, PDNS_RECORD records)
+	void NsdWindowsPlugin::DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records)
 	{
-		BrowseContext& browseContext = *static_cast<BrowseContext*>(context);
-		browseContext.plugin->OnServiceDiscovered(browseContext.handle, status, records);
+		DiscoveryContext& discoveryContext = *static_cast<DiscoveryContext*>(context);
+		discoveryContext.plugin->OnServiceDiscovered(discoveryContext.handle, status, records);
 	}
 
-	void DnsServiceRegisterCallback(const DWORD status, PVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindowsPlugin::DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
 		registerContext.plugin->OnServiceRegistered(registerContext.handle, status, pInstance);
+	}
+
+	std::optional<ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromRecords(PDNS_RECORD records) {
+
+		ServiceInfo serviceInfo;
+
+		for (auto record = records; record; record = record->pNext) {
+
+			// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
+			// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
+
+			switch (record->wType) {
+
+			case DNS_TYPE_PTR: { // 0x0012
+
+				auto name = ToUtf8(record->pName); // PTR name field, e.g. "_http._tcp.local"
+				auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+				auto ttl = record->dwTtl;
+
+				serviceInfo.type = name.substr(0, name.rfind('.'));
+				serviceInfo.name = nameHost.substr(0, nameHost.find('.'));
+				serviceInfo.status = (ttl > 0) ? ServiceInfo::STATUS_FOUND : ServiceInfo::STATUS_LOST;
+
+				std::cout << GetTimeNow() << " " << "Record: PTR: name: " << name << ", domain name: " << nameHost << ", ttl: " << ttl << std::endl;
+				break;
+			}
+
+			case DNS_TYPE_SRV: { // 0x0021
+
+				auto hostname = ToUtf8(record->Data.SRV.pNameTarget);
+				auto port = record->Data.SRV.wPort;
+				auto ttl = record->dwTtl;
+
+				serviceInfo.host = hostname;
+				serviceInfo.port = port;
+
+				std::cout << GetTimeNow() << " " << "Record: SRV: host: " << hostname << ", port: " << port << ", ttl: " << ttl << std::endl;
+				break;
+			}
+
+			case DNS_TYPE_TEXT: {
+				std::cout << GetTimeNow() << " " << "Record: TXT" << std::endl; // TODO
+				break;
+			}
+
+			case DNS_TYPE_A: {
+				auto ip4 = record->Data.A.IpAddress;
+				std::cout << GetTimeNow() << " " << "Record: A: IP adress: " << std::hex << ip4 << std::endl;
+				break;
+			}
+
+
+			default: {
+				std::cout << GetTimeNow() << " " << "Record: skipping type 0x" << std::hex << record->wType << std::endl;
+			}
+			}
+		}
+
+		return serviceInfo;
 	}
 
 }  // namespace nsd_windows

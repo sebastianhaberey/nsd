@@ -11,42 +11,43 @@
 #include <optional>
 #include <map>
 #include <stdexcept>
+#include <sstream>
 #include <variant>
 #include <vector>
 
 namespace nsd_windows {
 
-	template<class T>
-	std::optional<T> Deserialize(const flutter::EncodableMap& arguments, std::string key)
+	template<class T, typename F>
+	T Deserialize(const flutter::EncodableMap& arguments, std::string key, F&& throwFunc)
 	{
 		auto it = arguments.find(key);
 
 		if (it == arguments.end() || it->second.IsNull()) {
-			return std::nullopt;
+			throwFunc();
+			std::stringstream s;
+			s << "Missing value: " << key << std::endl;
+			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, s.str());
 		}
 
-		return std::optional<T>(std::get<T>(it->second));
+		return std::get<T>(it->second);
 	}
 
-	template<class T> T UnwrapOrThrow(const std::optional<T>& optionalValue, ErrorCause errorCause, std::string message) {
-		if (optionalValue.has_value()) {
-			return optionalValue.value();
+	template<class T>
+	T Deserialize(const flutter::EncodableMap& arguments, std::string key)
+	{
+		return Deserialize<T>(arguments, key, []() {});
+	}
+
+	template <class T, typename F> typename std::vector<T>::iterator FindIf(std::vector<T>& values, F&& predicate) {
+		for (std::vector<T>::iterator it = values.begin(); it != values.end(); it++) {
+			if (predicate(*it)) {
+				return it;
+			}
 		}
-		throw NsdError(errorCause, message);
-	};
+		return values.end();
+	}
 
-	std::optional<std::string> DeserializeHandle(const flutter::EncodableMap& arguments);
-	std::optional<std::string> DeserializeServiceType(const flutter::EncodableMap& arguments);
-	std::optional<std::string> DeserializeServiceName(const flutter::EncodableMap& arguments);
-	std::optional<int> DeserializeServicePort(const flutter::EncodableMap& arguments);
-	std::optional<std::string> DeserializeServiceHost(const flutter::EncodableMap& arguments);
-
-	std::unique_ptr<flutter::EncodableValue> Serialize(flutter::EncodableMap values);
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeHandle(std::string handle);
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceType(std::string serviceType);
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceName(std::string serviceName);
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceHost(std::string serviceHost);
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServicePort(int servicePort);
+	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(flutter::EncodableMap values);
 
 	std::wstring ToUtf16(const std::string& string);
 	std::string ToUtf8(const std::wstring& wide_string);
@@ -54,4 +55,5 @@ namespace nsd_windows {
 	std::string GetLastErrorMessage();
 	std::vector<std::string> Split(std::string text, const char delimiter);
 	std::string GetTimeNow();
+	std::wstring GetComputerName();
 }

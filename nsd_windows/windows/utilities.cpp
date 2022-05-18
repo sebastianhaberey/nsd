@@ -7,56 +7,10 @@
 #include <iostream>
 #include <stringapiset.h>
 #include <strsafe.h>
-#include <sstream>
 
 namespace nsd_windows {
 
-	std::optional<std::string> DeserializeHandle(const flutter::EncodableMap& arguments)
-	{
-		return Deserialize<std::string>(arguments, "handle");
-	}
-
-	std::optional<std::string> DeserializeServiceType(const flutter::EncodableMap& arguments)
-	{
-		return Deserialize<std::string>(arguments, "service.type");
-	}
-
-	std::optional<std::string> DeserializeServiceName(const flutter::EncodableMap& arguments)
-	{
-		return Deserialize<std::string>(arguments, "service.name");
-	}
-
-	std::optional<std::string> DeserializeServiceHost(const flutter::EncodableMap& arguments)
-	{
-		return Deserialize<std::string>(arguments, "service.host");
-	}
-
-	std::optional<int> DeserializeServicePort(const flutter::EncodableMap& arguments)
-	{
-		return Deserialize<int>(arguments, "service.port");
-	}
-
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeHandle(std::string handle) {
-		return { "handle", handle };
-	}
-
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceType(std::string serviceType) {
-		return { "service.type", serviceType };
-	}
-
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceName(std::string serviceName) {
-		return { "service.name", serviceName };
-	}
-
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServiceHost(std::string serviceHost) {
-		return { "service.host", serviceHost };
-	}
-
-	std::pair<flutter::EncodableValue, flutter::EncodableValue> SerializeServicePort(int servicePort) {
-		return { "service.port", servicePort };
-	}
-
-	std::unique_ptr<flutter::EncodableValue> Serialize(flutter::EncodableMap values) {
+	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(flutter::EncodableMap values) {
 		return std::move(std::make_unique<flutter::EncodableValue>(values));
 	}
 
@@ -146,5 +100,15 @@ namespace nsd_windows {
 		std::stringstream stringstream;
 		stringstream << std::put_time(std::localtime(&now_c), "%F %T");
 		return stringstream.str();
+	}
+
+	std::wstring GetComputerName() {
+		DWORD size = 0;
+		GetComputerNameEx(ComputerNameDnsHostname, nullptr, &size);
+		std::vector<wchar_t> computerName(size);
+		if (!GetComputerNameEx(ComputerNameDnsHostname, &computerName[0], &size)) {
+			throw NsdError(ErrorCause::INTERNAL_ERROR, "Could not determine computer name");
+		}
+		return &computerName[0];
 	}
 }
