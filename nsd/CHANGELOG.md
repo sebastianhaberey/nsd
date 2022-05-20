@@ -94,3 +94,7 @@
 
 * issue #18: android: fixed missing plugin exception in release mode
 * updated documentation
+
+## 1.5.5
+
+* issue 18: updated android permissions section in readme
