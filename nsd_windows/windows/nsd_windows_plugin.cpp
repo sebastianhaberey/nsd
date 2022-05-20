@@ -118,6 +118,7 @@ namespace nsd_windows {
 			return;
 		}
 
+		methodChannel->InvokeMethod("onDiscoveryStopSuccessful", CreateMethodResult({ { "handle", handle } }));
 		result->Success();
 	}
 
@@ -188,10 +189,8 @@ namespace nsd_windows {
 		auto& request = context->request;
 
 		request.pServiceInstance = context->pReceivedInstance; // received instance can be different, e.g. in case of name conflicts, use more recent instance to deregister
+		request.pRegisterCompletionCallback = &DnsServiceUnregisterCallback;
 		auto status = DnsServiceDeRegister(&request, nullptr);
-
-		DnsServiceFreeInstance(context->pRequestInstance);
-		DnsServiceFreeInstance(context->pReceivedInstance);
 
 		if (status != DNS_REQUEST_PENDING) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetErrorMessage(status));
@@ -218,7 +217,7 @@ namespace nsd_windows {
 			std::vector<ServiceInfo>& services = discoveryContextMap.at(handle)->services;
 
 			auto it = FindIf(services, [compare = serviceInfo](ServiceInfo& current) -> bool {
-				return 
+				return
 					current.name == compare.name &&
 					current.type == compare.type;
 				});
@@ -279,6 +278,23 @@ namespace nsd_windows {
 			}));
 	}
 
+	void NsdWindowsPlugin::OnServiceUnregistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		auto& context = registerContextMap.at(handle);
+
+		DnsServiceFreeInstance(context->pRequestInstance);
+		DnsServiceFreeInstance(context->pReceivedInstance);
+
+		if (status != ERROR_SUCCESS) {
+			std::cout << "OnServiceUnregistered(): ERROR: " << GetErrorMessage(status) << std::endl;
+			return;
+		}
+
+		methodChannel->InvokeMethod("onUnregistrationSuccessful", CreateMethodResult({
+				{ "handle", handle },
+			}));
+	}
+
 	void NsdWindowsPlugin::DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records)
 	{
 		DiscoveryContext& discoveryContext = *static_cast<DiscoveryContext*>(context);
@@ -289,6 +305,12 @@ namespace nsd_windows {
 	{
 		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
 		registerContext.plugin->OnServiceRegistered(registerContext.handle, status, pInstance);
+	}
+
+	void NsdWindowsPlugin::DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
+		registerContext.plugin->OnServiceUnregistered(registerContext.handle, status, pInstance);
 	}
 
 	std::optional<ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromRecords(PDNS_RECORD records) {
@@ -308,8 +330,10 @@ namespace nsd_windows {
 				auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
 				auto ttl = record->dwTtl;
 
-				serviceInfo.type = name.substr(0, name.rfind('.'));
-				serviceInfo.name = nameHost.substr(0, nameHost.find('.'));
+				auto components = Split(nameHost, '.');
+
+				serviceInfo.name = components[0];
+				serviceInfo.type = components[1] + "." + components[2];
 				serviceInfo.status = (ttl > 0) ? ServiceInfo::STATUS_FOUND : ServiceInfo::STATUS_LOST;
 
 				std::cout << GetTimeNow() << " " << "Record: PTR: name: " << name << ", domain name: " << nameHost << ", ttl: " << ttl << std::endl;

@@ -60,6 +60,7 @@ namespace nsd_windows {
 		static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 		static void DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records);
 		static void DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
+		static void DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 
 		NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel);
 		virtual ~NsdWindowsPlugin();
@@ -70,6 +71,7 @@ namespace nsd_windows {
 
 		void OnServiceDiscovered(const std::string& handle, const DWORD status, PDNS_RECORD records);
 		void OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
+		void OnServiceUnregistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
 
 	private:
 
