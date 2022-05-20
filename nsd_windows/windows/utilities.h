@@ -56,4 +56,6 @@ namespace nsd_windows {
 	std::vector<std::string> Split(std::string text, const char delimiter);
 	std::string GetTimeNow();
 	std::wstring GetComputerName();
+	PWCHAR CreateUtf16CString(std::string value);
+	PWCHAR CreateUtf16CString(std::wstring value);
 }

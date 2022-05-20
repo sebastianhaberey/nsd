@@ -111,4 +111,14 @@ namespace nsd_windows {
 		}
 		return &computerName[0];
 	}
+
+	PWCHAR CreateUtf16CString(std::wstring value) {
+		PWCHAR pCString = new wchar_t[value.length() + 1];
+		wcscpy(pCString, value.c_str());
+		return pCString;
+	}
+
+	PWCHAR CreateUtf16CString(std::string value) {
+		return CreateUtf16CString(ToUtf16(value));
+	}
 }

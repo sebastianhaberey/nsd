@@ -37,7 +37,6 @@ namespace nsd_windows {
 		NsdWindowsPlugin* plugin;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
-		std::wstring serviceType;
 		DNS_SERVICE_BROWSE_REQUEST request;
 		std::vector<ServiceInfo> services;
 	};
@@ -47,19 +46,14 @@ namespace nsd_windows {
 
 		NsdWindowsPlugin* plugin;
 		std::string handle;
-		std::wstring serviceName;
-		std::wstring hostName;
 		DNS_SERVICE_CANCEL canceller;
 		DNS_SERVICE_REGISTER_REQUEST request;
-		PDNS_SERVICE_INSTANCE pRequestInstance = nullptr;
-		PDNS_SERVICE_INSTANCE pReceivedInstance = nullptr;
 	};
 
 	struct ResolveContext {
 
 		NsdWindowsPlugin* plugin;
 		std::string handle;
-		std::wstring queryName;
 		DNS_SERVICE_CANCEL canceller;
 		DNS_SERVICE_RESOLVE_REQUEST request;
 	};
