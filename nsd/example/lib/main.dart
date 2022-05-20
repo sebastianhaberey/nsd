@@ -7,7 +7,8 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:nsd/nsd.dart';
 import 'package:provider/provider.dart';
 
-const String serviceType = '_http._tcp';
+const String serviceTypeDiscover = '_http._tcp';
+const String serviceTypeRegister = '_http._tcp';
 const utf8encoder = Utf8Encoder();
 
 void main() {
@@ -34,7 +35,8 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> addDiscovery() async {
-    final discovery = await startDiscovery(serviceType);
+    final discovery =
+        await startDiscovery(serviceTypeDiscover, autoResolve: false);
     setState(() {
       discoveries.add(discovery);
     });
@@ -52,7 +54,7 @@ class MyAppState extends State<MyApp> {
   Future<void> addRegistration() async {
     final service = Service(
         name: 'Some Service',
-        type: serviceType,
+        type: serviceTypeRegister,
         port: nextPort,
         txt: createTxt());
 
