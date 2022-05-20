@@ -18,7 +18,7 @@
 namespace nsd_windows {
 
 	template<class T, typename F>
-	T Deserialize(const flutter::EncodableMap& arguments, std::string key, F&& throwFunc)
+	T Deserialize(const flutter::EncodableMap& arguments, const std::string key, const F&& throwFunc)
 	{
 		auto it = arguments.find(key);
 
@@ -33,12 +33,12 @@ namespace nsd_windows {
 	}
 
 	template<class T>
-	T Deserialize(const flutter::EncodableMap& arguments, std::string key)
+	T Deserialize(const flutter::EncodableMap& arguments, const std::string key)
 	{
 		return Deserialize<T>(arguments, key, []() {});
 	}
 
-	template <class T, typename F> typename std::vector<T>::iterator FindIf(std::vector<T>& values, F&& predicate) {
+	template <class T, typename F> typename std::vector<T>::iterator FindIf(std::vector<T>& values, const F&& predicate) {
 		for (std::vector<T>::iterator it = values.begin(); it != values.end(); it++) {
 			if (predicate(*it)) {
 				return it;
@@ -47,15 +47,15 @@ namespace nsd_windows {
 		return values.end();
 	}
 
-	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(flutter::EncodableMap values);
+	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values);
 
-	std::wstring ToUtf16(const std::string& string);
-	std::string ToUtf8(const std::wstring& wide_string);
-	std::string GetErrorMessage(DWORD messageId);
+	std::wstring ToUtf16(const std::string string);
+	std::string ToUtf8(const std::wstring wide_string);
+	std::string GetErrorMessage(const DWORD messageId);
 	std::string GetLastErrorMessage();
-	std::vector<std::string> Split(std::string text, const char delimiter);
+	std::vector<std::string> Split(const std::string text, const char delimiter);
 	std::string GetTimeNow();
 	std::wstring GetComputerName();
-	PWCHAR CreateUtf16CString(std::string value);
-	PWCHAR CreateUtf16CString(std::wstring value);
+	PWCHAR CreateUtf16CString(const std::string value);
+	PWCHAR CreateUtf16CString(const std::wstring value);
 }

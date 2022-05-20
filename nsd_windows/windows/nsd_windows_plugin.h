@@ -81,7 +81,8 @@ namespace nsd_windows {
 
 	private:
 
-		static std::optional<ServiceInfo> GetServiceInfoFromRecords(PDNS_RECORD records);
+		static std::optional<ServiceInfo> GetServiceInfoFromRecords(const PDNS_RECORD& records);
+		static std::optional<ServiceInfo> GetServiceInfoFromPtrRecord(const PDNS_RECORD& record);
 
 		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
 		std::map<std::string, std::unique_ptr<DiscoveryContext>> discoveryContextMap;
@@ -90,7 +91,7 @@ namespace nsd_windows {
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
-			std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+			std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 
 		void StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);

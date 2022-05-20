@@ -10,11 +10,11 @@
 
 namespace nsd_windows {
 
-	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(flutter::EncodableMap values) {
+	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values) {
 		return std::move(std::make_unique<flutter::EncodableValue>(values));
 	}
 
-	std::wstring ToUtf16(const std::string& string)
+	std::wstring ToUtf16(const std::string string)
 	{
 		// see https://stackoverflow.com/a/69410299/8707976
 
@@ -35,7 +35,7 @@ namespace nsd_windows {
 		return result;
 	}
 
-	std::string ToUtf8(const std::wstring& wide_string)
+	std::string ToUtf8(const std::wstring wide_string)
 	{
 		// see https://stackoverflow.com/a/69410299/8707976
 
@@ -56,7 +56,7 @@ namespace nsd_windows {
 		return result;
 	}
 
-	std::string GetErrorMessage(DWORD messageId)
+	std::string GetErrorMessage(const DWORD messageId)
 	{
 		// see https://docs.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
 
@@ -85,14 +85,14 @@ namespace nsd_windows {
 		return GetErrorMessage(GetLastError());
 	}
 
-	std::vector<std::string> Split(std::string text, const char delimiter) {
-		std::vector<std::string> strings;
-		std::istringstream f(text);
-		std::string s;
-		while (std::getline(f, s, delimiter)) {
-			strings.push_back(s);
+	std::vector<std::string> Split(const std::string text, const char delimiter) {
+		std::istringstream in(text);
+		std::vector<std::string> out;
+		std::string current;
+		while (std::getline(in, current, delimiter)) {
+			out.push_back(current);
 		}
-		return strings;
+		return out;
 	}
 
 	std::string GetTimeNow() {
@@ -112,13 +112,13 @@ namespace nsd_windows {
 		return &computerName[0];
 	}
 
-	PWCHAR CreateUtf16CString(std::wstring value) {
+	PWCHAR CreateUtf16CString(const std::wstring value) {
 		PWCHAR pCString = new wchar_t[value.length() + 1];
 		wcscpy(pCString, value.c_str());
 		return pCString;
 	}
 
-	PWCHAR CreateUtf16CString(std::string value) {
+	PWCHAR CreateUtf16CString(const std::string value) {
 		return CreateUtf16CString(ToUtf16(value));
 	}
 }

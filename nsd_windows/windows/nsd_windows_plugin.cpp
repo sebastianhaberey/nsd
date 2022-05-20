@@ -15,14 +15,9 @@
 
 namespace nsd_windows {
 
-	// static
-	void NsdWindowsPlugin::RegisterWithRegistrar(
-		flutter::PluginRegistrarWindows* registrar) {
-		auto methodChannel =
-			std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-				registrar->messenger(), "com.haberey/nsd",
-				&flutter::StandardMethodCodec::GetInstance());
-
+	void NsdWindowsPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar) {
+		auto methodChannel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+			registrar->messenger(), "com.haberey/nsd", &flutter::StandardMethodCodec::GetInstance());
 		auto nsdWindowsPlugin = std::make_unique<NsdWindowsPlugin>(std::move(methodChannel));
 		registrar->AddPlugin(std::move(nsdWindowsPlugin));
 	}
@@ -30,21 +25,19 @@ namespace nsd_windows {
 	NsdWindowsPlugin::NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) {
 		this->methodChannel = std::move(methodChannel);
 		this->methodChannel->SetMethodCallHandler(
-			[plugin = this](const auto& call, auto result) { plugin->HandleMethodCall(call, std::move(result));
+			[plugin = this](const auto& call, auto result) { plugin->HandleMethodCall(call, result);
 			});
 	}
 
 	NsdWindowsPlugin::~NsdWindowsPlugin() {}
 
-	void NsdWindowsPlugin::HandleMethodCall(
-		const flutter::MethodCall<flutter::EncodableValue>& methodCall,
-		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+	void NsdWindowsPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue>& methodCall,
+		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
 
 		const auto& method_name = methodCall.method_name();
 
 		try {
-			const flutter::EncodableMap& arguments =
-				std::get<flutter::EncodableMap>(*methodCall.arguments());
+			const flutter::EncodableMap& arguments = std::get<flutter::EncodableMap>(*methodCall.arguments());
 
 			if (method_name == "startDiscovery") {
 				StartDiscovery(arguments, result);
@@ -75,8 +68,8 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = Deserialize<std::string>(arguments, "handle");
-		auto serviceType = Deserialize<std::string>(arguments, "service.type");
+		const auto handle = Deserialize<std::string>(arguments, "handle");
+		const auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
 		auto context = std::make_unique<DiscoveryContext>();
 		context->plugin = this;
@@ -89,7 +82,7 @@ namespace nsd_windows {
 		request.pBrowseCallback = &DnsServiceBrowseCallback;
 		request.pQueryContext = context.get();
 
-		auto status = DnsServiceBrowse(&request, &context->canceller);
+		const auto status = DnsServiceBrowse(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
@@ -102,16 +95,16 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = Deserialize<std::string>(arguments, "handle");
+		const auto handle = Deserialize<std::string>(arguments, "handle");
 
-		auto it = discoveryContextMap.find(handle);
+		const auto it = discoveryContextMap.find(handle);
 		if (it == discoveryContextMap.end()) {
 			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, "Unknown handle");
 		}
 
 		auto& context = *it->second.get();
 
-		auto status = DnsServiceBrowseCancel(&context.canceller);
+		const auto status = DnsServiceBrowseCancel(&context.canceller);
 		discoveryContextMap.erase(it);
 
 		if (status != ERROR_SUCCESS) {
@@ -124,9 +117,9 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = Deserialize<std::string>(arguments, "handle");
-		auto serviceName = Deserialize<std::string>(arguments, "service.name");
-		auto serviceType = Deserialize<std::string>(arguments, "service.type");
+		const auto handle = Deserialize<std::string>(arguments, "handle");
+		const auto serviceName = Deserialize<std::string>(arguments, "service.name");
+		const auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
 		auto context = std::make_unique<ResolveContext>();
 		context->plugin = this;
@@ -139,7 +132,7 @@ namespace nsd_windows {
 		request.pResolveCompletionCallback = &DnsServiceResolveCallback;
 		request.pQueryContext = context.get();
 
-		auto status = DnsServiceResolve(&request, &context->canceller);
+		const auto status = DnsServiceResolve(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
@@ -151,12 +144,12 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = Deserialize<std::string>(arguments, "handle");
-		auto serviceName = Deserialize<std::string>(arguments, "service.name");
-		auto serviceType = Deserialize<std::string>(arguments, "service.type");
-		auto servicePort = Deserialize<int>(arguments, "service.port");
+		const auto handle = Deserialize<std::string>(arguments, "handle");
+		const auto serviceName = Deserialize<std::string>(arguments, "service.name");
+		const auto serviceType = Deserialize<std::string>(arguments, "service.type");
+		const auto servicePort = Deserialize<int>(arguments, "service.port");
 
-		auto computerName = GetComputerName();
+		const auto computerName = GetComputerName();
 
 		auto context = std::make_unique<RegisterContext>();
 		context->plugin = this;
@@ -164,7 +157,7 @@ namespace nsd_windows {
 
 		// see https://docs.microsoft.com/en-us/windows/win32/api/windns/nf-windns-dnsserviceconstructinstance
 
-		PDNS_SERVICE_INSTANCE pServiceInstance = DnsServiceConstructInstance(
+		const PDNS_SERVICE_INSTANCE pServiceInstance = DnsServiceConstructInstance(
 			CreateUtf16CString(serviceName + "." + serviceType + ".local"), // PCWSTR pServiceName
 			CreateUtf16CString(computerName + L".local"), // PCWSTR pHostName
 			nullptr, // PIP4_ADDRESS pIp4 (optional)
@@ -187,7 +180,7 @@ namespace nsd_windows {
 		request.pQueryContext = context.get();
 		request.unicastEnabled = false;
 
-		auto status = DnsServiceRegister(&request, &context->canceller);
+		const auto status = DnsServiceRegister(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
 			DnsServiceFreeInstance(pServiceInstance);
@@ -200,9 +193,9 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
-		auto handle = Deserialize<std::string>(arguments, "handle");
+		const auto handle = Deserialize<std::string>(arguments, "handle");
 
-		auto it = registerContextMap.find(handle);
+		const auto it = registerContextMap.find(handle);
 		if (it == registerContextMap.end()) {
 			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, "Unknown handle");
 		}
@@ -212,7 +205,7 @@ namespace nsd_windows {
 
 		request.pRegisterCompletionCallback = &DnsServiceUnregisterCallback; // switch callback for request reuse
 
-		auto status = DnsServiceDeRegister(&request, nullptr);
+		const auto status = DnsServiceDeRegister(&request, nullptr);
 
 		if (status != DNS_REQUEST_PENDING) {
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
@@ -231,49 +224,51 @@ namespace nsd_windows {
 			return;
 		}
 
-		auto serviceInfoOptional = GetServiceInfoFromRecords(records);
-		if (serviceInfoOptional.has_value()) {
+		const auto serviceInfoO = GetServiceInfoFromRecords(records);
+		if (!serviceInfoO.has_value()) {
+			// must be deleted as described here: https://docs.microsoft.com/en-us/windows/win32/api/windns/nc-windns-dns_service_browse_callback
+			DnsRecordListFree(records, DnsFreeRecordList);
+			return;
+		}
 
-			ServiceInfo& serviceInfo = serviceInfoOptional.value();
-			std::vector<ServiceInfo>& services = discoveryContextMap.at(handle)->services;
+		const ServiceInfo& serviceInfo = serviceInfoO.value();
+		std::vector<ServiceInfo>& services = discoveryContextMap.at(handle)->services;
 
-			auto it = FindIf(services, [compare = serviceInfo](ServiceInfo& current) -> bool {
-				return
-					current.name == compare.name &&
-					current.type == compare.type;
-				});
+		const auto it = FindIf(services, [compare = serviceInfo](ServiceInfo& current) -> bool {
+			return
+				current.name == compare.name &&
+				current.type == compare.type;
+			});
 
-			if (serviceInfo.status == ServiceInfo::STATUS_FOUND) {
+		if (serviceInfo.status == ServiceInfo::STATUS_FOUND) {
 
-				if (it == services.end()) {
-					services.push_back(serviceInfo);
-					methodChannel->InvokeMethod("onServiceDiscovered", CreateMethodResult({
-							{ "handle", handle },
-							{ "service.name", serviceInfo.name.value() },
-							{ "service.type", serviceInfo.type.value() }
-						}));
-				}
+			if (it == services.end()) {
+				services.push_back(serviceInfo);
+				methodChannel->InvokeMethod("onServiceDiscovered", CreateMethodResult({
+						{ "handle", handle },
+						{ "service.name", serviceInfo.name.value() },
+						{ "service.type", serviceInfo.type.value() }
+					}));
 			}
-			else {
+		}
+		else {
 
-				if (it != services.end()) {
-					services.erase(it);
-					methodChannel->InvokeMethod("onServiceLost", CreateMethodResult({
-							{ "handle", handle },
-							{ "service.name", serviceInfo.name.value() },
-							{ "service.type", serviceInfo.type.value() }
-						}));
-				}
+			if (it != services.end()) {
+				services.erase(it);
+				methodChannel->InvokeMethod("onServiceLost", CreateMethodResult({
+						{ "handle", handle },
+						{ "service.name", serviceInfo.name.value() },
+						{ "service.type", serviceInfo.type.value() }
+					}));
 			}
 		}
 
-		// must be deleted as described here: https://docs.microsoft.com/en-us/windows/win32/api/windns/nc-windns-dns_service_browse_callback
 		DnsRecordListFree(records, DnsFreeRecordList);
 	}
 
 	void NsdWindowsPlugin::OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
-		auto it = resolveContextMap.find(handle);
+		const auto it = resolveContextMap.find(handle);
 		if (it == resolveContextMap.end()) {
 			//std::cout << "OnServiceResolved(): ERROR: Unknown handle: " << handle << std::endl;
 			DnsServiceFreeInstance(pInstance);
@@ -281,16 +276,20 @@ namespace nsd_windows {
 		}
 
 		if (status != ERROR_SUCCESS) {
-			methodChannel->InvokeMethod("onResolveFailed", CreateMethodResult({ { "handle", handle } }));
+			methodChannel->InvokeMethod("onResolveFailed", CreateMethodResult({
+					{ "handle", handle },
+					{ "error.cause", ToErrorCode(ErrorCause::INTERNAL_ERROR) },
+					{ "error.message", GetErrorMessage(status) },
+				}));
 			DnsServiceFreeInstance(pInstance);
 			return;
 		}
 
-		auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
-		auto serviceName = components.at(0);
-		auto serviceType = components.at(1) + "." + components.at(2);
-		auto servicePort = pInstance->wPort;
-		auto serviceHost = ToUtf8(pInstance->pszHostName);
+		const auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+		const auto serviceName = components.at(0);
+		const auto serviceType = components.at(1) + "." + components.at(2);
+		const auto servicePort = pInstance->wPort;
+		const auto serviceHost = ToUtf8(pInstance->pszHostName);
 
 		DnsServiceFreeInstance(pInstance);
 		resolveContextMap.erase(it);
@@ -306,7 +305,7 @@ namespace nsd_windows {
 
 	void NsdWindowsPlugin::OnServiceRegistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
-		auto it = registerContextMap.find(handle);
+		const auto it = registerContextMap.find(handle);
 		if (it == registerContextMap.end()) {
 			//std::cout << "OnServiceRegistered(): ERROR: Unknown handle: " << handle << std::endl;
 			DnsServiceFreeInstance(pInstance);
@@ -319,16 +318,21 @@ namespace nsd_windows {
 		if (status != ERROR_SUCCESS) {
 			DnsServiceFreeInstance(request.pServiceInstance);
 			DnsServiceFreeInstance(pInstance);
+			methodChannel->InvokeMethod("onRegistrationFailed", CreateMethodResult({
+					{ "handle", handle },
+					{ "error.cause", ToErrorCode(ErrorCause::INTERNAL_ERROR) },
+					{ "error.message", GetErrorMessage(status) },
+				}));
 			methodChannel->InvokeMethod("onRegistrationFailed", CreateMethodResult({ { "handle", handle } }));
 			return;
 		}
 
-		auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+		const auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
 
-		auto serviceName = components.at(0);
-		auto serviceType = components.at(1) + "." + components.at(2);
-		auto servicePort = pInstance->wPort;
-		auto serviceHost = ToUtf8(pInstance->pszHostName);
+		const auto serviceName = components.at(0);
+		const auto serviceType = components.at(1) + "." + components.at(2);
+		const auto servicePort = pInstance->wPort;
+		const auto serviceHost = ToUtf8(pInstance->pszHostName);
 
 		// later, the existing request must be reused with the newly received instance for unregistering 
 		DnsServiceFreeInstance(request.pServiceInstance); // free existing instance
@@ -347,7 +351,7 @@ namespace nsd_windows {
 	{
 		DnsServiceFreeInstance(pInstance); // not used and must be freed
 
-		auto it = registerContextMap.find(handle);
+		const auto it = registerContextMap.find(handle);
 		if (it == registerContextMap.end()) {
 			//std::cout << "OnServiceUnregistered(): ERROR: Unknown handle: " << handle << std::endl;
 			return;
@@ -360,7 +364,11 @@ namespace nsd_windows {
 		registerContextMap.erase(it);
 
 		if (status != ERROR_SUCCESS) {
-			methodChannel->InvokeMethod("onUnregistrationFailed", CreateMethodResult({ { "handle", handle } }));
+			methodChannel->InvokeMethod("onUnregistrationFailed", CreateMethodResult({
+					{ "handle", handle },
+					{ "error.cause", ToErrorCode(ErrorCause::INTERNAL_ERROR) },
+					{ "error.message", GetErrorMessage(status) },
+				}));
 			return;
 		}
 
@@ -391,32 +399,35 @@ namespace nsd_windows {
 		registerContext.plugin->OnServiceUnregistered(registerContext.handle, status, pInstance);
 	}
 
-	std::optional<ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromRecords(PDNS_RECORD records) {
+	std::optional<ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromRecords(const PDNS_RECORD& records) {
+
+		// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
+		// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
 
 		for (auto record = records; record; record = record->pNext) {
-
-			// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
-			// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
-
 			if (record->wType == DNS_TYPE_PTR) { // 0x0012
-
-				auto name = ToUtf8(record->pName); // PTR name field, e.g. "_http._tcp.local"
-				auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
-				auto ttl = record->dwTtl;
-
-				auto components = Split(nameHost, '.');
-
-				ServiceInfo serviceInfo;
-				serviceInfo.name = components[0];
-				serviceInfo.type = components[1] + "." + components[2];
-				serviceInfo.status = (ttl > 0) ? ServiceInfo::STATUS_FOUND : ServiceInfo::STATUS_LOST;
-
-				//std::cout << GetTimeNow() << " " << "Record: PTR: name: " << name << ", domain name: " << nameHost << ", ttl: " << ttl << std::endl;
-				return serviceInfo;
+				return GetServiceInfoFromPtrRecord(record);
 			}
 		}
 
 		return std::nullopt;
+	}
+
+	std::optional<nsd_windows::ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromPtrRecord(const PDNS_RECORD& record)
+	{
+		const auto name = ToUtf8(record->pName); // PTR name field, e.g. "_http._tcp.local"
+		const auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+		const auto ttl = record->dwTtl;
+
+		const auto components = Split(nameHost, '.');
+
+		ServiceInfo serviceInfo;
+		serviceInfo.name = components[0];
+		serviceInfo.type = components[1] + "." + components[2];
+		serviceInfo.status = (ttl > 0) ? ServiceInfo::STATUS_FOUND : ServiceInfo::STATUS_LOST;
+
+		//std::cout << GetTimeNow() << " " << "Record: PTR: name: " << name << ", domain name: " << nameHost << ", ttl: " << ttl << std::endl;
+		return serviceInfo;
 	}
 
 }  // namespace nsd_windows
