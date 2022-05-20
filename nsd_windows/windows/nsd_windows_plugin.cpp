@@ -122,6 +122,34 @@ namespace nsd_windows {
 		result->Success();
 	}
 
+	void NsdWindowsPlugin::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	{
+		auto handle = Deserialize<std::string>(arguments, "handle");
+		auto serviceName = Deserialize<std::string>(arguments, "service.name");
+		auto serviceType = Deserialize<std::string>(arguments, "service.type");
+
+		auto context = std::make_unique<ResolveContext>();
+		context->plugin = this;
+		context->handle = handle;
+		context->queryName = ToUtf16(serviceName) + L"." + ToUtf16(serviceType) + L".local"; // TODO this is only here so it doesn't get destroyed
+
+		context->request.Version = DNS_QUERY_REQUEST_VERSION1;
+		context->request.InterfaceIndex = 0;
+		context->request.QueryName = (PWSTR)context->queryName.c_str(); // TODO nasty cast
+		context->request.pResolveCompletionCallback = &DnsServiceResolveCallback;
+		context->request.pQueryContext = context.get();
+
+		auto status = DnsServiceResolve(&context->request, &context->canceller);
+
+		if (status != DNS_REQUEST_PENDING) {
+			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), GetErrorMessage(status));
+			return;
+		}
+
+		resolveContextMap[handle] = std::move(context);
+		result->Success();
+	}
+
 	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
@@ -161,7 +189,7 @@ namespace nsd_windows {
 		context->request.pServiceInstance = pServiceInstance;
 		context->request.pRegisterCompletionCallback = &DnsServiceRegisterCallback;
 		context->request.pQueryContext = context.get();
-		context->request.unicastEnabled = false;
+		context->request.unicastEnabled = false; // TODO see if removing this makes service type detection work
 
 		auto status = DnsServiceRegister(&context->request, &context->canceller);
 
@@ -174,11 +202,6 @@ namespace nsd_windows {
 		}
 
 		registerContextMap[handle] = std::move(context);
-		result->Success();
-	}
-
-	void NsdWindowsPlugin::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
-	{
 		result->Success();
 	}
 
@@ -200,7 +223,7 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::OnServiceDiscovered(const std::string& handle, const DWORD status, PDNS_RECORD records)
+	void NsdWindowsPlugin::OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records)
 	{
 		std::cout << GetTimeNow() << " " << "OnServiceDiscovered()" << std::endl;
 
@@ -250,7 +273,33 @@ namespace nsd_windows {
 		DnsRecordListFree(records, DnsFreeRecordList);
 	}
 
-	void NsdWindowsPlugin::OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindowsPlugin::OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		if (status != ERROR_SUCCESS) {
+			std::cout << "OnServiceRegistered(): ERROR: " << GetErrorMessage(status) << std::endl;
+			DnsServiceFreeInstance(pInstance);
+			return;
+		}
+
+		auto components = Split(ToUtf8(pInstance->pszInstanceName), '.'); // "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
+
+		auto serviceName = components.at(0);
+		auto serviceType = components.at(1) + "." + components.at(2);
+		auto servicePort = pInstance->wPort;
+		auto serviceHost = ToUtf8(pInstance->pszHostName);
+
+		DnsServiceFreeInstance(pInstance);
+
+		methodChannel->InvokeMethod("onResolveSuccessful", CreateMethodResult({
+				{ "handle", handle },
+				{ "service.type", serviceType },
+				{ "service.name", serviceName },
+				{ "service.port", servicePort },
+				{ "service.host", serviceHost },
+			}));
+	}
+
+	void NsdWindowsPlugin::OnServiceRegistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		if (status != ERROR_SUCCESS) {
 			std::cout << "OnServiceRegistered(): ERROR: " << GetErrorMessage(status) << std::endl;
@@ -278,12 +327,16 @@ namespace nsd_windows {
 			}));
 	}
 
-	void NsdWindowsPlugin::OnServiceUnregistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindowsPlugin::OnServiceUnregistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		auto& context = registerContextMap.at(handle);
 
+		// TODO maybe some of them can be freed earlier?
 		DnsServiceFreeInstance(context->pRequestInstance);
 		DnsServiceFreeInstance(context->pReceivedInstance);
+		DnsServiceFreeInstance(pInstance);
+
+		registerContextMap.erase(handle);
 
 		if (status != ERROR_SUCCESS) {
 			std::cout << "OnServiceUnregistered(): ERROR: " << GetErrorMessage(status) << std::endl;
@@ -299,6 +352,12 @@ namespace nsd_windows {
 	{
 		DiscoveryContext& discoveryContext = *static_cast<DiscoveryContext*>(context);
 		discoveryContext.plugin->OnServiceDiscovered(discoveryContext.handle, status, records);
+	}
+
+	void NsdWindowsPlugin::DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	{
+		ResolveContext& resolveContext = *static_cast<ResolveContext*>(context);
+		resolveContext.plugin->OnServiceResolved(resolveContext.handle, status, pInstance);
 	}
 
 	void NsdWindowsPlugin::DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)

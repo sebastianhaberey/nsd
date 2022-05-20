@@ -55,12 +55,23 @@ namespace nsd_windows {
 		PDNS_SERVICE_INSTANCE pReceivedInstance = nullptr;
 	};
 
+	struct ResolveContext {
+
+		NsdWindowsPlugin* plugin;
+		std::string handle;
+		std::wstring queryName;
+		DNS_SERVICE_CANCEL canceller;
+		DNS_SERVICE_RESOLVE_REQUEST request;
+	};
+
 	class NsdWindowsPlugin : public flutter::Plugin {
 	public:
 		static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
+
 		static void DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records);
 		static void DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 		static void DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
+		static void DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 
 		NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel);
 		virtual ~NsdWindowsPlugin();
@@ -69,9 +80,10 @@ namespace nsd_windows {
 		NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
 		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
 
-		void OnServiceDiscovered(const std::string& handle, const DWORD status, PDNS_RECORD records);
-		void OnServiceRegistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
-		void OnServiceUnregistered(const std::string& handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
+		void OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records);
+		void OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
+		void OnServiceRegistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
+		void OnServiceUnregistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);
 
 	private:
 
@@ -80,6 +92,7 @@ namespace nsd_windows {
 		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
 		std::map<std::string, std::unique_ptr<DiscoveryContext>> discoveryContextMap;
 		std::map<std::string, std::unique_ptr<RegisterContext>> registerContextMap;
+		std::map<std::string, std::unique_ptr<ResolveContext>> resolveContextMap;
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -87,8 +100,8 @@ namespace nsd_windows {
 
 		void StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
-		void Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
+		void Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 		void Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);
 
 	};
