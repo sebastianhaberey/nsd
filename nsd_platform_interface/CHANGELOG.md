@@ -41,3 +41,7 @@
 ## 1.4.1
 
 * more unit tests for error handling
+
+## 1.4.2
+
+* updated documentation

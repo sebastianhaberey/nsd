@@ -89,3 +89,8 @@
 ## 1.5.3
 
 * fixed nsd_android dependency
+
+## 1.5.4
+
+* issue #18: android: fixed missing plugin exception in release mode
+* updated documentation

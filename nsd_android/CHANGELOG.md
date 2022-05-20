@@ -36,3 +36,7 @@
 ## 1.2.1
 
 * issue #17: synchronized plugin compile sdk version with current flutter compile sdk version
+
+## 1.2.2
+
+* issue #18: android: fixed missing plugin exception in release mode
