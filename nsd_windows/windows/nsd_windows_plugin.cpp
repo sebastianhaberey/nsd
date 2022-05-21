@@ -34,10 +34,10 @@ namespace nsd_windows {
 	void NsdWindowsPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue>& methodCall,
 		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
 
-		const auto& method_name = methodCall.method_name();
+		const auto method_name = methodCall.method_name();
 
 		try {
-			const flutter::EncodableMap& arguments = std::get<flutter::EncodableMap>(*methodCall.arguments());
+			const auto arguments = std::get<flutter::EncodableMap>(*methodCall.arguments());
 
 			if (method_name == "startDiscovery") {
 				StartDiscovery(arguments, result);
@@ -149,19 +149,10 @@ namespace nsd_windows {
 		const auto serviceType = Deserialize<std::string>(arguments, "service.type");
 		const auto servicePort = Deserialize<int>(arguments, "service.port");
 
-		std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> serviceTxt;
-		DWORD serviceTxtSize = 0;
-		PCWSTR* serviceTxtKeys = nullptr;
-		PCWSTR* serviceTxtValues = nullptr;
-
-		if (HasKey(arguments, "service.txt")) {
-			serviceTxt = FlutterTxtToWindowsTxt(Deserialize<flutter::EncodableMap>(arguments, "service.txt"));
-			serviceTxtSize = (DWORD)std::get<0>(serviceTxt).size();
-			serviceTxtKeys = &std::get<0>(serviceTxt)[0];
-			serviceTxtValues = &std::get<1>(serviceTxt)[0];
-		}
-
 		const auto computerName = GetComputerName();
+
+		const std::optional<FlutterTxt> serviceTxtO = DeserializeO<flutter::EncodableMap>(arguments, "service.txt");
+		const WindowsTxt serviceTxt = serviceTxtO.has_value() ? FlutterTxtToWindowsTxt(serviceTxtO.value()) : WindowsTxt();
 
 		// see https://docs.microsoft.com/en-us/windows/win32/api/windns/nf-windns-dnsserviceconstructinstance
 
@@ -173,9 +164,9 @@ namespace nsd_windows {
 			static_cast<WORD>(servicePort), // WORD wPort
 			0, // WORD wPriority
 			0, // WORD wWeight
-			serviceTxtSize, // DWORD dwPropertiesCount
-			serviceTxtKeys, // PCWSTR* keys
-			serviceTxtValues // PCWSTR* values
+			serviceTxt.size, // DWORD dwPropertiesCount
+			serviceTxt.keys, // PCWSTR* keys
+			serviceTxt.values // PCWSTR* values
 		);
 
 		auto context = std::make_unique<RegisterContext>();
@@ -430,7 +421,6 @@ namespace nsd_windows {
 
 	std::optional<nsd_windows::ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromPtrRecord(const PDNS_RECORD& record)
 	{
-		const auto name = ToUtf8(record->pName); // PTR name field, e.g. "_http._tcp.local"
 		const auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
 		const auto ttl = record->dwTtl;
 

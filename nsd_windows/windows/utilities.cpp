@@ -12,10 +12,10 @@
 
 namespace nsd_windows {
 
-	flutter::EncodableMap WindowsTxtToFlutterTxt(const std::vector<PCWSTR>& keys, const std::vector<PCWSTR>& values) {
-		flutter::EncodableMap txt;
+	FlutterTxt WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values) {
+		FlutterTxt txt;
 
-		for (int i = 0; i < keys.size(); i++) {
+		for (DWORD i = 0; i < count; i++) {
 
 			const auto key = ToUtf8(keys[i]);
 			const auto codeUnitsString = ToUtf8(values[i]);
@@ -36,36 +36,41 @@ namespace nsd_windows {
 		return txt;
 	}
 
-	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values) {
-		return WindowsTxtToFlutterTxt(std::vector<PCWSTR>(keys, keys + count), std::vector<PCWSTR>(values, values + count));
-	}
+	WindowsTxt FlutterTxtToWindowsTxt(const FlutterTxt& txt) {
 
-	std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> FlutterTxtToWindowsTxt(const flutter::EncodableMap& txt) {
-		std::vector<PCWSTR> keys;
-		std::vector<PCWSTR> values;
+		auto count = txt.size();
 
-		for (auto it = txt.begin(); it != txt.end(); it++) {
-
-			const auto key = CreateUtf16CString(std::get<std::string>(it->first));
-
-			if (it->second.IsNull()) {
-				keys.push_back(key);
-				values.push_back(nullptr);
-			}
-			else if (std::holds_alternative<std::vector<unsigned char>>(it->second)) { // list of UTF-8 code units
-				keys.push_back(key);
-				const auto& codeUnitsList = std::get<std::vector<unsigned char>>(it->second);
-				const std::string codeUnitsString(codeUnitsList.begin(), codeUnitsList.end());
-
-				// Non-UTF-8 code units such as '255' will be replaced with U+FFFD by MultiByteToWideChar, so they will not survive the journey
-				values.push_back(CreateUtf16CString(codeUnitsString));
-			}
-			else {
-				// ignore value
-			}
+		if (count == 0) {
+			return WindowsTxt();
 		}
 
-		return { keys, values };
+		// TODO find out if DnsServiceFreeInstance() really frees the pointer array and the associated strings,
+		// otherwise this will be a memory leak.
+
+		WindowsTxt windowsTxt;
+
+		windowsTxt.size = static_cast<DWORD>(count);
+		windowsTxt.keys = new PCWSTR[count];
+		windowsTxt.values = new PCWSTR[count];
+
+		auto it = txt.begin();
+
+		for (auto i = 0; i < count; i++) {
+
+			windowsTxt.keys[i] = CreateUtf16CString(std::get<std::string>(it->first));
+
+			if (std::holds_alternative<std::vector<unsigned char>>(it->second)) { 
+				const auto& codeUnitsList = std::get<std::vector<unsigned char>>(it->second); // list of UTF-8 code units
+				const std::string codeUnitsString(codeUnitsList.begin(), codeUnitsList.end());
+				windowsTxt.values[i] = CreateUtf16CString(codeUnitsString); // Non-UTF-8 code units such as '255' will be replaced with U+FFFD by MultiByteToWideChar, so they will not survive the journey
+			}
+			else {
+				windowsTxt.values[i] = nullptr; // every other data type is unknown and treated as null value
+			}
+
+			it++;
+		}
+		return windowsTxt;
 	}
 
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values) {
@@ -154,10 +159,14 @@ namespace nsd_windows {
 	}
 
 	std::string GetTimeNow() {
-		std::time_t const now_c = std::time(nullptr);
-		std::stringstream stringstream;
-		stringstream << std::put_time(std::localtime(&now_c), "%F %T");
-		return stringstream.str();
+
+		// see https://stackoverflow.com/a/38034148/8707976
+
+		std::tm bt{};
+		auto timer = std::time_t(std::time(0));
+		localtime_s(&bt, &timer);
+		char buf[64];
+		return { buf, std::strftime(buf, sizeof(buf), "%F %T", &bt) };
 	}
 
 	std::wstring GetComputerName() {
@@ -179,10 +188,5 @@ namespace nsd_windows {
 
 	PWCHAR CreateUtf16CString(const std::string value) {
 		return CreateUtf16CString(ToUtf16(value));
-	}
-
-	bool HasKey(const flutter::EncodableMap& map, const std::string key) {
-		auto it = map.find(key);
-		return it != map.end() && !it->second.IsNull() && !std::holds_alternative<std::monostate>(it->second);
 	}
 }

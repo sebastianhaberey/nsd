@@ -18,15 +18,36 @@ using namespace std::string_literals;
 
 namespace nsd_windows {
 
+	typedef flutter::EncodableMap FlutterTxt;
+
+	struct WindowsTxt {
+		DWORD size = 0;
+		PCWSTR* keys = nullptr;
+		PCWSTR* values = nullptr;
+	};
+
+	template<class T>
+	std::optional<T> DeserializeO(const flutter::EncodableMap& arguments, const std::string key)
+	{
+		auto it = arguments.find(key);
+
+		if (it == arguments.end() || it->second.IsNull() || std::holds_alternative<std::monostate>(it->second)) {
+			return std::nullopt;
+		}
+
+		return std::get<T>(it->second);
+	}
+
 	template<class T, typename F>
 	T Deserialize(const flutter::EncodableMap& arguments, const std::string key, const F&& throwFunc)
 	{
-		if (!HasKey(arguments, key)) {
+		std::optional<T> valueO = DeserializeO<T>(arguments, key);
+		if (!valueO.has_value()) {
 			throwFunc();
 			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, "Missing value: "s + key);
 		}
 
-		return std::get<T>((arguments.find(key))->second);
+		return valueO.value();
 	}
 
 	template<class T>
@@ -44,9 +65,8 @@ namespace nsd_windows {
 		return values.end();
 	}
 
-	flutter::EncodableMap WindowsTxtToFlutterTxt(const std::vector<PCWSTR>& keys, const std::vector<PCWSTR>& values);
-	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values);
-	std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> FlutterTxtToWindowsTxt(const flutter::EncodableMap& txt);
+	FlutterTxt WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values);
+	WindowsTxt FlutterTxtToWindowsTxt(const FlutterTxt& txt);
 
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values);
 
@@ -59,5 +79,4 @@ namespace nsd_windows {
 	std::wstring GetComputerName();
 	PWCHAR CreateUtf16CString(const std::string value);
 	PWCHAR CreateUtf16CString(const std::wstring value);
-	bool HasKey(const flutter::EncodableMap& map, const std::string key);
 }
