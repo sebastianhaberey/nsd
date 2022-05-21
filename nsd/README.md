@@ -148,3 +148,9 @@ enableLogging(LogTopic.calls);
 ```
 
 will log errors and all calls to the native side (and their callbacks), which often yields useful information.
+
+<br></br>
+
+## Projects using nsd
+
+🎮 [Tic Tac Toe Local Multiplayer Game for Android](https://github.com/lakscastro/ttt) by Laks Castro
