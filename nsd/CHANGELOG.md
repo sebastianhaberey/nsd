@@ -98,3 +98,8 @@
 ## 1.5.5
 
 * issue 18: updated android permissions section in readme
+
+## 1.5.6
+
+* re-activated auto-resolve in example application
+* added projects using nsd section to readme
