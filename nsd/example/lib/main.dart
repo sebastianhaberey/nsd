@@ -35,8 +35,7 @@ class MyAppState extends State<MyApp> {
   }
 
   Future<void> addDiscovery() async {
-    final discovery =
-        await startDiscovery(serviceTypeDiscover, autoResolve: false);
+    final discovery = await startDiscovery(serviceTypeDiscover);
     setState(() {
       discoveries.add(discovery);
     });
