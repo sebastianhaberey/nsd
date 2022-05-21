@@ -70,9 +70,6 @@ void main() {
 
   testWidgets('Verify txt attribute of registered service',
       (WidgetTester _) async {
-    if (Platform.isWindows) {
-      return; // TODO skip test for windows instead of false positive
-    }
 
     final discovery = await startDiscovery(serviceType);
 
@@ -91,9 +88,9 @@ void main() {
     // see https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
     final binaryValue = Uint8List.fromList([254, 255]);
 
-    // Android's NsdManager doesn't support binary txt data due to signature of
-    // NsdServiceInfo.setAttribute(String key, String value)
-    if (!Platform.isAndroid) {
+    // Android doesn't support binary txt data due to signature of NsdServiceInfo.setAttribute() and
+    // Windows doesn't support binary txt data due to signature of DnsServiceConstructInstance()
+    if (!Platform.isAndroid && !Platform.isWindows) {
       txt['a-binary'] = binaryValue;
     }
 
@@ -112,7 +109,7 @@ void main() {
     // should be present even though it is blank
     expect(receivedTxt.containsKey('a-blank'), true);
 
-    // should theoretically be a blank list but Android / macOS / iOS return null here
+    // should theoretically be a blank list but Android / macOS / iOS / Windows return null here
     expect(receivedTxt['a-blank'], null);
 
     // should be present even though it is null
@@ -121,7 +118,7 @@ void main() {
     // null values are supported
     expect(receivedTxt['a-null'], null);
 
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid && !Platform.isWindows) {
       expect(receivedTxt['a-binary'], binaryValue);
     }
 

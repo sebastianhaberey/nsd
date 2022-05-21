@@ -11,25 +11,22 @@
 #include <optional>
 #include <map>
 #include <stdexcept>
-#include <sstream>
 #include <variant>
 #include <vector>
+
+using namespace std::string_literals;
 
 namespace nsd_windows {
 
 	template<class T, typename F>
 	T Deserialize(const flutter::EncodableMap& arguments, const std::string key, const F&& throwFunc)
 	{
-		auto it = arguments.find(key);
-
-		if (it == arguments.end() || it->second.IsNull()) {
+		if (!HasKey(arguments, key)) {
 			throwFunc();
-			std::stringstream s;
-			s << "Missing value: " << key << std::endl;
-			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, s.str());
+			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, "Missing value: "s + key);
 		}
 
-		return std::get<T>(it->second);
+		return std::get<T>((arguments.find(key))->second);
 	}
 
 	template<class T>
@@ -47,6 +44,10 @@ namespace nsd_windows {
 		return values.end();
 	}
 
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const std::vector<PCWSTR>& keys, const std::vector<PCWSTR>& values);
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values);
+	std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> FlutterTxtToWindowsTxt(const flutter::EncodableMap& txt);
+
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values);
 
 	std::wstring ToUtf16(const std::string string);
@@ -58,4 +59,5 @@ namespace nsd_windows {
 	std::wstring GetComputerName();
 	PWCHAR CreateUtf16CString(const std::string value);
 	PWCHAR CreateUtf16CString(const std::wstring value);
+	bool HasKey(const flutter::EncodableMap& map, const std::string key);
 }

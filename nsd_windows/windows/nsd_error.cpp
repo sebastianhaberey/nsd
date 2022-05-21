@@ -20,7 +20,11 @@ namespace nsd_windows {
 		}
 	}
 
-	NsdError::NsdError(ErrorCause errorCause, std::string message) : std::runtime_error(message), errorCause(errorCause)
+	const char* NsdError::what() const throw() {
+		return message.c_str(); 
+	}
+
+	NsdError::NsdError(const ErrorCause errorCause, const std::string& message) : errorCause(errorCause), message(message)
 	{
 	}
 

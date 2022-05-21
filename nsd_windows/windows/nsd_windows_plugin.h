@@ -28,7 +28,6 @@ namespace nsd_windows {
 		std::optional<std::string> host;
 		std::optional<int> port;
 		Status status;
-		// TODO txt
 	};
 
 

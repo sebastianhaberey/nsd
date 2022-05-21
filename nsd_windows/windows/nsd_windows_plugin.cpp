@@ -58,10 +58,10 @@ namespace nsd_windows {
 				result->NotImplemented();
 			}
 		}
-		catch (NsdError e) {
+		catch (const NsdError& e) {
 			result->Error(ToErrorCode(e.errorCause), e.what());
 		}
-		catch (std::exception e) {
+		catch (const std::exception& e) {
 			result->Error(ToErrorCode(ErrorCause::INTERNAL_ERROR), e.what());
 		}
 	}
@@ -149,11 +149,19 @@ namespace nsd_windows {
 		const auto serviceType = Deserialize<std::string>(arguments, "service.type");
 		const auto servicePort = Deserialize<int>(arguments, "service.port");
 
-		const auto computerName = GetComputerName();
+		std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> serviceTxt;
+		DWORD serviceTxtSize = 0;
+		PCWSTR* serviceTxtKeys = nullptr;
+		PCWSTR* serviceTxtValues = nullptr;
 
-		auto context = std::make_unique<RegisterContext>();
-		context->plugin = this;
-		context->handle = handle;
+		if (HasKey(arguments, "service.txt")) {
+			serviceTxt = FlutterTxtToWindowsTxt(Deserialize<flutter::EncodableMap>(arguments, "service.txt"));
+			serviceTxtSize = (DWORD)std::get<0>(serviceTxt).size();
+			serviceTxtKeys = &std::get<0>(serviceTxt)[0];
+			serviceTxtValues = &std::get<1>(serviceTxt)[0];
+		}
+
+		const auto computerName = GetComputerName();
 
 		// see https://docs.microsoft.com/en-us/windows/win32/api/windns/nf-windns-dnsserviceconstructinstance
 
@@ -165,12 +173,14 @@ namespace nsd_windows {
 			static_cast<WORD>(servicePort), // WORD wPort
 			0, // WORD wPriority
 			0, // WORD wWeight
-			0, // DWORD dwPropertiesCount
-			nullptr, // PCWSTR* keys
-			nullptr // PCWSTR* values
+			serviceTxtSize, // DWORD dwPropertiesCount
+			serviceTxtKeys, // PCWSTR* keys
+			serviceTxtValues // PCWSTR* values
 		);
 
-		// TODO TXT
+		auto context = std::make_unique<RegisterContext>();
+		context->plugin = this;
+		context->handle = handle;
 
 		auto& request = context->request;
 		request.Version = DNS_QUERY_REQUEST_VERSION1;
@@ -183,7 +193,7 @@ namespace nsd_windows {
 		const auto status = DnsServiceRegister(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
-			DnsServiceFreeInstance(pServiceInstance);
+			DnsServiceFreeInstance(pServiceInstance); // TODO see if this can bee freed generally instead of here
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
 		}
 
@@ -247,7 +257,7 @@ namespace nsd_windows {
 				methodChannel->InvokeMethod("onServiceDiscovered", CreateMethodResult({
 						{ "handle", handle },
 						{ "service.name", serviceInfo.name.value() },
-						{ "service.type", serviceInfo.type.value() }
+						{ "service.type", serviceInfo.type.value() },
 					}));
 			}
 		}
@@ -258,7 +268,7 @@ namespace nsd_windows {
 				methodChannel->InvokeMethod("onServiceLost", CreateMethodResult({
 						{ "handle", handle },
 						{ "service.name", serviceInfo.name.value() },
-						{ "service.type", serviceInfo.type.value() }
+						{ "service.type", serviceInfo.type.value() },
 					}));
 			}
 		}
@@ -290,6 +300,7 @@ namespace nsd_windows {
 		const auto serviceType = components.at(1) + "." + components.at(2);
 		const auto servicePort = pInstance->wPort;
 		const auto serviceHost = ToUtf8(pInstance->pszHostName);
+		const auto serviceTxt = WindowsTxtToFlutterTxt(pInstance->dwPropertyCount, pInstance->keys, pInstance->values);
 
 		DnsServiceFreeInstance(pInstance);
 		resolveContextMap.erase(it);
@@ -300,6 +311,7 @@ namespace nsd_windows {
 				{ "service.name", serviceName },
 				{ "service.port", servicePort },
 				{ "service.host", serviceHost },
+				{ "service.txt", serviceTxt },
 			}));
 	}
 
@@ -333,6 +345,8 @@ namespace nsd_windows {
 		const auto serviceType = components.at(1) + "." + components.at(2);
 		const auto servicePort = pInstance->wPort;
 		const auto serviceHost = ToUtf8(pInstance->pszHostName);
+		const auto serviceTxt = WindowsTxtToFlutterTxt(pInstance->dwPropertyCount, pInstance->keys, pInstance->values);
+
 
 		// later, the existing request must be reused with the newly received instance for unregistering 
 		DnsServiceFreeInstance(request.pServiceInstance); // free existing instance
@@ -344,6 +358,7 @@ namespace nsd_windows {
 				{ "service.name", serviceName },
 				{ "service.port", servicePort },
 				{ "service.host", serviceHost },
+				{ "service.txt", serviceTxt },
 			}));
 	}
 

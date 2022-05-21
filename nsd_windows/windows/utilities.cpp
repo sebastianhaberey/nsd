@@ -3,12 +3,70 @@
 #include <codecvt>
 #include <chrono>
 #include <ctime>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stringapiset.h>
 #include <strsafe.h>
 
 namespace nsd_windows {
+
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const std::vector<PCWSTR>& keys, const std::vector<PCWSTR>& values) {
+		flutter::EncodableMap txt;
+
+		for (int i = 0; i < keys.size(); i++) {
+
+			const auto key = ToUtf8(keys[i]);
+			const auto codeUnitsString = ToUtf8(values[i]);
+			const auto codeUnitsList = std::vector<unsigned char>(codeUnitsString.begin(), codeUnitsString.end());
+
+			if (codeUnitsList.empty()) {
+
+				// Windows doesn't distinguish between "empty value" ("foo=") and "no value" (e.g. "foo") as described in RFC6763,
+				// instead all "no value" will be empty. We treat both these value types as "no value" to be consistent with the other platforms.
+				// see https://datatracker.ietf.org/doc/html/rfc6763#section-6.4
+
+				txt[key] = std::monostate();
+			}
+			else {
+				txt[key] = codeUnitsList;
+			}
+		}
+		return txt;
+	}
+
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values) {
+		return WindowsTxtToFlutterTxt(std::vector<PCWSTR>(keys, keys + count), std::vector<PCWSTR>(values, values + count));
+	}
+
+	std::tuple<std::vector<PCWSTR>, std::vector<PCWSTR>> FlutterTxtToWindowsTxt(const flutter::EncodableMap& txt) {
+		std::vector<PCWSTR> keys;
+		std::vector<PCWSTR> values;
+
+		for (auto it = txt.begin(); it != txt.end(); it++) {
+
+			const auto key = CreateUtf16CString(std::get<std::string>(it->first));
+
+			if (it->second.IsNull()) {
+				keys.push_back(key);
+				values.push_back(nullptr);
+			}
+			else if (std::holds_alternative<std::vector<unsigned char>>(it->second)) { // list of UTF-8 code units
+				keys.push_back(key);
+				const auto& codeUnitsList = std::get<std::vector<unsigned char>>(it->second);
+				const std::string codeUnitsString(codeUnitsList.begin(), codeUnitsList.end());
+
+				// Non-UTF-8 code units such as '255' will be replaced with U+FFFD by MultiByteToWideChar, so they will not survive the journey
+				values.push_back(CreateUtf16CString(codeUnitsString));
+			}
+			else {
+				// ignore value
+			}
+		}
+
+		return { keys, values };
+	}
 
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values) {
 		return std::move(std::make_unique<flutter::EncodableValue>(values));
@@ -113,12 +171,18 @@ namespace nsd_windows {
 	}
 
 	PWCHAR CreateUtf16CString(const std::wstring value) {
-		PWCHAR pCString = new wchar_t[value.length() + 1];
-		wcscpy(pCString, value.c_str());
+		const auto size = value.length() + 1;
+		const PWCHAR pCString = new wchar_t[size];
+		wcscpy_s(pCString, size, value.c_str());
 		return pCString;
 	}
 
 	PWCHAR CreateUtf16CString(const std::string value) {
 		return CreateUtf16CString(ToUtf16(value));
+	}
+
+	bool HasKey(const flutter::EncodableMap& map, const std::string key) {
+		auto it = map.find(key);
+		return it != map.end() && !it->second.IsNull() && !std::holds_alternative<std::monostate>(it->second);
 	}
 }

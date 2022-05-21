@@ -15,10 +15,15 @@ namespace nsd_windows {
 
 	std::string ToErrorCode(const ErrorCause errorCause);
 
-	class NsdError : public std::runtime_error {
+	class NsdError : public std::exception {
 	public:
+		const std::string message;
 		const ErrorCause errorCause;
-		NsdError(ErrorCause errorCause, std::string message);
+
+		// TODO find out why this is necessary, extending std::runtime_error and calling std::runtime_error(message) should be ok?
+		virtual char const* what() const throw() override;
+
+		NsdError(const ErrorCause errorCause, const std::string& message);
 		virtual ~NsdError();
 
 	};
