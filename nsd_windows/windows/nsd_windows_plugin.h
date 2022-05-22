@@ -36,10 +36,16 @@ namespace nsd_windows {
 		NsdWindowsPlugin* plugin;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
-		DNS_SERVICE_BROWSE_REQUEST request;
 		std::vector<ServiceInfo> services;
 	};
 
+
+	struct ResolveContext {
+
+		NsdWindowsPlugin* plugin;
+		std::string handle;
+		DNS_SERVICE_CANCEL canceller;
+	};
 
 	struct RegisterContext {
 
@@ -47,14 +53,6 @@ namespace nsd_windows {
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 		DNS_SERVICE_REGISTER_REQUEST request;
-	};
-
-	struct ResolveContext {
-
-		NsdWindowsPlugin* plugin;
-		std::string handle;
-		DNS_SERVICE_CANCEL canceller;
-		DNS_SERVICE_RESOLVE_REQUEST request;
 	};
 
 	class NsdWindowsPlugin : public flutter::Plugin {

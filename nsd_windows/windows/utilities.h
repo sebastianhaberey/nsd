@@ -7,10 +7,8 @@
 #include <windows.h>
 
 #include <functional>
-#include <iostream>
 #include <optional>
 #include <map>
-#include <stdexcept>
 #include <variant>
 #include <vector>
 
@@ -18,16 +16,29 @@ using namespace std::string_literals;
 
 namespace nsd_windows {
 
-	typedef flutter::EncodableMap FlutterTxt;
-
+	// provides c-style pointers but frees the values along with the parent object 
 	struct WindowsTxt {
+
+		WindowsTxt() {};
+		virtual ~WindowsTxt() {};
+		WindowsTxt(const WindowsTxt&) = delete; // copying would invalidate c pointers
+
 		DWORD size = 0;
-		PCWSTR* keys = nullptr;
-		PCWSTR* values = nullptr;
+		PCWSTR* pKeyPointers = nullptr;
+		PCWSTR* pValuePointers = nullptr;
+
+	private:
+
+		friend std::unique_ptr<WindowsTxt> FlutterTxtToWindowsTxt(std::optional<const flutter::EncodableMap> txt);
+
+		std::vector<std::wstring> keys;
+		std::vector<std::wstring> values;
+		std::vector<PCWSTR> keyPointers;
+		std::vector<PCWSTR> valuePointers;
 	};
 
 	template<class T>
-	std::optional<T> DeserializeO(const flutter::EncodableMap& arguments, const std::string key)
+	std::optional<T> DeserializeOptional(const flutter::EncodableMap& arguments, const std::string key)
 	{
 		auto it = arguments.find(key);
 
@@ -41,7 +52,7 @@ namespace nsd_windows {
 	template<class T, typename F>
 	T Deserialize(const flutter::EncodableMap& arguments, const std::string key, const F&& throwFunc)
 	{
-		std::optional<T> valueO = DeserializeO<T>(arguments, key);
+		std::optional<T> valueO = DeserializeOptional<T>(arguments, key);
 		if (!valueO.has_value()) {
 			throwFunc();
 			throw NsdError(ErrorCause::ILLEGAL_ARGUMENT, "Missing value: "s + key);
@@ -65,8 +76,8 @@ namespace nsd_windows {
 		return values.end();
 	}
 
-	FlutterTxt WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values);
-	WindowsTxt FlutterTxtToWindowsTxt(const FlutterTxt& txt);
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values);
+	std::unique_ptr<WindowsTxt> FlutterTxtToWindowsTxt(std::optional<const flutter::EncodableMap> txt);
 
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values);
 
@@ -77,6 +88,5 @@ namespace nsd_windows {
 	std::vector<std::string> Split(const std::string text, const char delimiter);
 	std::string GetTimeNow();
 	std::wstring GetComputerName();
-	PWCHAR CreateUtf16CString(const std::string value);
-	PWCHAR CreateUtf16CString(const std::wstring value);
+	std::vector<PCWSTR> GetPointers(std::vector<std::wstring>& in);
 }

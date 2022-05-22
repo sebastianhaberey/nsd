@@ -1,25 +1,19 @@
 #include "utilities.h"
 
 #include <codecvt>
-#include <chrono>
-#include <ctime>
-#include <cstring>
-#include <iomanip>
-#include <iostream>
 #include <sstream>
-#include <stringapiset.h>
-#include <strsafe.h>
+#include <algorithm>
 
 namespace nsd_windows {
 
-	FlutterTxt WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values) {
-		FlutterTxt txt;
+	flutter::EncodableMap WindowsTxtToFlutterTxt(const DWORD count, const PWSTR* keys, const PWSTR* values) {
+		flutter::EncodableMap txt;
 
 		for (DWORD i = 0; i < count; i++) {
 
-			const auto key = ToUtf8(keys[i]);
-			const auto codeUnitsString = ToUtf8(values[i]);
-			const auto codeUnitsList = std::vector<unsigned char>(codeUnitsString.begin(), codeUnitsString.end());
+			auto key = ToUtf8(keys[i]);
+			auto codeUnitsString = ToUtf8(values[i]);
+			auto codeUnitsList = std::vector<unsigned char>(codeUnitsString.begin(), codeUnitsString.end());
 
 			if (codeUnitsList.empty()) {
 
@@ -36,41 +30,39 @@ namespace nsd_windows {
 		return txt;
 	}
 
-	WindowsTxt FlutterTxtToWindowsTxt(const FlutterTxt& txt) {
+	std::unique_ptr<WindowsTxt> FlutterTxtToWindowsTxt(std::optional<const flutter::EncodableMap> txt) {
 
-		auto count = txt.size();
-
-		if (count == 0) {
-			return WindowsTxt();
+		if (!txt.has_value() || txt->size() == 0) {
+			return std::make_unique<WindowsTxt>();
 		}
 
-		// TODO find out if DnsServiceFreeInstance() really frees the pointer array and the associated strings,
-		// otherwise this will be a memory leak.
+		auto count = txt->size();
+		auto windowsTxt = std::make_unique<WindowsTxt>();
 
-		WindowsTxt windowsTxt;
+		for (auto it = txt->begin(); it != txt->end(); it++) {
 
-		windowsTxt.size = static_cast<DWORD>(count);
-		windowsTxt.keys = new PCWSTR[count];
-		windowsTxt.values = new PCWSTR[count];
+			auto key = ToUtf16(std::get<std::string>(it->first));
+			windowsTxt->keys.push_back(key);
 
-		auto it = txt.begin();
+			if (std::holds_alternative<std::vector<unsigned char>>(it->second)) {
 
-		for (auto i = 0; i < count; i++) {
-
-			windowsTxt.keys[i] = CreateUtf16CString(std::get<std::string>(it->first));
-
-			if (std::holds_alternative<std::vector<unsigned char>>(it->second)) { 
-				const auto& codeUnitsList = std::get<std::vector<unsigned char>>(it->second); // list of UTF-8 code units
-				const std::string codeUnitsString(codeUnitsList.begin(), codeUnitsList.end());
-				windowsTxt.values[i] = CreateUtf16CString(codeUnitsString); // Non-UTF-8 code units such as '255' will be replaced with U+FFFD by MultiByteToWideChar, so they will not survive the journey
+				auto& codeUnitsList = std::get<std::vector<unsigned char>>(it->second); // list of UTF-8 code units
+				std::string codeUnitsString(codeUnitsList.begin(), codeUnitsList.end());
+				auto value = ToUtf16(codeUnitsString); // Non-UTF-8 code units such as '255' will be replaced with U+FFFD by MultiByteToWideChar, so they will not survive the journey
+				windowsTxt->values.push_back(value);
 			}
 			else {
-				windowsTxt.values[i] = nullptr; // every other data type is unknown and treated as null value
+				windowsTxt->values.push_back(L"");
 			}
-
-			it++;
 		}
-		return windowsTxt;
+
+		windowsTxt->size = static_cast<DWORD>(count);
+		windowsTxt->keyPointers = GetPointers(windowsTxt->keys);
+		windowsTxt->valuePointers = GetPointers(windowsTxt->values);
+		windowsTxt->pKeyPointers = &windowsTxt->keyPointers[0];
+		windowsTxt->pValuePointers = &windowsTxt->valuePointers[0];
+
+		return std::move(windowsTxt);
 	}
 
 	std::unique_ptr<flutter::EncodableValue> CreateMethodResult(const flutter::EncodableMap values) {
@@ -86,7 +78,7 @@ namespace nsd_windows {
 			return L"";
 		}
 
-		const auto size_needed = MultiByteToWideChar(CP_UTF8, 0, &string.at(0), (int)string.size(), nullptr, 0);
+		auto size_needed = MultiByteToWideChar(CP_UTF8, 0, &string.at(0), (int)string.size(), nullptr, 0);
 		if (size_needed <= 0)
 		{
 			throw std::runtime_error("MultiByteToWideChar() failed: " + std::to_string(size_needed));
@@ -107,7 +99,7 @@ namespace nsd_windows {
 			return "";
 		}
 
-		const auto size_needed = WideCharToMultiByte(CP_UTF8, 0, &wide_string.at(0), (int)wide_string.size(), nullptr, 0, nullptr, nullptr);
+		auto size_needed = WideCharToMultiByte(CP_UTF8, 0, &wide_string.at(0), (int)wide_string.size(), nullptr, 0, nullptr, nullptr);
 		if (size_needed <= 0)
 		{
 			throw std::runtime_error("WideCharToMultiByte() failed: " + std::to_string(size_needed));
@@ -165,7 +157,7 @@ namespace nsd_windows {
 		std::tm bt{};
 		auto timer = std::time_t(std::time(0));
 		localtime_s(&bt, &timer);
-		char buf[64];
+		char buf[64]{};
 		return { buf, std::strftime(buf, sizeof(buf), "%F %T", &bt) };
 	}
 
@@ -179,14 +171,12 @@ namespace nsd_windows {
 		return &computerName[0];
 	}
 
-	PWCHAR CreateUtf16CString(const std::wstring value) {
-		const auto size = value.length() + 1;
-		const PWCHAR pCString = new wchar_t[size];
-		wcscpy_s(pCString, size, value.c_str());
-		return pCString;
-	}
-
-	PWCHAR CreateUtf16CString(const std::string value) {
-		return CreateUtf16CString(ToUtf16(value));
+	std::vector<PCWSTR> GetPointers(std::vector<std::wstring>& in)
+	{
+		std::vector<PCWSTR> out;
+		std::transform(in.begin(), in.end(), std::back_inserter(out), [](const std::wstring& string) -> PCWSTR {
+			return string.c_str();
+			});
+		return out;
 	}
 }
