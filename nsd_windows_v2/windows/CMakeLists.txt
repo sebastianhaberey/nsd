@@ -5,28 +5,24 @@
 cmake_minimum_required(VERSION 3.14)
 
 # Project-level configuration.
-set(PROJECT_NAME "nsd_windows")
+set(PROJECT_NAME "nsd_windows_v2")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 # This value is used when generating builds using this plugin, so it must
 # not be changed
-set(PLUGIN_NAME "nsd_windows_plugin")
+set(PLUGIN_NAME "nsd_windows_v2_plugin")
 
 # Any new source files that you add to the plugin should be added here.
 list(APPEND PLUGIN_SOURCES
-  "nsd_windows_plugin.h"
-  "nsd_windows_plugin.cpp"
-  "nsd_error.h"
-  "nsd_error.cpp"
-  "utilities.h"
-  "utilities.cpp"
+  "nsd_windows_v2_plugin.cpp"
+  "nsd_windows_v2_plugin.h"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment
 # on PLUGIN_NAME above).
 add_library(${PLUGIN_NAME} SHARED
-  "include/nsd_windows/nsd_windows_plugin_c_api.h"
-  "nsd_windows_plugin_c_api.cpp"
+  "include/nsd_windows_v2/nsd_windows_v2_plugin_c_api.h"
+  "nsd_windows_v2_plugin_c_api.cpp"
   ${PLUGIN_SOURCES}
 )
 
@@ -51,7 +47,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
-set(nsd_windows_bundled_libraries
+set(nsd_windows_v2_bundled_libraries
   ""
   PARENT_SCOPE
 )
