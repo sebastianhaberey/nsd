@@ -23,3 +23,15 @@ body:
         - Other (please describe above)
     validations:
       required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform does this issue concern?
+      options:
+        - Android
+        - iOS
+        - macOS
+        - Windows
+        - All of them
+        - Don't know
