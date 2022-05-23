@@ -44,3 +44,5 @@ flutter:
         default_package: nsd_ios
       macos:
         default_package: nsd_macos
+      windows:
+        default_package: nsd_windows_v2
