@@ -103,3 +103,7 @@
 
 * re-activated auto-resolve in example application
 * added projects using nsd section to readme
+
+## 2.0.0
+
+* issue #9: initial release of windows plugin

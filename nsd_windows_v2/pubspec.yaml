@@ -1,7 +1,7 @@
 name: nsd_windows_v2
 description: Flutter network service discovery plugin (Windows submodule - will be installed with the parent plugin).
-version: 0.0.1
-repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd_windows
+version: 1.0.0
+repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd_windows_v2
 issue_tracker: https://github.com/sebastianhaberey/nsd/issues
 
 environment:
