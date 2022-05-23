@@ -159,7 +159,7 @@ will log errors and all calls to the native side (and their callbacks), which of
 
 ## Contributors
 
-[Ivesecoto](https://github.com/lvsecoto) - wrote the Windows prototype
+[lxp-git](https://github.com/lxp-git) - wrote the Windows prototype!
 
 <br></br>
 
