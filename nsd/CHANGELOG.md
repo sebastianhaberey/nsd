@@ -120,3 +120,7 @@
 ## 2.0.3
 
 * added nsd_windows_v2 as default dependency for windows
+
+## 2.1.0
+
+* windows: migrated current code back to nsd_windows

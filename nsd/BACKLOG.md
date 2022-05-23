@@ -4,11 +4,11 @@
 
 ## Unsorted
 
-- windows platform
 - linux platform
 
 ## Done
 
+- windows platform
 - platform: add toString() for discovery and registration
 - platform: onUnregistrationSuccessful: discard handlers
 - android: serialization: serializeServiceInfo: use serializeKey instead of string constants
