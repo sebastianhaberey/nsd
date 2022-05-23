@@ -14,7 +14,7 @@
 
 namespace nsd_windows {
 
-	class NsdWindowsPlugin;
+	class NsdWindows;
 
 	struct ServiceInfo {
 
@@ -33,7 +33,7 @@ namespace nsd_windows {
 
 	struct DiscoveryContext {
 
-		NsdWindowsPlugin* plugin;
+		NsdWindows* nsdWindows;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 		std::vector<ServiceInfo> services;
@@ -42,34 +42,32 @@ namespace nsd_windows {
 
 	struct ResolveContext {
 
-		NsdWindowsPlugin* plugin;
+		NsdWindows* nsdWindows;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 	};
 
 	struct RegisterContext {
 
-		NsdWindowsPlugin* plugin;
+		NsdWindows* nsdWindows;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 		DNS_SERVICE_REGISTER_REQUEST request;
 	};
 
-	class NsdWindowsPlugin : public flutter::Plugin {
+	class NsdWindows {
 	public:
-		static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 
 		static void DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records);
 		static void DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 		static void DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 		static void DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance);
 
-		NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel);
-		virtual ~NsdWindowsPlugin();
+		NsdWindows(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel);
+		virtual ~NsdWindows();
 
-		// Disallow copy and assign.
-		NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
-		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
+		NsdWindows(const NsdWindows&) = delete; // disallow copy
+		NsdWindows& operator=(const NsdWindows&) = delete; // disallow assign
 
 		void OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records);
 		void OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance);

@@ -1,4 +1,4 @@
-#include "nsd_windows_plugin.h"
+#include "nsd_windows.h"
 
 #include "nsd_error.h"
 #include "utilities.h"
@@ -15,23 +15,16 @@
 
 namespace nsd_windows {
 
-	void NsdWindowsPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar) {
-		auto methodChannel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-			registrar->messenger(), "com.haberey/nsd", &flutter::StandardMethodCodec::GetInstance());
-		auto nsdWindowsPlugin = std::make_unique<NsdWindowsPlugin>(std::move(methodChannel));
-		registrar->AddPlugin(std::move(nsdWindowsPlugin));
-	}
-
-	NsdWindowsPlugin::NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) {
+	NsdWindows::NsdWindows(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) {
 		this->methodChannel = std::move(methodChannel);
 		this->methodChannel->SetMethodCallHandler(
-			[plugin = this](const auto& call, auto result) { plugin->HandleMethodCall(call, result);
+			[nsdWindows = this](const auto& call, auto result) { nsdWindows->HandleMethodCall(call, result);
 			});
 	}
 
-	NsdWindowsPlugin::~NsdWindowsPlugin() {}
+	NsdWindows::~NsdWindows() {}
 
-	void NsdWindowsPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue>& methodCall,
+	void NsdWindows::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue>& methodCall,
 		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
 
 		const auto& method_name = methodCall.method_name();
@@ -66,13 +59,13 @@ namespace nsd_windows {
 		}
 	}
 
-	void NsdWindowsPlugin::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	void NsdWindows::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
 		auto context = std::make_unique<DiscoveryContext>();
-		context->plugin = this;
+		context->nsdWindows = this;
 		context->handle = handle;
 
 		auto queryName = ToUtf16(serviceType + ".local");
@@ -95,7 +88,7 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	void NsdWindows::StopDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
 
@@ -117,14 +110,14 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	void NsdWindows::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceName = Deserialize<std::string>(arguments, "service.name");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
 		auto context = std::make_unique<ResolveContext>();
-		context->plugin = this;
+		context->nsdWindows = this;
 		context->handle = handle;
 
 		auto queryName = ToUtf16(serviceName + "." + serviceType + ".local");
@@ -146,7 +139,7 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	void NsdWindows::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceName = Deserialize<std::string>(arguments, "service.name");
@@ -175,7 +168,7 @@ namespace nsd_windows {
 		);
 
 		auto context = std::make_unique<RegisterContext>();
-		context->plugin = this;
+		context->nsdWindows = this;
 		context->handle = handle;
 
 		auto& request = context->request;
@@ -200,7 +193,7 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
+	void NsdWindows::Unregister(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
 		auto handle = Deserialize<std::string>(arguments, "handle");
 
@@ -226,7 +219,7 @@ namespace nsd_windows {
 		result->Success();
 	}
 
-	void NsdWindowsPlugin::OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records)
+	void NsdWindows::OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records)
 	{
 		//std::cout << GetTimeNow() << " " << "OnServiceDiscovered()" << std::endl;
 
@@ -278,7 +271,7 @@ namespace nsd_windows {
 		DnsRecordListFree(records, DnsFreeRecordList);
 	}
 
-	void NsdWindowsPlugin::OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::OnServiceResolved(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		auto it = resolveContextMap.find(handle);
 		if (it == resolveContextMap.end()) {
@@ -317,7 +310,7 @@ namespace nsd_windows {
 			}));
 	}
 
-	void NsdWindowsPlugin::OnServiceRegistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::OnServiceRegistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		auto it = registerContextMap.find(handle);
 		if (it == registerContextMap.end()) {
@@ -361,7 +354,7 @@ namespace nsd_windows {
 			}));
 	}
 
-	void NsdWindowsPlugin::OnServiceUnregistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::OnServiceUnregistered(const std::string handle, const DWORD status, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		DnsServiceFreeInstance(pInstance); // not used
 
@@ -385,31 +378,31 @@ namespace nsd_windows {
 		methodChannel->InvokeMethod("onUnregistrationSuccessful", CreateMethodResult({ { "handle", handle } }));
 	}
 
-	void NsdWindowsPlugin::DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records)
+	void NsdWindows::DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records)
 	{
 		DiscoveryContext& discoveryContext = *static_cast<DiscoveryContext*>(context);
-		discoveryContext.plugin->OnServiceDiscovered(discoveryContext.handle, status, records);
+		discoveryContext.nsdWindows->OnServiceDiscovered(discoveryContext.handle, status, records);
 	}
 
-	void NsdWindowsPlugin::DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		ResolveContext& resolveContext = *static_cast<ResolveContext*>(context);
-		resolveContext.plugin->OnServiceResolved(resolveContext.handle, status, pInstance);
+		resolveContext.nsdWindows->OnServiceResolved(resolveContext.handle, status, pInstance);
 	}
 
-	void NsdWindowsPlugin::DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
-		registerContext.plugin->OnServiceRegistered(registerContext.handle, status, pInstance);
+		registerContext.nsdWindows->OnServiceRegistered(registerContext.handle, status, pInstance);
 	}
 
-	void NsdWindowsPlugin::DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
+	void NsdWindows::DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
 	{
 		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
-		registerContext.plugin->OnServiceUnregistered(registerContext.handle, status, pInstance);
+		registerContext.nsdWindows->OnServiceUnregistered(registerContext.handle, status, pInstance);
 	}
 
-	std::optional<ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromRecords(const PDNS_RECORD& records) {
+	std::optional<ServiceInfo> NsdWindows::GetServiceInfoFromRecords(const PDNS_RECORD& records) {
 
 		// record properties see https://docs.microsoft.com/en-us/windows/win32/api/windns/ns-windns-dns_recordw
 		// seen: DNS_TYPE_A (0x0001), DNS_TYPE_TEXT (0x0010), DNS_TYPE_AAAA (0x001c), DNS_TYPE_SRV (0x0021)
@@ -423,7 +416,7 @@ namespace nsd_windows {
 		return std::nullopt;
 	}
 
-	std::optional<nsd_windows::ServiceInfo> NsdWindowsPlugin::GetServiceInfoFromPtrRecord(const PDNS_RECORD& record)
+	std::optional<nsd_windows::ServiceInfo> NsdWindows::GetServiceInfoFromPtrRecord(const PDNS_RECORD& record)
 	{
 		auto nameHost = ToUtf8(record->Data.PTR.pNameHost); // PTR rdata field DNAME, e.g. "HP Color LaserJet MFP M277dw (C162F4)._http._tcp.local"
 		auto ttl = record->dwTtl;

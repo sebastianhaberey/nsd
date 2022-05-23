@@ -16,8 +16,8 @@ set(PLUGIN_NAME "nsd_windows_v2_plugin")
 list(APPEND PLUGIN_SOURCES
   "nsd_windows_v2_plugin.cpp"
   "nsd_windows_v2_plugin.h"
-  "nsd_windows_plugin.h"
-  "nsd_windows_plugin.cpp"
+  "nsd_windows.h"
+  "nsd_windows.cpp"
   "nsd_error.h"
   "nsd_error.cpp"
   "utilities.h"

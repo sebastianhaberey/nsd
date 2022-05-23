@@ -21,7 +21,7 @@ namespace nsd_windows {
 
 		WindowsTxt() {};
 		virtual ~WindowsTxt() {};
-		WindowsTxt(const WindowsTxt&) = delete; // copying would invalidate c pointers
+		WindowsTxt(const WindowsTxt&) = delete; // copying would invalidate c pointersv
 
 		DWORD size = 0;
 		PCWSTR* pKeyPointers = nullptr;
