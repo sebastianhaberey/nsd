@@ -112,7 +112,7 @@ pubspec.lock
 !**/macos/**/default.perspectivev3
 
 # see https://github.com/flutter/plugins/blob/main/packages/url_launcher/url_launcher_windows/windows/.gitignore
-**/windows/**/flutter/
+**/windows/**/flutter/ephemeral
 
 # Visual Studio user-specific files.
 **/windows/**/*.suo
