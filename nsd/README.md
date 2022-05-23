@@ -4,6 +4,7 @@
 [![Android Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/android-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/android-tests.yml)
 [![iOS Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/ios-tests.yml)
 [![macOS Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-tests.yml)
+[![Windows Tests](https://github.com/sebastianhaberey/nsd/actions/workflows/windows-tests.yml/badge.svg)](https://github.com/sebastianhaberey/nsd/actions/workflows/macos-tests.yml)
 [![codecov](https://codecov.io/gh/sebastianhaberey/nsd/branch/main/graph/badge.svg?token=JPGRAMJWV2)](https://codecov.io/gh/sebastianhaberey/nsd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![pub package](https://img.shields.io/pub/v/nsd.svg)](https://pub.dev/packages/nsd)
@@ -89,6 +90,7 @@ and register multiple services. It will discover its own services but also other
 - Android: API level 21 (Android 5.0)
 - iOS: 12.0
 - macOS: 10.11 (El Capitan)
+- Windows 10 (19H1/1903) (Mai 2019 Update)
 
 <br></br>
 
@@ -138,6 +140,10 @@ Even though using a service structure to represent a service type feels like a h
 consistent on Android / macOS / iOS platform APIs. Since they are all doing it, 
 the plugin has the same behavior.
 
+**Note**: this currently doesn't function 100% on Windows platforms. While it will detect the types of
+services registered by other machines correctly, it will not detect types of services that were 
+registered using the plugin.
+
 ### Enable Debug Logging
 
 In order to help debugging, logging can be enabled for individual topics. For example
@@ -151,6 +157,14 @@ will log errors and all calls to the native side (and their callbacks), which of
 
 <br></br>
 
+## Contributors
+
+[Ivesecoto](https://github.com/lvsecoto) - wrote the Windows prototype
+
+<br></br>
+
 ## Projects using nsd
 
 🎮 [Tic Tac Toe Local Multiplayer Game for Android](https://github.com/lakscastro/ttt) by Laks Castro
+
+<br></br>
