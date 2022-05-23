@@ -111,3 +111,8 @@
 ## 2.0.1
 
 * fixed contributors section in readme
+
+## 2.0.2
+
+* updated github issue template
+* new version to update pub.dev after package transfer
