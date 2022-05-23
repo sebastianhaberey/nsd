@@ -10,4 +10,5 @@
    4. Disable `publish_to: none` in project _nsd_
 5. Commit locally with message "versioning (x.y.z)"
 6. Publish with `flutter pub publish` starting with lowest in dependency tree
-7. Push versioning changes, wait for CI to complete successfully
+7. Tag version
+8. Push versioning changes, wait for CI to complete successfully
