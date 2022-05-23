@@ -1,6 +1,8 @@
 #ifndef FLUTTER_PLUGIN_NSD_WINDOWS_PLUGIN_H_
 #define FLUTTER_PLUGIN_NSD_WINDOWS_PLUGIN_H_
 
+#include "nsd_windows.h"
+
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 
@@ -8,24 +10,21 @@
 
 namespace nsd_windows {
 
-class NsdWindowsPlugin : public flutter::Plugin {
- public:
-  static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
+	class NsdWindowsPlugin : public flutter::Plugin {
+	public:
+		static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 
-  NsdWindowsPlugin();
+		NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel);
+		virtual ~NsdWindowsPlugin();
 
-  virtual ~NsdWindowsPlugin();
+		// Disallow copy and assign.
+		NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
+		NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
 
-  // Disallow copy and assign.
-  NsdWindowsPlugin(const NsdWindowsPlugin&) = delete;
-  NsdWindowsPlugin& operator=(const NsdWindowsPlugin&) = delete;
+	private:
 
- private:
-  // Called when a method is called on this plugin's channel from Dart.
-  void HandleMethodCall(
-      const flutter::MethodCall<flutter::EncodableValue> &method_call,
-      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
-};
+		nsd_windows::NsdWindows nsdWindows;
+	};
 
 }  // namespace nsd_windows
 

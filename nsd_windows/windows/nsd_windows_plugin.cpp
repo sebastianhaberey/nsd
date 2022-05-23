@@ -15,45 +15,15 @@
 
 namespace nsd_windows {
 
-// static
-void NsdWindowsPlugin::RegisterWithRegistrar(
-    flutter::PluginRegistrarWindows *registrar) {
-  auto channel =
-      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "nsd_windows",
-          &flutter::StandardMethodCodec::GetInstance());
+	void NsdWindowsPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar) {
+		auto methodChannel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+			registrar->messenger(), "com.haberey/nsd", &flutter::StandardMethodCodec::GetInstance());
+		auto nsdWindows = std::make_unique<NsdWindowsPlugin>(std::move(methodChannel));
+		registrar->AddPlugin(std::move(nsdWindows));
+	}
 
-  auto plugin = std::make_unique<NsdWindowsPlugin>();
+	NsdWindowsPlugin::NsdWindowsPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) : nsdWindows(std::move(methodChannel)) {}
 
-  channel->SetMethodCallHandler(
-      [plugin_pointer = plugin.get()](const auto &call, auto result) {
-        plugin_pointer->HandleMethodCall(call, std::move(result));
-      });
-
-  registrar->AddPlugin(std::move(plugin));
-}
-
-NsdWindowsPlugin::NsdWindowsPlugin() {}
-
-NsdWindowsPlugin::~NsdWindowsPlugin() {}
-
-void NsdWindowsPlugin::HandleMethodCall(
-    const flutter::MethodCall<flutter::EncodableValue> &method_call,
-    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
-    }
-    result->Success(flutter::EncodableValue(version_stream.str()));
-  } else {
-    result->NotImplemented();
-  }
-}
+	NsdWindowsPlugin::~NsdWindowsPlugin() {};
 
 }  // namespace nsd_windows
