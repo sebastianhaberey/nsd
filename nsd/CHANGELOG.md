@@ -116,3 +116,7 @@
 
 * updated github issue template
 * new version to update pub.dev after package transfer
+
+## 2.0.3
+
+* added nsd_windows_v2 as default dependency for windows
