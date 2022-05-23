@@ -27,8 +27,8 @@ dependencies:
     path: ../nsd_ios
   nsd_macos:
     path: ../nsd_macos
-  nsd_windows:
-    path: ../nsd_windows
+  nsd_windows_v2:
+    path: ../nsd_windows_v2
   nsd_platform_interface:
     path: ../nsd_platform_interface
 
