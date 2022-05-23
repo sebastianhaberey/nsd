@@ -107,3 +107,7 @@
 ## 2.0.0
 
 * issue #9: initial release of windows plugin
+
+## 2.0.1
+
+* fixed contributors section in readme
