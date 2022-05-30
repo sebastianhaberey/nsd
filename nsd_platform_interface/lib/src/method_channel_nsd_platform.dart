@@ -46,15 +46,15 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     final completer = Completer<Discovery>();
     _attachDummyCallback(completer.future);
 
-    setHandler(handle, 'onDiscoveryStartSuccessful',
+    _setHandler(handle, 'onDiscoveryStartSuccessful',
         (arguments) => completer.complete(discovery));
 
-    setHandler(handle, 'onDiscoveryStartFailed', (arguments) {
+    _setHandler(handle, 'onDiscoveryStartFailed', (arguments) {
       discardHandlers(handle);
       completer.completeError(deserializeError(arguments)!);
     });
 
-    setHandler(handle, 'onServiceDiscovered', (arguments) async {
+    _setHandler(handle, 'onServiceDiscovered', (arguments) async {
       var service = deserializeService(arguments)!;
       if (autoResolve) {
         service = await resolve(service);
@@ -66,7 +66,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       discovery.add(service);
     });
 
-    setHandler(handle, 'onServiceLost',
+    _setHandler(handle, 'onServiceLost',
         (arguments) => discovery.remove(deserializeService(arguments)!));
 
     return invoke('startDiscovery', {
@@ -81,12 +81,12 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     _attachDummyCallback(completer.future);
     final handle = discovery.id;
 
-    setHandler(handle, 'onDiscoveryStopSuccessful', (arguments) {
+    _setHandler(handle, 'onDiscoveryStopSuccessful', (arguments) {
       discardHandlers(handle);
       completer.complete();
     });
 
-    setHandler(handle, 'onDiscoveryStopFailed', (arguments) {
+    _setHandler(handle, 'onDiscoveryStopFailed', (arguments) {
       discardHandlers(handle);
       completer.completeError(deserializeError(arguments)!);
     });
@@ -104,7 +104,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     final completer = Completer<Service>();
     _attachDummyCallback(completer.future);
 
-    setHandler(handle, 'onResolveSuccessful', (arguments) {
+    _setHandler(handle, 'onResolveSuccessful', (arguments) {
       discardHandlers(handle);
       // merge received service info into requested service info b/c some
       // properties may have been updated, but the received service info isn't
@@ -113,7 +113,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       completer.complete(merged);
     });
 
-    setHandler(handle, 'onResolveFailed', (arguments) {
+    _setHandler(handle, 'onResolveFailed', (arguments) {
       discardHandlers(handle);
       completer.completeError(deserializeError(arguments)!);
     });
@@ -132,7 +132,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     final completer = Completer<Registration>();
     _attachDummyCallback(completer.future);
 
-    setHandler(handle, 'onRegistrationSuccessful', (arguments) {
+    _setHandler(handle, 'onRegistrationSuccessful', (arguments) {
       // merge received service info into requested service info b/c some
       // properties may have been updated, but the received service info isn't
       // always complete, e.g. NetService only returns the name
@@ -140,7 +140,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       completer.complete(Registration(handle, merged));
     });
 
-    setHandler(handle, 'onRegistrationFailed', (arguments) {
+    _setHandler(handle, 'onRegistrationFailed', (arguments) {
       discardHandlers(handle);
       completer.completeError(deserializeError(arguments)!);
     });
@@ -157,12 +157,12 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     _attachDummyCallback(completer.future);
     final handle = registration.id;
 
-    setHandler(handle, 'onUnregistrationSuccessful', (arguments) {
+    _setHandler(handle, 'onUnregistrationSuccessful', (arguments) {
       discardHandlers(handle);
       completer.complete();
     });
 
-    setHandler(handle, 'onUnregistrationFailed', (arguments) {
+    _setHandler(handle, 'onUnregistrationFailed', (arguments) {
       discardHandlers(handle);
       completer.completeError(deserializeError(arguments)!);
     });
@@ -182,7 +182,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       throw NsdError(ErrorCause.illegalArgument, 'Expected handle');
     }
 
-    final handler = getHandler(handle, method);
+    final handler = _getHandler(handle, method);
     if (handler == null) {
       throw NsdError(ErrorCause.internalError, 'No handler: $method $handle');
     }
@@ -190,7 +190,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
     return handler(arguments);
   }
 
-  _Handler? getHandler(String handle, String method) {
+  _Handler? _getHandler(String handle, String method) {
     return _handlers[handle]?[method];
   }
 
@@ -201,7 +201,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
         .catchError((e) => throw toNsdError(e));
   }
 
-  void setHandler(String handle, String method, _Handler handler) {
+  void _setHandler(String handle, String method, _Handler handler) {
     _handlers.putIfAbsent(handle, () => {})[method] = handler;
   }
 

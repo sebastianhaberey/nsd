@@ -14,22 +14,21 @@ const utf8encoder = Utf8Encoder();
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MethodChannelNsdPlatform _nsd;
-  late MethodChannel _methodChannel;
-  late Map<String, Function(String handle, dynamic arguments)> _mockHandlers;
+  late MethodChannelNsdPlatform nsd;
+  late MethodChannel methodChannel;
+  late Map<String, Function(String handle, dynamic arguments)> mockHandlers;
 
   setUp(() async {
-    _nsd = MethodChannelNsdPlatform();
-    _nsd.enableLogging(LogTopic.calls);
-    _methodChannel = const MethodChannel(channelName);
-    _mockHandlers = HashMap();
+    nsd = MethodChannelNsdPlatform();
+    nsd.enableLogging(LogTopic.calls);
+    methodChannel = const MethodChannel(channelName);
+    mockHandlers = HashMap();
 
     // install custom handler that routes method calls to mock handlers
     TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
-        .setMockMethodCallHandler(_methodChannel,
-            (MethodCall methodCall) async {
+        .setMockMethodCallHandler(methodChannel, (MethodCall methodCall) async {
       final handle = deserializeHandle(methodCall.arguments)!;
-      return _mockHandlers[methodCall.method]
+      return mockHandlers[methodCall.method]
           ?.call(handle, methodCall.arguments);
     });
   });
@@ -37,33 +36,33 @@ void main() {
   group('$MethodChannelNsdPlatform discovery', () {
     test('Start succeeds if native code reports success', () async {
       // simulate success callback by native code
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      await _nsd.startDiscovery('_foo._tcp');
+      await nsd.startDiscovery('_foo._tcp');
     });
 
     test('Start succeeds for special service enumeration type', () async {
       // simulate success callback by native code
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      await _nsd.startDiscovery('_services._dns-sd._udp');
+      await nsd.startDiscovery('_services._dns-sd._udp');
     });
 
     test('Autoresolve', () async {
       late String capturedHandle;
 
       // simulate success callback by native code
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       // set up mock resolver to answer with "resolved" service
-      _mockHandlers['resolve'] = (handle, arguments) {
+      mockHandlers['resolve'] = (handle, arguments) {
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
           ...serializeService(const Service(
@@ -71,7 +70,7 @@ void main() {
         });
       };
 
-      final discovery = await _nsd.startDiscovery('_foo._tcp');
+      final discovery = await nsd.startDiscovery('_foo._tcp');
 
       // simulate unresolved discovered service
       await mockReply('onServiceDiscovered', {
@@ -88,13 +87,13 @@ void main() {
       late String capturedHandle;
 
       // simulate success callback by native code
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       // set up mock resolver to answer with "resolved" service
-      _mockHandlers['resolve'] = (handle, arguments) {
+      mockHandlers['resolve'] = (handle, arguments) {
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
           ...serializeService(const Service(
@@ -102,8 +101,8 @@ void main() {
         });
       };
 
-      final discovery = await _nsd.startDiscovery('_foo._tcp',
-          ipLookupType: IpLookupType.any);
+      final discovery =
+          await nsd.startDiscovery('_foo._tcp', ipLookupType: IpLookupType.any);
 
       // simulate unresolved discovered service
       await mockReply('onServiceDiscovered', {
@@ -117,7 +116,7 @@ void main() {
 
     test('Start fails if native code reports failure', () async {
       // simulate failure callback by native code
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartFailed', {
           ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
@@ -129,7 +128,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+      expect(nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
     });
 
     test('Start fails if service type is invalid', () async {
@@ -137,7 +136,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
           .having((e) => e.message, 'error message', contains('format'));
 
-      expect(_nsd.startDiscovery('foo'), throwsA(matcher));
+      expect(nsd.startDiscovery('foo'), throwsA(matcher));
     });
 
     test('Start fails if IP lookup is enabled without auto resolve', () async {
@@ -147,13 +146,13 @@ void main() {
               contains('Auto resolve must be enabled'));
 
       expect(
-          _nsd.startDiscovery('_foo._tcp',
+          nsd.startDiscovery('_foo._tcp',
               autoResolve: false, ipLookupType: IpLookupType.v4),
           throwsA(matcher));
     });
 
     test('Platform exceptions are converted to nsd errors', () async {
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         throw PlatformException(
             code: ErrorCause.securityIssue.name, message: 'platform');
       };
@@ -164,11 +163,11 @@ void main() {
 
       // platform exceptions are propagated to the flutter side
       // and should be converted to nsd errors
-      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+      expect(nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
     });
 
     test('Missing plugin exceptions are converted to nsd errors', () async {
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         throw MissingPluginException();
       };
 
@@ -177,11 +176,11 @@ void main() {
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.internalError);
 
-      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+      expect(nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
     });
 
     test('Generic exceptions are converted to nsd errors', () async {
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         throw Exception('generic');
       };
 
@@ -191,28 +190,28 @@ void main() {
 
       // all other exceptions are converted to platform exceptions by flutter
       // and should be converted to nsd errors (internal)
-      expect(_nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
+      expect(nsd.startDiscovery('_foo._tcp'), throwsA(matcher));
     });
 
     test('Stop succeeds if native code reports success', () async {
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      _mockHandlers['stopDiscovery'] = (handle, arguments) {
+      mockHandlers['stopDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStopSuccessful', serializeHandle(handle));
       };
 
-      final discovery = await _nsd.startDiscovery('_foo._tcp');
-      await _nsd.stopDiscovery(discovery);
+      final discovery = await nsd.startDiscovery('_foo._tcp');
+      await nsd.stopDiscovery(discovery);
     });
 
     test('Stop fails if native code reports failure', () async {
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
-      _mockHandlers['stopDiscovery'] = (handle, arguments) {
+      mockHandlers['stopDiscovery'] = (handle, arguments) {
         mockReply('onDiscoveryStopFailed', {
           ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
@@ -220,25 +219,25 @@ void main() {
         });
       };
 
-      final discovery = await _nsd.startDiscovery('_foo._tcp');
+      final discovery = await nsd.startDiscovery('_foo._tcp');
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.stopDiscovery(discovery), throwsA(matcher));
+      expect(nsd.stopDiscovery(discovery), throwsA(matcher));
     });
 
     test('Client is notified if service is discovered', () async {
       late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery =
-          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+          await nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
       const service = Service(name: 'Some name', type: '_foo._tcp');
       await mockReply('onServiceDiscovered',
@@ -250,13 +249,13 @@ void main() {
     test('Client is notified if service is lost', () async {
       late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery =
-          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+          await nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
       const service = Service(name: 'Some name', type: '_foo._tcp');
 
@@ -274,13 +273,13 @@ void main() {
     test('Callback is notified if service is discovered', () async {
       late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery =
-          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+          await nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
       final completer = Completer();
       discovery.addServiceListener((service, status) {
@@ -299,13 +298,13 @@ void main() {
     test('Callback is notified if service is lost', () async {
       late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery =
-          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+          await nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
       final completer = Completer();
       discovery.addServiceListener((service, status) {
@@ -328,13 +327,13 @@ void main() {
     test('Callback is unregistered properly', () async {
       late String capturedHandle;
 
-      _mockHandlers['startDiscovery'] = (handle, arguments) {
+      mockHandlers['startDiscovery'] = (handle, arguments) {
         capturedHandle = handle;
         mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
       };
 
       final discovery =
-          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+          await nsd.startDiscovery('_foo._tcp', autoResolve: false);
 
       final completer = Completer();
       serviceListener(service, status) {
@@ -358,7 +357,7 @@ void main() {
 
   group('$MethodChannelNsdPlatform resolve', () {
     test('Resolve succeeds if native code reports success', () async {
-      _mockHandlers['resolve'] = (handle, arguments) {
+      mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveSuccessful', {
           ...serializeHandle(handle),
@@ -372,7 +371,7 @@ void main() {
       };
 
       const service = Service(name: 'Some name', type: '_foo._tcp');
-      final result = await _nsd.resolve(service);
+      final result = await nsd.resolve(service);
 
       // result should contain the original fields plus the updated host / port
       expect(result.name, 'Some name');
@@ -383,7 +382,7 @@ void main() {
     });
 
     test('Resolve fails if native code reports failure', () async {
-      _mockHandlers['resolve'] = (handle, arguments) {
+      mockHandlers['resolve'] = (handle, arguments) {
         // return service info with name only
         mockReply('onResolveFailed', {
           ...serializeHandle(handle),
@@ -398,7 +397,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.resolve(service), throwsA(matcher));
+      expect(nsd.resolve(service), throwsA(matcher));
     });
 
     test('Resolve fails if service type is invalid', () async {
@@ -408,13 +407,13 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
           .having((e) => e.message, 'error message', contains('format'));
 
-      expect(_nsd.resolve(service), throwsA(matcher));
+      expect(nsd.resolve(service), throwsA(matcher));
     });
   });
 
   group('$MethodChannelNsdPlatform registration', () {
     test('Registration succeeds if native code reports success', () async {
-      _mockHandlers['register'] = (handle, arguments) {
+      mockHandlers['register'] = (handle, arguments) {
         // return service info with name only
         mockReply('onRegistrationSuccessful', {
           ...serializeHandle(handle),
@@ -422,7 +421,7 @@ void main() {
         });
       };
 
-      final registration = await _nsd
+      final registration = await nsd
           .register(const Service(name: 'Some name', type: '_foo._tcp'));
 
       final service = registration.service;
@@ -434,7 +433,7 @@ void main() {
 
     test('Registration fails if native code reports failure', () async {
       // simulate failure callback by native code
-      _mockHandlers['register'] = (handle, arguments) {
+      mockHandlers['register'] = (handle, arguments) {
         mockReply('onRegistrationFailed', {
           ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
@@ -448,7 +447,7 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.register(service), throwsA(matcher));
+      expect(nsd.register(service), throwsA(matcher));
     });
 
     test('Registration fails if service type is invalid', () async {
@@ -458,18 +457,18 @@ void main() {
           .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
           .having((e) => e.message, 'error message', contains('format'));
 
-      expect(_nsd.register(service), throwsA(matcher));
+      expect(nsd.register(service), throwsA(matcher));
     });
 
     test('Unregistration succeeds if native code reports success', () async {
       // simulate success callback by native code
-      _mockHandlers['register'] = (handle, arguments) {
+      mockHandlers['register'] = (handle, arguments) {
         const service = Service(name: 'Some name (2)', type: '_foo._tcp');
         mockReply('onRegistrationSuccessful',
             {...serializeHandle(handle), ...serializeService(service)});
       };
 
-      _mockHandlers['unregister'] = (handle, arguments) {
+      mockHandlers['unregister'] = (handle, arguments) {
         mockReply('onUnregistrationSuccessful', {
           ...serializeHandle(handle),
         });
@@ -477,19 +476,19 @@ void main() {
 
       const service = Service(name: 'Some name', type: '_foo._tcp');
 
-      final registration = await _nsd.register(service);
-      await _nsd.unregister(registration);
+      final registration = await nsd.register(service);
+      await nsd.unregister(registration);
     });
 
     test('Unregistration fails if native code reports failure', () async {
       // simulate success callback by native code
-      _mockHandlers['register'] = (handle, arguments) {
+      mockHandlers['register'] = (handle, arguments) {
         const service = Service(name: 'Some name (2)', type: '_foo._tcp');
         mockReply('onRegistrationSuccessful',
             {...serializeHandle(handle), ...serializeService(service)});
       };
 
-      _mockHandlers['unregister'] = (handle, arguments) {
+      mockHandlers['unregister'] = (handle, arguments) {
         mockReply('onUnregistrationFailed', {
           ...serializeHandle(handle),
           ...serializeErrorCause(ErrorCause.maxLimit),
@@ -498,13 +497,13 @@ void main() {
       };
 
       const service = Service(name: 'Some name', type: '_foo._tcp');
-      final registration = await _nsd.register(service);
+      final registration = await nsd.register(service);
 
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.maxLimit)
           .having((e) => e.message, 'error message', contains('some error'));
 
-      expect(_nsd.unregister(registration), throwsA(matcher));
+      expect(nsd.unregister(registration), throwsA(matcher));
     });
   });
 
