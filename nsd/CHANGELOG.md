@@ -124,3 +124,7 @@
 ## 2.1.0
 
 * windows: migrated current code back to nsd_windows
+
+## 2.2.0
+
+* issue #20: added alternative discovery listening mechanism for found & lost events

@@ -45,3 +45,7 @@
 ## 1.4.2
 
 * updated documentation
+
+## 1.5.0
+
+* issue #20: added alternative discovery listening mechanism for found & lost events
