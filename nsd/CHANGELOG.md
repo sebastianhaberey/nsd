@@ -128,3 +128,7 @@
 ## 2.2.0
 
 * issue #20: added alternative discovery listening mechanism for found & lost events
+
+## 2.2.1 
+
+* added missing exports for service status, service listener
