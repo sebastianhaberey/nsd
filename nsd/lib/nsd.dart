@@ -14,6 +14,10 @@ export 'package:nsd_platform_interface/nsd_platform_interface.dart'
     show LogTopic;
 export 'package:nsd_platform_interface/nsd_platform_interface.dart'
     show IpLookupType;
+export 'package:nsd_platform_interface/nsd_platform_interface.dart'
+    show ServiceStatus;
+export 'package:nsd_platform_interface/nsd_platform_interface.dart'
+    show ServiceListener;
 
 /// Starts a discovery for the specified service type.
 ///
