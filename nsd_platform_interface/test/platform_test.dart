@@ -270,6 +270,90 @@ void main() {
 
       expect(discovery.services.length, 0);
     });
+
+    test('Callback is notified if service is discovered', () async {
+      late String capturedHandle;
+
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      final discovery =
+          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+
+      final completer = Completer();
+      discovery.addServiceListener((service, status) {
+        if (status == ServiceStatus.found) {
+          completer.complete();
+        }
+      });
+
+      const service = Service(name: 'Some name', type: '_foo._tcp');
+      await mockReply('onServiceDiscovered',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
+
+      await completer.future;
+    });
+
+    test('Callback is notified if service is lost', () async {
+      late String capturedHandle;
+
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      final discovery =
+          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+
+      final completer = Completer();
+      discovery.addServiceListener((service, status) {
+        if (status == ServiceStatus.lost) {
+          completer.complete();
+        }
+      });
+
+      const service = Service(name: 'Some name', type: '_foo._tcp');
+
+      await mockReply('onServiceDiscovered',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
+
+      await mockReply('onServiceLost',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
+
+      await completer.future;
+    });
+
+    test('Callback is unregistered properly', () async {
+      late String capturedHandle;
+
+      _mockHandlers['startDiscovery'] = (handle, arguments) {
+        capturedHandle = handle;
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      final discovery =
+          await _nsd.startDiscovery('_foo._tcp', autoResolve: false);
+
+      final completer = Completer();
+      serviceListener(service, status) {
+        completer.complete(); // should never be called
+      }
+
+      discovery.addServiceListener(serviceListener);
+      discovery.removeServiceListener(serviceListener);
+
+      const service = Service(name: 'Some name', type: '_foo._tcp');
+
+      await mockReply('onServiceDiscovered',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
+
+      await mockReply('onServiceLost',
+          {...serializeHandle(capturedHandle), ...serializeService(service)});
+
+      expect(completer.isCompleted, false);
+    });
   });
 
   group('$MethodChannelNsdPlatform resolve', () {

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:provider/provider.dart';
@@ -114,6 +116,18 @@ class NsdError extends Error {
       'NsdError (message: "$message", cause: ${enumValueToString(cause)})';
 }
 
+/// Indicates the discovery status of a service.
+enum ServiceStatus {
+  /// Service was found
+  found,
+
+  /// Service was lost
+  lost,
+}
+
+typedef ServiceListener = FutureOr<void> Function(
+    Service service, ServiceStatus status);
+
 /// Represents a discovery.
 ///
 /// It is also a [ChangeNotifier] so it can be used with a [ChangeNotifierProvider]
@@ -125,6 +139,7 @@ class Discovery with ChangeNotifier {
   final String id;
 
   final List<Service> _services = [];
+  final List<ServiceListener> _serviceListeners = [];
 
   /// The discovered services.
   ///
@@ -137,14 +152,37 @@ class Discovery with ChangeNotifier {
 
   // TODO hide this
   void add(Service service) {
-    _services.add(service);
-    notifyListeners();
+    final existing = _services.firstWhereOrNull((e) => isSame(e, service));
+    if (existing == null) {
+      _services.add(service);
+      _notifyAllListeners(service, ServiceStatus.found);
+    }
   }
 
   // TODO hide this
   void remove(Service service) {
-    _services.removeWhere((e) => isSame(e, service));
+    final existing = _services.firstWhereOrNull((e) => isSame(e, service));
+    if (existing != null) {
+      _services.remove(existing);
+      _notifyAllListeners(existing, ServiceStatus.lost);
+    }
+  }
+
+  /// Adds a listener that is notified when a new service is found
+  /// or an existing one is lost.
+  void addServiceListener(ServiceListener serviceListener) {
+    _serviceListeners.add(serviceListener);
+  }
+
+  void removeServiceListener(ServiceListener serviceListener) {
+    _serviceListeners.remove(serviceListener);
+  }
+
+  void _notifyAllListeners(Service service, ServiceStatus status) {
     notifyListeners();
+    for (var serviceListener in _serviceListeners) {
+      serviceListener(service, status);
+    }
   }
 
   @override

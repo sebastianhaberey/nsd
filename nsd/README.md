@@ -30,6 +30,16 @@ discovery.addListener(() {
 await stopDiscovery(discovery);
 ```
 
+or alternatively:
+
+```dart
+discovery.addServiceListener((service, status) {
+  if (status == ServiceStatus.found) {
+    // put service in own collection, etc.
+  }
+});
+```
+
 ### Service Registration
 
 ```dart
