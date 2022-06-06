@@ -20,6 +20,7 @@ namespace nsd_windows {
 		this->methodChannel->SetMethodCallHandler(
 			[nsdWindows = this](const auto& call, auto result) { nsdWindows->HandleMethodCall(call, result);
 			});
+		this->systemRequirementsSatisfied = CheckSystemRequirementsSatisfied();
 	}
 
 	NsdWindows::~NsdWindows() {}
@@ -61,6 +62,10 @@ namespace nsd_windows {
 
 	void NsdWindows::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+		if (!this->systemRequirementsSatisfied) {
+			throw NsdError(ErrorCause::OPERATION_NOT_SUPPORTED, "Plugin requires at least Windows 10, build 18362");
+		}
+
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
@@ -141,6 +146,10 @@ namespace nsd_windows {
 
 	void NsdWindows::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+		if (!this->systemRequirementsSatisfied) {
+			throw NsdError(ErrorCause::OPERATION_NOT_SUPPORTED, "Plugin requires at least Windows 10, build 18362");
+		}
+
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceName = Deserialize<std::string>(arguments, "service.name");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");

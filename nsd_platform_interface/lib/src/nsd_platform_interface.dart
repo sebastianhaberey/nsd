@@ -97,6 +97,10 @@ enum ErrorCause {
   /// An error in platform or native code that cannot be addressed by the client.
   internalError,
 
+  /// The operation is not supported, for example if the OS version is not
+  /// recent enough and doesn't support mDNS / DNS-SD API.
+  operationNotSupported,
+
   /// A security issue, for example a missing permission.
   securityIssue,
 }

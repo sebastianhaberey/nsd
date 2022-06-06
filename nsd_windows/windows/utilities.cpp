@@ -179,4 +179,29 @@ namespace nsd_windows {
 			});
 		return out;
 	}
+
+	bool CheckSystemRequirementsSatisfied()
+	{
+		// see https://stackoverflow.com/a/52122386/8707976
+
+		NTSTATUS(WINAPI * RtlGetVersion)(LPOSVERSIONINFOEXW) = nullptr;
+		OSVERSIONINFOEXW osInfo{};
+
+		*(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
+
+		if (NULL == RtlGetVersion)
+		{
+			return false; // if the function is not supported, the OS is too old
+		}
+
+		osInfo.dwOSVersionInfoSize = sizeof(osInfo);
+		RtlGetVersion(&osInfo);
+		ULONG majorVersion = osInfo.dwMajorVersion;
+		ULONG buildNumber = osInfo.dwBuildNumber;
+
+		// Plugin requires 1903 - 19H1 - May 2019 Update - Build No. 18362
+		// (see also https://github.com/mumble-voip/mumble/pull/4494)
+
+		return (majorVersion >= 10 && buildNumber >= 18362);
+	}
 }

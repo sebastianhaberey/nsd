@@ -84,6 +84,8 @@ namespace nsd_windows {
 		std::map<std::string, std::unique_ptr<RegisterContext>> registerContextMap;
 		std::map<std::string, std::unique_ptr<ResolveContext>> resolveContextMap;
 
+		bool systemRequirementsSatisfied;
+
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
 			std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result);

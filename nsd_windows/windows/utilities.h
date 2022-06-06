@@ -89,4 +89,5 @@ namespace nsd_windows {
 	std::string GetTimeNow();
 	std::wstring GetComputerName();
 	std::vector<PCWSTR> GetPointers(std::vector<std::wstring>& in);
+	bool CheckSystemRequirementsSatisfied();
 }

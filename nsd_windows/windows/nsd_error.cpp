@@ -14,6 +14,9 @@ namespace nsd_windows {
 		case MAX_LIMIT:
 			return "maxLimit";
 
+		case OPERATION_NOT_SUPPORTED:
+			return "operationNotSupported";
+
 		case INTERNAL_ERROR:
 		default:
 			return "internalError";
@@ -32,4 +35,3 @@ namespace nsd_windows {
 	{
 	}
 }
-
