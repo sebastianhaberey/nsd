@@ -49,3 +49,7 @@
 ## 1.5.0
 
 * issue #20: added alternative discovery listening mechanism for found & lost events
+
+## 1.5.1
+
+* issue #22: added error cause "operation not supported"

@@ -137,3 +137,6 @@
 
 * issue #22: start discovery and register operations now fail properly if windows version is too low
 
+## 2.2.3
+
+* issue #22: added error cause "operation not supported"
