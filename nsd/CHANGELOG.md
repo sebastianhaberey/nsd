@@ -132,3 +132,8 @@
 ## 2.2.1 
 
 * added missing exports for service status, service listener
+
+## 2.2.2
+
+* issue #22: start discovery and register operations now fail properly if windows version is too low
+

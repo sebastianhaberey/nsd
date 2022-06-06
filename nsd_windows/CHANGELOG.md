@@ -5,3 +5,7 @@
 ## 2.0.0
 
 * migrated current code back to nsd_windows
+
+## 2.0.1
+
+* issue #22: start discovery and register operations now fail properly if windows version is too low
