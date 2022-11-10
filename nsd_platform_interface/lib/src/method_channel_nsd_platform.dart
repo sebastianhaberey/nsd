@@ -261,7 +261,7 @@ bool isValidServiceType(String? type) {
     return true; // special type for enumeration of services, see https://datatracker.ietf.org/doc/html/rfc6763#section-9 (issue #8)
   }
 
-  return RegExp(r'^_[a-zA-Z0-9-]{1,15}._(tcp|udp)').hasMatch(type);
+  return RegExp(r'^_[a-zA-Z0-9-_]{1,15}._(tcp|udp)').hasMatch(type);
 }
 
 InternetAddressType? getInternetAddressType(IpLookupType ipLookupType) {
