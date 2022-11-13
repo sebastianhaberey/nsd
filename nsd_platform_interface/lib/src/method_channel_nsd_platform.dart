@@ -25,6 +25,8 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   final _methodChannel = const MethodChannel('com.haberey/nsd');
   final _handlers = <String, Map<String, _Handler>>{};
 
+  var _disableServiceTypeValidation = false;
+
   MethodChannelNsdPlatform() {
     _methodChannel.setMethodCallHandler(handleMethodCall);
   }
@@ -213,6 +215,18 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
   void enableLogging(LogTopic logTopic) {
     enableLogTopic(logTopic);
   }
+
+  @override
+  void disableServiceTypeValidation(bool value) {
+    _disableServiceTypeValidation = value;
+  }
+
+  void assertValidServiceType(String? serviceType) {
+    if (!_disableServiceTypeValidation && !isValidServiceType(serviceType)) {
+      throw NsdError(ErrorCause.illegalArgument,
+          'Service type must be in format _<Service>._<Proto>: $serviceType');
+    }
+  }
 }
 
 Future<Service> performIpLookup(
@@ -233,26 +247,7 @@ Future<Service> performIpLookup(
 void _attachDummyCallback<T>(Future<T> future) => unawaited(
     future.then<void>((value) => null).onError((error, stackTrace) => null));
 
-void assertValidServiceType(String? serviceType) {
-  if (!isValidServiceType(serviceType)) {
-    throw NsdError(ErrorCause.illegalArgument,
-        'Service type must be in format _<Service>._<Proto>: $serviceType');
-  }
-}
-
 bool isValidServiceType(String? type) {
-  // <Service> portion
-  //
-  // first label see https://www.rfc-editor.org/rfc/rfc6335.html (5.1):
-  //
-  // - MUST be at least 1 character and no more than 15 characters long
-  // - MUST contain only  'A' - 'Z', 'a' - 'z', '0' - '9', hyphens
-  // - MUST contain at least one letter
-  //
-  // second label see https://datatracker.ietf.org/doc/html/rfc6763#section-4.1.2:
-  //
-  //  -  either "_tcp" or "_udp"
-
   if (type == null) {
     return false;
   }

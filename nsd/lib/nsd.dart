@@ -73,3 +73,25 @@ Future<void> unregister(Registration registration) async =>
 ///
 void enableLogging(LogTopic logTopic) =>
     NsdPlatformInterface.instance.enableLogging(logTopic);
+
+/// The plugin throws an error if user-specified service types do not match the
+/// specifiation:
+///
+/// First label (https://datatracker.ietf.org/doc/html/rfc6335#section-5.1):
+///
+/// - MUST be at least 1 character and no more than 15 characters long
+/// - MUST contain only  'A' - 'Z', 'a' - 'z', '0' - '9', hyphens
+/// - MUST contain at least one letter
+///
+/// Second label (https://datatracker.ietf.org/doc/html/rfc6763#section-4.1.2):
+///
+///  - either "_tcp" or "_udp"
+///
+/// Users report services that do not conform to this specification (see Github
+/// issue #29). This flag will disable the validation entirely.
+///
+/// WARNING: Use this at your own risk. Platforms or networks might refuse
+/// non-standard service types.
+///
+void disableServiceTypeValidation(bool value) =>
+    NsdPlatformInterface.instance.disableServiceTypeValidation(value);

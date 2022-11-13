@@ -37,6 +37,8 @@ abstract class NsdPlatformInterface extends PlatformInterface {
   Future<void> unregister(Registration registration);
 
   void enableLogging(LogTopic logTopic);
+
+  void disableServiceTypeValidation(bool value);
 }
 
 /// Represents a network service.

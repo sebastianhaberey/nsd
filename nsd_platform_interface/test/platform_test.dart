@@ -139,6 +139,16 @@ void main() {
       expect(nsd.startDiscovery('foo'), throwsA(matcher));
     });
 
+    test('Invalid service types are ignored if configured', () async {
+      nsd.disableServiceTypeValidation(true);
+
+      mockHandlers['startDiscovery'] = (handle, arguments) {
+        mockReply('onDiscoveryStartSuccessful', serializeHandle(handle));
+      };
+
+      await nsd.startDiscovery('foo');
+    });
+
     test('Start fails if IP lookup is enabled without auto resolve', () async {
       final matcher = isA<NsdError>()
           .having((e) => e.cause, 'error cause', ErrorCause.illegalArgument)
