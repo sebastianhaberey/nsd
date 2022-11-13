@@ -8,7 +8,7 @@ on:
   push: # macos should always be triggered to verify overall functionality, it is the fastest because it requires no simulators
 
 env:
-  flutter_version: '3.0.0'
+  flutter_version: '3.3.8'
 
 jobs:
   test:
