@@ -53,3 +53,7 @@
 ## 1.5.1
 
 * issue #22: added error cause "operation not supported"
+
+## 1.6.0
+
+* issue #29: added an option to disable service type validation by the plugin

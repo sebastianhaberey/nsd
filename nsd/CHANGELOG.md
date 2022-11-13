@@ -140,3 +140,8 @@
 ## 2.2.3
 
 * issue #22: added error cause "operation not supported"
+
+## 2.3.0
+
+* issue #29: added an option to disable service type validation by the plugin
+
