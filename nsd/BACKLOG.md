@@ -4,6 +4,8 @@
 
 ## Unsorted
 
+- add documentation for disabling service type validation
+- improve error message for service type validation, see: https://github.com/sebastianhaberey/nsd/issues/36#issue-1598202717
 - linux platform
 
 ## Done
