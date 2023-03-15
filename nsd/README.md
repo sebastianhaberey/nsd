@@ -154,6 +154,25 @@ the plugin has the same behavior.
 services registered by other machines correctly, it will not detect types of services that were 
 registered using the plugin.
 
+### Disable service name validation
+
+Service names are validated by the plugin according to [RFC 6335](https://datatracker.ietf.org/doc/html/rfc6335#section-5.1):
+
+* MUST be at least 1 character and no more than 15 characters long
+* MUST contain only US-ASCII [ANSI.X3.4-1986] letters 'A' - 'Z' and 'a' - 'z', digits '0' - '9', and hyphens ('-', ASCII 0x2D or decimal 45)
+* MUST contain at least one letter ('A' - 'Z' or 'a' - 'z')
+* MUST NOT begin or end with a hyphen
+* hyphens MUST NOT be adjacent to other hyphens
+
+If you are getting the error message _"Service type must be in format..."_ but you still want to work
+with service names that do not conform to the rules, you can disable service name validation entirely:
+
+```dart
+disableServiceTypeValidation(true);
+```
+
+Be aware that some network environments might not support non-conformant service names.
+
 ### Enable Debug Logging
 
 In order to help debugging, logging can be enabled for individual topics. For example
