@@ -4,7 +4,10 @@
 name: Windows Tests
 
 on:
-  workflow_dispatch: # since nsd_windows is an endorsed plugin, ci is triggered on demand
+  workflow_dispatch:
+  push:
+    paths:
+      - "nsd_windows/**"
 
 env:
   flutter_version: '3.3.8'

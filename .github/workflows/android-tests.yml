@@ -9,7 +9,6 @@ on:
   push:
     paths:
       - "nsd_android/**"
-      
 
 env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
