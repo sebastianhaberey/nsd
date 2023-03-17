@@ -15,7 +15,7 @@ env:
 jobs:
   test:
     name: Run tests (Windows)
-    runs-on: windows-2.303.0
+    runs-on: windows-2022
     defaults:
       run:
         working-directory: nsd/example
