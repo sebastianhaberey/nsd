@@ -10,7 +10,7 @@ on:
       - "nsd_ios/**"
 
 env:
-  flutter_version: '3.3.8'
+  flutter_version: '3.7.8'
 
 jobs:
   test:

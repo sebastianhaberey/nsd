@@ -12,8 +12,8 @@ on:
 
 env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
-  flutter_version: '3.3.8'
-  api_level: '31'
+  flutter_version: '3.7.8'
+  api_level: '33'
   target: default
   arch: x86_64
   profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"

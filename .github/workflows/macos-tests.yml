@@ -8,7 +8,7 @@ on:
   push: # macos is always triggered to verify overall functionality (it's the fastest because it requires no simulators)
 
 env:
-  flutter_version: '3.3.8'
+  flutter_version: '3.7.8'
 
 jobs:
   test:
