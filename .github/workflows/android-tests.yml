@@ -42,16 +42,11 @@ jobs:
           channel: ${{ env.flutter_channel }}
           flutter-version: ${{ env.flutter_version }}
 
-      - name: Set up Gradle cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+      - name: Gradle cache
+        uses: gradle/gradle-build-action@v2
 
       - name: Set up AVD cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: avd-cache
         with:
           path: |
