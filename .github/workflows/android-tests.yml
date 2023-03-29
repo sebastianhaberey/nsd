@@ -14,7 +14,7 @@ env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
   flutter_version: '3.7.8'
   api_level: '33'
-  target: default
+  target: google_apis
   arch: x86_64
   profile: Nexus 6 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
 
@@ -60,7 +60,7 @@ jobs:
           key: avd-${{ env.api_level }}
 
       - name: Install Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
