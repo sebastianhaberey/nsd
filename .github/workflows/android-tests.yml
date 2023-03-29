@@ -16,7 +16,7 @@ env:
   api_level: '33'
   target: google_apis
   arch: x86_64
-  profile: pixel_5 # "Nexus 4", "Nexus 6", "Nexus 10", "pixel", "pixel_3", "pixel_5"
+  profile: pixel_6 # run 'avdmanager list device' to see profiles
 
 jobs:
   test:
@@ -65,9 +65,6 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
-
-      - name: List profiles
-        run: avdmanager list device
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
