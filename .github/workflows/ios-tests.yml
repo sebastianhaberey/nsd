@@ -43,7 +43,7 @@ jobs:
         id: simulator
         uses: futureware-tech/simulator-action@v2
         with:
-          model: 'iPhone 11' # 'iPhone 8' (see simulator list)
+          model: 'iPhone 14' # (see simulator list in Github actions output)
 
       - name: Show Flutter configuration
         run: flutter doctor -v
