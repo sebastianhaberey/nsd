@@ -4,12 +4,11 @@
 
 ## Unsorted
 
-- add documentation for disabling service type validation
-- improve error message for service type validation, see: https://github.com/sebastianhaberey/nsd/issues/36#issue-1598202717
 - linux platform
 
 ## Done
 
+- add documentation for disabling service type validation
 - windows platform
 - platform: add toString() for discovery and registration
 - platform: onUnregistrationSuccessful: discard handlers
@@ -34,6 +33,7 @@
 
 ## Trashcan
 
+- add documentation for disabling service type validation
 - platform: add enableLogTopics -> would be api change ("enableLogging" + "enableLoggings"?)
 - platform: replace dynamic arguments / return values with more concrete types where possible
 - clean up code according to flutter coding guidelines -> done for most aspects
