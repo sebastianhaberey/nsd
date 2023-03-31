@@ -145,3 +145,9 @@
 
 * issue #29: added an option to disable service type validation by the plugin
 
+## 2.3.1
+
+* issue #36: added readme section to disable service name validation
+* issue #41: removed integration test badges due to unstable CI
+* updated example flutter dependencies
+
