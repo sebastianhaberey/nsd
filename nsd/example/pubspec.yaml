@@ -15,7 +15,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   provider: ^6.0.5
   flutter_speed_dial: ^6.2.0
-  uuid: ^3.0.7
+  uuid: ^4.2.1
   shelf: ^1.4.0
 
 dev_dependencies:
