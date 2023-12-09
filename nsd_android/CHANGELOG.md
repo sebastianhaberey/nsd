@@ -40,3 +40,8 @@
 ## 1.2.2
 
 * issue #18: android: fixed missing plugin exception in release mode
+
+## 2.0.0
+
+* issue #55: fixed android error where failure on unregistration did not report back to dart side
+* updated dart sdk to >=3.0.0 <4.0.0, flutter to >=3.10.0

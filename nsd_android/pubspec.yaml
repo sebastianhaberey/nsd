@@ -1,12 +1,12 @@
 name: nsd_android
 description: Flutter network service discovery plugin (Android submodule - will be installed with the parent plugin).
-version: 1.2.2
+version: 2.0.0
 repository: https://github.com/sebastianhaberey/nsd/tree/main/nsd_android
 issue_tracker: https://github.com/sebastianhaberey/nsd/issues
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=2.5.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:

@@ -17,7 +17,7 @@
 
 ## 1.0.4
 
-* introduced ci for android, macos and ios 
+* introduced ci for android, macos and ios
 
 ## 1.0.5
 
@@ -129,7 +129,7 @@
 
 * issue #20: added alternative discovery listening mechanism for found & lost events
 
-## 2.2.1 
+## 2.2.1
 
 * added missing exports for service status, service listener
 
@@ -151,3 +151,10 @@
 * issue #41: removed integration test badges due to unstable CI
 * updated example flutter dependencies
 
+## 3.0.0
+
+* issue #55: fixed android error where failure on unregistration did not report back to dart side
+* issue #50: updated uuid to current version (4.2.1)
+* updated dart sdk to >=3.0.0 <4.0.0, flutter to >=3.10.0
+* updated various dependencies
+* fixed various flutter analyze issues detected by new analyze version
