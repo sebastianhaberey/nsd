@@ -16,7 +16,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State createState() => MyAppState();
@@ -180,7 +180,8 @@ class DiscoveryState extends State<DiscoveryWidget> {
       BuildContext context, Discovery discovery, Widget? child) {
     return DataTable(
       headingRowHeight: 24,
-      dataRowHeight: 24,
+      dataRowMinHeight: 24,
+      dataRowMaxHeight: 24,
       dataTextStyle: const TextStyle(color: Colors.black, fontSize: 12),
       columnSpacing: 8,
       horizontalMargin: 0,

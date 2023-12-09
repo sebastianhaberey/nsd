@@ -187,7 +187,7 @@ void main() {
 isBlankOrNull(Uint8List? value) async => value == null || value.isEmpty;
 
 Service createService(String name, int port) =>
-    Service(name: name + ' $port', type: serviceType, port: port);
+    Service(name: '$name $port', type: serviceType, port: port);
 
 Iterable<Service> findNameStartingWith(List<Service> services, String name) =>
     services.where((service) => service.name!.startsWith(name));
