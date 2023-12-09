@@ -13,7 +13,7 @@ env:
 jobs:
   test:
     name: Run tests (macOS)
-    runs-on: macos-latest
+    runs-on: macos-13
     defaults:
       run:
         working-directory: nsd/example
