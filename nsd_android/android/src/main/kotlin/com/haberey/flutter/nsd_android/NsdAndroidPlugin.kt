@@ -43,8 +43,9 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
         wifiManager = getSystemService(context, WifiManager::class.java)!!
 
         if (multicastPermissionGranted(context)) {
-            multicastLock = wifiManager.createMulticastLock("nsdMulticastLock")
-            multicastLock?.setReferenceCounted(true)
+            multicastLock = wifiManager.createMulticastLock("nsdMulticastLock").also {
+                it.setReferenceCounted(true)
+            }
         }
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
@@ -89,7 +90,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             throw NsdError(
                 ErrorCause.SECURITY_ISSUE,
                 "Missing required permission CHANGE_WIFI_MULTICAST_STATE"
-            );
+            )
         }
 
         multicastLock?.acquire()
@@ -124,7 +125,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
             throw NsdError(
                 ErrorCause.SECURITY_ISSUE,
                 "Missing required permission CHANGE_WIFI_MULTICAST_STATE"
-            );
+            )
         }
 
         multicastLock?.release()
@@ -297,7 +298,7 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
                 val arguments = serializeHandle(handle) +
                         serializeErrorCause(getErrorCause(errorCode)) +
                         serializeErrorMessage(getErrorMessage(errorCode))
-                invokeMethod("onUnregistratioFailed", arguments)
+                invokeMethod("onUnregistrationFailed", arguments)
             }
         }
 
