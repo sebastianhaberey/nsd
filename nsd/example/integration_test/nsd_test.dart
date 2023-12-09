@@ -70,7 +70,6 @@ void main() {
 
   testWidgets('Verify txt attribute of registered service',
       (WidgetTester _) async {
-
     final discovery = await startDiscovery(serviceType);
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
