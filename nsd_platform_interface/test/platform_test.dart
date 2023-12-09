@@ -25,7 +25,7 @@ void main() {
     mockHandlers = HashMap();
 
     // install custom handler that routes method calls to mock handlers
-    TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(methodChannel, (MethodCall methodCall) async {
       final handle = deserializeHandle(methodCall.arguments)!;
       return mockHandlers[methodCall.method]
@@ -603,7 +603,7 @@ Future<dynamic> mockReply(String method, dynamic arguments) async {
   final dataIn = codec.encodeMethodCall(MethodCall(method, arguments));
 
   final completer = Completer<ByteData?>();
-  TestDefaultBinaryMessengerBinding.instance!.channelBuffers
+  TestDefaultBinaryMessengerBinding.instance.channelBuffers
       .push(channelName, dataIn, (dataOut) {
     completer.complete(dataOut);
   });

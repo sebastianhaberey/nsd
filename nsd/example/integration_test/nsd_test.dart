@@ -70,7 +70,6 @@ void main() {
 
   testWidgets('Verify txt attribute of registered service',
       (WidgetTester _) async {
-
     final discovery = await startDiscovery(serviceType);
 
     final name = uuid.v4(); // UUID as service name base ensures test isolation
@@ -188,7 +187,7 @@ void main() {
 isBlankOrNull(Uint8List? value) async => value == null || value.isEmpty;
 
 Service createService(String name, int port) =>
-    Service(name: name + ' $port', type: serviceType, port: port);
+    Service(name: '$name $port', type: serviceType, port: port);
 
 Iterable<Service> findNameStartingWith(List<Service> services, String name) =>
     services.where((service) => service.name!.startsWith(name));

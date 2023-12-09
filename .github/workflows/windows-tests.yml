@@ -10,7 +10,7 @@ on:
       - "nsd_windows/**"
 
 env:
-  flutter_version: '3.7.8'
+  flutter_version: '3.16.3'
 
 jobs:
   test:

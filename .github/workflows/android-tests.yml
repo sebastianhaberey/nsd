@@ -12,7 +12,7 @@ on:
 
 env:
   flutter_channel: 'stable' # 'dev', 'alpha', 'stable'
-  flutter_version: '3.7.8'
+  flutter_version: '3.16.3'
   api_level: '33'
   target: google_apis
   arch: x86_64

@@ -7,7 +7,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:provider/provider.dart';
 
 import 'method_channel_nsd_platform.dart';
-import 'utilities.dart';
 
 // Documentation: see the corresponding functions in the nsd main module.
 abstract class NsdPlatformInterface extends PlatformInterface {
@@ -117,8 +116,7 @@ class NsdError extends Error {
   NsdError(this.cause, this.message);
 
   @override
-  String toString() =>
-      'NsdError (message: "$message", cause: ${enumValueToString(cause)})';
+  String toString() => 'NsdError (message: "$message", cause: ${cause.name})';
 }
 
 /// Indicates the discovery status of a service.

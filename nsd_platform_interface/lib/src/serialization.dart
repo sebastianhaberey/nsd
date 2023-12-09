@@ -10,7 +10,7 @@ Map<String, dynamic> serializeServiceType(String value) =>
     {'service.type': value};
 
 Map<String, dynamic> serializeErrorCause(ErrorCause value) =>
-    {'error.cause': enumValueToString(value)};
+    {'error.cause': value.name};
 
 ErrorCause? deserializeErrorCause(dynamic arguments) {
   final errorCauseString = deserializeString(arguments, 'error.cause');
