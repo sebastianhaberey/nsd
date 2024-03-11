@@ -87,7 +87,7 @@ internal fun NsdServiceInfo.setAttributesFromTxt(flutterTxt: Map<String, ByteArr
             val value = it.value
 
             if (value == null) {
-                setAttribute(key, null)
+                setAttribute(key, null as String?)
             } else {
                 assertValidUtf8(key, value)
                 setAttribute(key, value.toString(Charsets.UTF_8))
