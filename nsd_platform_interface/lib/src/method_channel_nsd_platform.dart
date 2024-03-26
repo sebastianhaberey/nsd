@@ -61,7 +61,7 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       if (autoResolve) {
         service = await resolve(service);
 
-        if (isIpLookupEnabled(ipLookupType)) {
+        if (isIpLookupEnabled(ipLookupType) && service.addresses == null) {
           service = await performIpLookup(service, ipLookupType);
         }
       }

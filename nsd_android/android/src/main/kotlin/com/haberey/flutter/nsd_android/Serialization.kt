@@ -12,6 +12,7 @@ private enum class Key(val serializeKey: String) {
     SERVICE_TYPE("service.type"),
     SERVICE_HOST("service.host"),
     SERVICE_PORT("service.port"),
+    SERVICE_ADDRESSES("service.addresses"),
     SERVICE_TXT("service.txt"),
     ERROR_CAUSE("error.cause"),
     ERROR_MESSAGE("error.message"),
@@ -110,6 +111,7 @@ internal fun serializeServiceInfo(nsdServiceInfo: NsdServiceInfo): Map<String, A
         Key.SERVICE_NAME.serializeKey to nsdServiceInfo.serviceName,
         Key.SERVICE_TYPE.serializeKey to removeLeadingAndTrailingDots(serviceType = nsdServiceInfo.serviceType),
         Key.SERVICE_HOST.serializeKey to nsdServiceInfo.host?.canonicalHostName,
+        Key.SERVICE_ADDRESSES.serializeKey to nsdServiceInfo.host?.hostAddress,
         Key.SERVICE_PORT.serializeKey to if (nsdServiceInfo.port == 0) null else nsdServiceInfo.port,
         Key.SERVICE_TXT.serializeKey to nsdServiceInfo.attributes,
     )
