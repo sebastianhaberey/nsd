@@ -51,7 +51,6 @@ Service? deserializeService(dynamic arguments) {
   final type = data['service.type'] as String?;
   final host = data['service.host'] as String?;
   final port = data['service.port'] as int?;
-  final txt = data['service.txt'] != null
   final addresses = data['service.addresses'] as String?;
   final txt = data['service.txt'] != null ? Map<String, Uint8List?>.from(data['service.txt']) : null;
 
