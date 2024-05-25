@@ -190,6 +190,6 @@ will log errors and all calls to the native side (and their callbacks), which of
 
 ## Projects using nsd
 
-🎮 [Tic Tac Toe Local Multiplayer Game for Android](https://github.com/lakscastro/ttt) by Laks Castro
+🎮 [Tic Tac Toe Local Multiplayer Game for Android](https://github.com/alexrintt/ttt) by Laks Castro
 
 <br></br>
