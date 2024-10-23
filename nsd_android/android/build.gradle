@@ -1,3 +1,4 @@
+group 'com.haberey.flutter.nsd_android'
 version '1.0-SNAPSHOT'
 
 buildscript {
