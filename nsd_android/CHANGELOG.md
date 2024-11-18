@@ -45,3 +45,7 @@
 
 * issue #55: fixed android error where failure on unregistration did not report back to dart side
 * updated dart sdk to >=3.0.0 <4.0.0, flutter to >=3.10.0
+
+# 2.1.0
+
+* issue #74: add missing namespace declaration in nsd_android module (thanks Okladnoj)

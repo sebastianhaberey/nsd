@@ -64,3 +64,7 @@
 * updated dart sdk to >=3.0.0 <4.0.0, flutter to >=3.10.0
 * updated various dependencies
 * fixed various flutter analyze issues detected by new analyze version
+
+# 2.1.0
+
+* issue #66: prefer using ip address given by android service (thanks RGPaul and jan-mu)
