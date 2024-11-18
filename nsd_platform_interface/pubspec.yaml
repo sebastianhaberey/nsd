@@ -11,12 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.1.7
-  uuid: ^4.2.1
-  provider: ^6.1.1
-  collection: ^1.18.0
+  plugin_platform_interface: ^2.1.8
+  uuid: ^4.5.1
+  provider: ^6.1.2
+  collection: ^1.18.0 # pinned by flutter_test
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^5.0.0

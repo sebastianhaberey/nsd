@@ -33,7 +33,7 @@ dependencies:
     path: ../nsd_platform_interface
 
 dev_dependencies:
-  flutter_lints: ^3.0.1
+  flutter_lints: ^5.0.0
 
 flutter:
   plugin:
