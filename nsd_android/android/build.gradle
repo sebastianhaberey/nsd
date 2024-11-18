@@ -26,6 +26,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 31
+    namespace 'com.haberey.flutter.nsd_android' 
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
