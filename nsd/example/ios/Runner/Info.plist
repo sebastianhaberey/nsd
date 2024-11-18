@@ -47,5 +47,9 @@
     <array>
         <string>_http._tcp</string>
     </array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>
