@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'nsd_platform_interface.dart';
@@ -51,19 +52,21 @@ Service? deserializeService(dynamic arguments) {
   final type = data['service.type'] as String?;
   final host = data['service.host'] as String?;
   final port = data['service.port'] as int?;
-  final txt = data['service.txt'] != null
-      ? Map<String, Uint8List?>.from(data['service.txt'])
-      : null;
+  final addresses = data['service.addresses'] as String?;
+  final txt = data['service.txt'] != null ? Map<String, Uint8List?>.from(data['service.txt']) : null;
 
-  if (name == null &&
-      type == null &&
-      host == null &&
-      port == null &&
+  if (name == null && 
+      type == null && 
+      host == null && 
+      port == null && 
+      addresses == null && 
       txt == null) {
     return null;
   }
 
-  return Service(name: name, type: type, host: host, port: port, txt: txt);
+  final inetAddresses = addresses != null ? [InternetAddress(addresses)] : null;
+
+  return Service(name: name, type: type, host: host, port: port, addresses: inetAddresses, txt: txt);
 }
 
 Map<String, dynamic> serializeHandle(String value) => {
