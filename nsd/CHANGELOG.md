@@ -1,3 +1,8 @@
+## 4.0.2
+
+* updated flutter version for github action
+* removed coverage badge (due to token issue)
+
 ## 4.0.1
 
 * issue #60: made change log more readable by putting newest entry first
