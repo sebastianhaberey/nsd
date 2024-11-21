@@ -1,3 +1,8 @@
+## 4.0.3
+
+* cleaned up various gradle build warnings
+* issue #75: android example application did not build due to flutter vs kotlin version incompatibility
+
 ## 4.0.2
 
 * updated flutter version for github action
