@@ -310,6 +310,9 @@ class NsdAndroidPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
+        registrationListeners.forEach {
+            nsdManager.unregisterService(it.value)
+        }
     }
 
     private fun multicastPermissionGranted(context: Context) =
