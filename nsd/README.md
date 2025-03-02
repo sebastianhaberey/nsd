@@ -15,32 +15,23 @@ A Flutter plugin for network service discovery and registration (aka NSD / DNS-S
 ```dart
 import 'package:nsd/nsd.dart';
 
-final discovery = await
-startDiscovery
-('_http._tcp
-'
-);discovery.addListener(() {
-// discovery.services contains discovered services
+final discovery = await startDiscovery('_http._tcp');
+discovery.addListener(() {
+  // discovery.services contains discovered services
 });
 
 // ...
 
-await
-stopDiscovery
-(
-discovery
-);
+await stopDiscovery(discovery);
 ```
 
 or alternatively:
 
 ```dart
-discovery.addServiceListener
-(
-(service, status) {
-if (status == ServiceStatus.found) {
-// put service in own collection, etc.
-}
+discovery.addServiceListener((service, status) {
+  if (status == ServiceStatus.found) {
+    // put service in own collection, etc.
+  }
 });
 ```
 
@@ -49,18 +40,11 @@ if (status == ServiceStatus.found) {
 ```dart
 import 'package:nsd/nsd.dart';
 
-final registration = await
-register
-(
-const Service(name: 'Foo', type: '_http._tcp', port: 56000));
+final registration = await register(const Service(name: 'Foo', type: '_http._tcp', port: 56000));
 
 // ...
 
-await
-unregister
-(
-registration
-);
+await unregister(registration);
 ```
 
 <br></br>
@@ -72,9 +56,8 @@ registration
 Add the following permissions to your manifest:
 
 ```Xml
-
-<uses-permission android:name="android.permission.INTERNET" /><uses-permission
-android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 ```
 
 ### iOS
@@ -82,10 +65,11 @@ android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 Add the following permissions to your Info.plist (replace service type with your own):
 
 ```Xml
-
-<key>NSLocalNetworkUsageDescription</key><string>Required to discover local network devices
-</string><key>NSBonjourServices</key><array>
-<string>_http._tcp</string>
+<key>NSLocalNetworkUsageDescription</key>
+<string>Required to discover local network devices</string>
+<key>NSBonjourServices</key>
+<array>
+  <string>_http._tcp</string>
 </array>
 ```
 
@@ -129,18 +113,7 @@ If you _do_ need the IP address, you can configure automatic ip lookup for your 
 like this:
 
 ```dart
-
-final discovery = await
-startDiscovery
-(
-serviceType
-,
-ipLookupType
-:
-IpLookupType
-.
-any
-);
+final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.any);
 ```
 
 Each discovered service will now have a list of IP addresses attached to it.
@@ -156,14 +129,7 @@ The current way to do this would be:
 Start the discovery like this:
 
 ```dart
-
-final discovery = await
-startDiscovery
-('_services._dns-sd._udp
-'
-, autoResolve:
-false
-);
+final discovery = await startDiscovery('_services._dns-sd._udp', autoResolve: false);
 ```
 
 The `autoResolve` flag is important because the results are not real services and cannot be
@@ -205,8 +171,7 @@ with service names that do not conform to the rules, you can disable service nam
 entirely:
 
 ```dart
-disableServiceTypeValidation
-(true);
+disableServiceTypeValidation(true);
 ```
 
 Be aware that some network environments might not support non-conformant service names.
@@ -216,9 +181,7 @@ Be aware that some network environments might not support non-conformant service
 In order to help debugging, logging can be enabled for individual topics. For example
 
 ```dart
-enableLogging
-(
-LogTopic.errors);
+enableLogging(LogTopic.errors);
 enableLogging(LogTopic.calls);
 ```
 
