@@ -25,6 +25,16 @@ func serializeService(_ netService: NetService) -> [String: Any?] {
         service["service.port"] = port
     }
 
+    // Extract IP address from addresses array
+    if let addresses = netService.addresses, !addresses.isEmpty {
+        for addressData in addresses {
+            if let address = getIpAddress(from: addressData) {
+                service["service.addresses"] = address
+                break // Use the first valid IP address
+            }
+        }
+    }
+
     if let recordData = netService.txtRecordData() {
         if let txt = nativeTxtToFlutterTxt(recordData) {
             service["service.txt"] = txt;
@@ -32,6 +42,27 @@ func serializeService(_ netService: NetService) -> [String: Any?] {
     }
 
     return service
+}
+
+func getIpAddress(from addressData: Data) -> String? {
+    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+    
+    addressData.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) -> Void in
+        guard let baseAddress = pointer.baseAddress else { return }
+        let sockaddrPtr = baseAddress.assumingMemoryBound(to: sockaddr.self)
+        
+        getnameinfo(
+            sockaddrPtr,
+            socklen_t(addressData.count),
+            &hostname,
+            socklen_t(hostname.count),
+            nil,
+            0,
+            NI_NUMERICHOST
+        )
+    }
+    
+    return String(cString: hostname)
 }
 
 func deserializeService(_ arguments: Any?, domain: String = "local.") -> NetService? {
