@@ -42,13 +42,14 @@ abstract class NsdPlatformInterface extends PlatformInterface {
 /// Represents a network service.
 class Service {
   const Service(
-      {this.name, this.type, this.host, this.port, this.txt, this.addresses});
+      {this.name, this.type, this.host, this.port, this.txt, this.addresses, this.ipStrings});
 
   final String? name;
   final String? type;
   final String? host;
   final int? port;
   final List<InternetAddress>? addresses;
+  final List<String>? ipStrings;
 
   /// Represents DNS TXT records.
   ///
@@ -62,7 +63,7 @@ class Service {
 
   @override
   String toString() =>
-      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt, addresses: $addresses)';
+      'Service (name: $name, service type: $type, hostname: $host, port: $port, txt: $txt, addresses: $addresses, ipStrings: ${ipStrings})';
 }
 
 /// Returns true if the two [Service] instances refer to the same service.
@@ -76,7 +77,8 @@ Service merge(Service existing, Service incoming) => Service(
     host: incoming.host ?? existing.host,
     port: incoming.port ?? existing.port,
     txt: incoming.txt ?? existing.txt,
-    addresses: incoming.addresses ?? existing.addresses);
+    addresses: incoming.addresses ?? existing.addresses,
+    ipStrings: incoming.ipStrings ?? existing.ipStrings);
 
 /// Indicates the cause of an [NsdError].
 enum ErrorCause {
