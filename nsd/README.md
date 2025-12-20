@@ -6,13 +6,11 @@
 
 A Flutter plugin for network service discovery and registration (aka NSD / DNS-SD / Bonjour / mDNS).
 
-<br></br>
-
 ## Basic Usage
 
 ### Service Discovery
 
-```dart
+```
 import 'package:nsd/nsd.dart';
 
 final discovery = await startDiscovery('_http._tcp');
@@ -27,7 +25,7 @@ await stopDiscovery(discovery);
 
 or alternatively:
 
-```dart
+```
 discovery.addServiceListener((service, status) {
   if (status == ServiceStatus.found) {
     // put service in own collection, etc.
@@ -37,7 +35,7 @@ discovery.addServiceListener((service, status) {
 
 ### Service Registration
 
-```dart
+```
 import 'package:nsd/nsd.dart';
 
 final registration = await register(const Service(name: 'Foo', type: '_http._tcp', port: 56000));
@@ -47,33 +45,27 @@ final registration = await register(const Service(name: 'Foo', type: '_http._tcp
 await unregister(registration);
 ```
 
-<br></br>
-
 ## Permissions
 
 ### Android
 
 Add the following permissions to your manifest:
 
-```Xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+```
+<uses-permission android:name="android.permission.INTERNET" /><uses-permission
+android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 ```
 
 ### iOS
 
 Add the following permissions to your Info.plist (replace service type with your own):
 
-```Xml
-<key>NSLocalNetworkUsageDescription</key>
-<string>Required to discover local network devices</string>
-<key>NSBonjourServices</key>
-<array>
-  <string>_http._tcp</string>
+```
+<key>NSLocalNetworkUsageDescription</key><string>Required to discover local network devices
+</string><key>NSBonjourServices</key><array>
+<string>_http._tcp</string>
 </array>
 ```
-
-<br></br>
 
 ## Example application
 
@@ -89,16 +81,12 @@ and register multiple services. It will discover its own services but also other
 - The source code demonstrates how to use the discovery object as a
   [ChangeNotifier](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
 
-<br></br>
-
 ## Minimum OS Requirements
 
 - Android: API level 21 (Android 5.0)
 - iOS: 12.0
 - macOS: 10.11 (El Capitan)
 - Windows 10 (19H1/1903) (Mai 2019 Update)
-
-<br></br>
 
 ## Advanced Usage
 
@@ -112,7 +100,7 @@ the [Apple Developer Forums](https://developer.apple.com/forums/thread/673771?an
 If you _do_ need the IP address, you can configure automatic ip lookup for your discovery
 like this:
 
-```dart
+```
 final discovery = await startDiscovery(serviceType, ipLookupType: IpLookupType.any);
 ```
 
@@ -128,7 +116,7 @@ The current way to do this would be:
 
 Start the discovery like this:
 
-```dart
+```
 final discovery = await startDiscovery('_services._dns-sd._udp', autoResolve: false);
 ```
 
@@ -170,7 +158,7 @@ work
 with service names that do not conform to the rules, you can disable service name validation
 entirely:
 
-```dart
+```
 disableServiceTypeValidation(true);
 ```
 
@@ -180,7 +168,7 @@ Be aware that some network environments might not support non-conformant service
 
 In order to help debugging, logging can be enabled for individual topics. For example
 
-```dart
+```
 enableLogging(LogTopic.errors);
 enableLogging(LogTopic.calls);
 ```
@@ -188,16 +176,10 @@ enableLogging(LogTopic.calls);
 will log errors and all calls to the native side (and their callbacks), which often yields useful
 information.
 
-<br></br>
-
 ## Contributors
 
 [lxp-git](https://github.com/lxp-git) - wrote the Windows prototype!
 
-<br></br>
-
 ## Projects using nsd
 
 🎮 [Tic Tac Toe Local Multiplayer Game for Android](https://github.com/lakscastro/ttt) by Laks Castro
-
-<br></br>
