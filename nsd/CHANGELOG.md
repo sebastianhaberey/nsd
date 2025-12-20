@@ -1,3 +1,7 @@
+## 4.0.4
+
+* issue #78: fix incorrect code formatting in README.md
+
 ## 4.0.3
 
 * cleaned up various gradle build warnings
