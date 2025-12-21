@@ -52,18 +52,20 @@ await unregister(registration);
 Add the following permissions to your manifest:
 
 ```
-<uses-permission android:name="android.permission.INTERNET" /><uses-permission
-android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 ```
 
 ### iOS
 
-Add the following permissions to your Info.plist (replace service type with your own):
+Add the following permissions to your Info.plist (replace service type string with your own):
 
 ```
-<key>NSLocalNetworkUsageDescription</key><string>Required to discover local network devices
-</string><key>NSBonjourServices</key><array>
-<string>_http._tcp</string>
+<key>NSLocalNetworkUsageDescription</key>
+<string>Required to discover local network devices</string>
+<key>NSBonjourServices</key>
+<array>
+    <string>_http._tcp</string>
 </array>
 ```
 
