@@ -139,9 +139,13 @@ consistent on Android / macOS / iOS platform APIs. Since they are all doing it,
 the plugin has the same behavior.
 
 **Note**: this currently doesn't function 100% on Windows platforms. While it will detect the types
-of
-services registered by other machines correctly, it will not detect types of services that were
+of services registered by other machines correctly, it will not detect types of services that were
 registered using the plugin.
+
+**Note**: since approximately iOS 14.5, this kind of multicast discovery requires the property list
+key [com.apple.developer.networking.multicast](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.networking.multicast).
+Users [report](https://github.com/sebastianhaberey/nsd/issues/67) they had success after requesting
+permission from Apple for this entitlement.
 
 ### Disable service name validation
 
