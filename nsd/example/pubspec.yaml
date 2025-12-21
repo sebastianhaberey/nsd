@@ -19,6 +19,10 @@ dependencies:
   shelf: ^1.4.1 # pinned by flutter
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
 
 flutter:

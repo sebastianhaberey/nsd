@@ -1,22 +1,28 @@
 PODS:
   - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
   - nsd_ios (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - nsd_ios (from `.symlinks/plugins/nsd_ios/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   nsd_ios:
     :path: ".symlinks/plugins/nsd_ios/ios"
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  nsd_ios: 8c37babdc6538e3350dbed3a52674d2edde98173
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  nsd_ios: 596ad79109ddd3e52d665f650f36428049e3653e
 
 PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
