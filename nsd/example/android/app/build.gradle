@@ -23,7 +23,8 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdk 35
+    ndkVersion = flutter.ndkVersion
+    compileSdk flutter.compileSdkVersion
     namespace 'com.haberey.flutter.example'
 
     compileOptions {
@@ -41,7 +42,7 @@ android {
 
     defaultConfig {
         applicationId "com.haberey.flutter.example"
-        minSdkVersion 21 // needed for NsdServiceInfo.getAttributes()
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
