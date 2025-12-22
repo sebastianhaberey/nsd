@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
+
 import 'nsd_platform_interface.dart';
 import 'utilities.dart';
 
@@ -56,13 +58,24 @@ Service? deserializeService(dynamic arguments) {
   final txt = data['service.txt'] != null
       ? Map<String, Uint8List?>.from(data['service.txt'])
       : null;
+  List<String>? ipStrings;
+  try {
+    ipStrings = data['service.ipStrings'] != null
+        ? List<String>.from(data['service.ipStrings'])
+        : null;
+  } catch (e) {
+    ipStrings = null;
+    debugPrint("Decode ipStrings failed: ${e}");
+  }
+
 
   if (name == null &&
       type == null &&
       host == null &&
       port == null &&
       addresses == null &&
-      txt == null) {
+      txt == null &&
+      ipStrings == null) {
     return null;
   }
 
@@ -74,7 +87,8 @@ Service? deserializeService(dynamic arguments) {
       host: host,
       port: port,
       addresses: inetAddresses,
-      txt: txt);
+      txt: txt,
+      ipStrings: ipStrings);
 }
 
 Map<String, dynamic> serializeHandle(String value) => {
