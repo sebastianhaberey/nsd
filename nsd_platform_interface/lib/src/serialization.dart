@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'nsd_platform_interface.dart';
 import 'utilities.dart';
 
-String? deserializeString(arguments, String key) =>
+String? deserializeString(dynamic arguments, String key) =>
     Map<String, dynamic>.from(arguments)[key];
 
 Map<String, dynamic> serializeServiceType(String value) =>
@@ -28,7 +28,7 @@ Map<String, dynamic> serializeErrorMessage(String value) =>
 String? deserializeErrorMessage(dynamic arguments) =>
     deserializeString(arguments, 'error.message');
 
-NsdError? deserializeError(arguments) {
+NsdError? deserializeError(dynamic arguments) {
   final cause = deserializeErrorCause(arguments);
   final message = deserializeErrorMessage(arguments);
   if (cause == null || message == null) {
