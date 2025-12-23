@@ -1,3 +1,8 @@
+## 2.1.0
+
+* synchronized with current flutter template
+* updated flutter dependencies
+
 ## 2.0.1
 
 * issue #60: made change log more readable by putting newest entry first

@@ -1,3 +1,8 @@
+## 2.2.0
+
+* updated flutter dependencies
+* fixed lint issues
+
 ## 2.1.1
 
 * issue #60: made change log more readable by putting newest entry first

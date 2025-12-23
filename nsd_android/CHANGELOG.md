@@ -1,3 +1,7 @@
+# 2.2.0
+
+* synchronized with current flutter template
+
 # 2.1.2
 
 * cleaned up various gradle build warnings

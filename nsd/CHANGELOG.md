@@ -1,11 +1,22 @@
+## 4.1.0
+
+* issue #51: added warning for service type enumeration
+* issue #67: updated documentation for new apple multicast entitlement
+* synchronized with current flutter template
+* fixed broken xml in readme
+* re-introduced integration tests for local development
+* added android studio run configurations for developer convenience
+* added project update instructions for future reference
+
 ## 4.0.4
 
-* issue #78: fix incorrect code formatting in README.md
+* issue #78: fix incorrect code formatting in readme
 
 ## 4.0.3
 
 * cleaned up various gradle build warnings
-* issue #75: android example application did not build due to flutter vs kotlin version incompatibility
+* issue #75: android example application did not build due to flutter vs kotlin version
+  incompatibility
 
 ## 4.0.2
 
