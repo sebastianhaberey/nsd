@@ -52,7 +52,7 @@ Service? deserializeService(dynamic arguments) {
   final type = data['service.type'] as String?;
   final host = data['service.host'] as String?;
   final port = data['service.port'] as int?;
-  final addresses = data['service.addresses'] as String?;
+  final addresses = deserializeAddresses(data['service.addresses']);
   final txt = data['service.txt'] != null
       ? Map<String, Uint8List?>.from(data['service.txt'])
       : null;
@@ -61,20 +61,18 @@ Service? deserializeService(dynamic arguments) {
       type == null &&
       host == null &&
       port == null &&
-      addresses == null &&
+      addresses.isEmpty &&
       txt == null) {
     return null;
   }
-
-  final inetAddresses = addresses != null ? [InternetAddress(addresses)] : null;
 
   return Service(
       name: name,
       type: type,
       host: host,
       port: port,
-      addresses: inetAddresses,
-      txt: txt);
+      txt: txt,
+      addresses: addresses);
 }
 
 Map<String, dynamic> serializeHandle(String value) => {
@@ -83,3 +81,43 @@ Map<String, dynamic> serializeHandle(String value) => {
 
 String? deserializeHandle(dynamic arguments) =>
     deserializeString(arguments, 'handle');
+
+List<InternetAddress> deserializeAddresses(dynamic rawAddressRecords) {
+  if (rawAddressRecords == null || rawAddressRecords is! List) {
+    return [];
+  }
+
+  final addresses = <InternetAddress>[];
+  final seen = <String>{}; // de-dupe by address string
+
+  for (final rawAddressRecord in rawAddressRecords) {
+    if (rawAddressRecord is! Map) {
+      continue;
+    }
+
+    final addressRecord = Map<String, dynamic>.from(rawAddressRecord);
+
+    final addressStr = addressRecord['address'] as String?;
+    if (addressStr == null || addressStr.isEmpty || !seen.add(addressStr)) {
+      continue;
+    }
+
+    // hint from native side (optional)
+    final typeStr = addressRecord['type'] as String?;
+
+    InternetAddressType? type;
+    if (typeStr == 'ipv4') {
+      type = InternetAddressType.IPv4;
+    } else if (typeStr == 'ipv6') {
+      type = InternetAddressType.IPv6;
+    }
+
+    try {
+      addresses.add(InternetAddress(addressStr, type: type));
+    } catch (_) {
+      // skip invalid address literal
+    }
+  }
+
+  return addresses;
+}

@@ -61,9 +61,8 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       if (autoResolve) {
         service = await resolve(service);
 
-        if (isIpLookupEnabled(ipLookupType) && service.addresses == null) {
-          service = await performIpLookup(service, ipLookupType);
-        }
+        // TODO remove this and deprecate IpLookupType once Windows supports native addresses too
+        service = await performIpLookup(service, ipLookupType);
       }
       discovery.add(service);
     });
@@ -75,6 +74,29 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
       ...serializeHandle(handle),
       ...serializeServiceType(serviceType)
     }).then((value) => completer.future);
+  }
+
+  Future<Service> performIpLookup(
+      Service service, IpLookupType ipLookupType) async {
+    final internetAddressType = getInternetAddressType(ipLookupType);
+    if (internetAddressType == null) {
+      return service; // lookup not enabled -> leave service as is
+    }
+
+    var addresses = service.addresses;
+    if (addresses != null && internetAddressType != InternetAddressType.any) {
+      // platform already supplied addresses -> no lookup, but respect user's choice of address type
+      addresses =
+          addresses.where((a) => a.type == internetAddressType).toList();
+    } else {
+      final host = service.host;
+      if (host == null) {
+        return service; // cannot look up addresses -> leave service as is
+      }
+      addresses = await InternetAddress.lookup(host, type: internetAddressType);
+    }
+
+    return merge(service, Service(addresses: addresses));
   }
 
   @override
@@ -230,15 +252,15 @@ class MethodChannelNsdPlatform extends NsdPlatformInterface {
 }
 
 Future<Service> performIpLookup(
-    Service service, IpLookupType ipLookupType) async {
+    Service service, InternetAddressType internetAddressType) async {
   final host = service.host;
 
   if (host == null) {
     return service;
   }
 
-  final addresses = await InternetAddress.lookup(host,
-      type: getInternetAddressType(ipLookupType)!);
+  final addresses =
+      await InternetAddress.lookup(host, type: internetAddressType);
   return merge(service, Service(addresses: addresses));
 }
 

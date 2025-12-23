@@ -31,6 +31,15 @@ func serializeService(_ netService: NetService) -> [String: Any?] {
         }
     }
 
+    if let addressDataList = netService.addresses {
+        
+        let addressEntries = addressDataList.compactMap { getAddressEntry(from: $0) }
+
+        if !addressEntries.isEmpty {
+            service["service.addresses"] = addressEntries
+        }
+    }
+
     return service
 }
 
@@ -120,4 +129,56 @@ func serializeErrorCause(_ value: ErrorCause) -> [String: Any?] {
 
 func serializeErrorMessage(_ value: String) -> [String: Any?] {
     ["error.message": value]
+}
+
+func getAddressEntry(from addressData: Data) -> [String: Any]? {
+    
+    // temporary access to raw bytes in data
+    addressData.withUnsafeBytes { rawBuffer in
+        
+        // rawBuffer.baseAddress can be nil if data is empty
+        guard let baseAddress = rawBuffer.baseAddress else {
+            return nil
+        }
+        
+        // get sockaddr pointer from baseAddress
+        let sockaddrPtr = baseAddress.assumingMemoryBound(to: sockaddr.self)
+
+        // prepare C-style character buffer
+        var addressData = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+        
+        // length of sockaddr struct
+        let length = socklen_t(addressData.count)
+
+        // get human-readable strings from sockaddr
+        guard getnameinfo(
+            sockaddrPtr,
+            length,
+            &addressData,
+            socklen_t(addressData.count),
+            nil,
+            0,
+            NI_NUMERICHOST // request numeric address e.g. "192.168.1.10" or "fe80::1234"
+        ) == 0 else {
+            return nil
+        }
+
+        // convert C-string buffer into Swift string
+        let address = String(cString: addressData)
+
+        switch Int32(sockaddrPtr.pointee.sa_family) {
+        case AF_INET:
+            return [
+                "address": address,
+                "type": "ipv4"
+            ]
+        case AF_INET6:
+            return [
+                "address": address,
+                "type": "ipv6"
+            ]
+        default:
+            return nil
+        }
+    }
 }

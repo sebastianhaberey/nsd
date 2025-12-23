@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -178,22 +179,24 @@ class DiscoveryState extends State<DiscoveryWidget> {
 
   Widget buildDataTable(
       BuildContext context, Discovery discovery, Widget? child) {
-    return DataTable(
-      headingRowHeight: 24,
-      dataRowMinHeight: 24,
-      dataRowMaxHeight: 24,
-      dataTextStyle: const TextStyle(color: Colors.black, fontSize: 12),
-      columnSpacing: 8,
-      horizontalMargin: 0,
-      headingTextStyle: const TextStyle(
-          color: Colors.black, fontSize: 12, fontWeight: FontWeight.w600),
-      columns: <DataColumn>[
-        buildDataColumn('Name'),
-        buildDataColumn('Type'),
-        buildDataColumn('Host'),
-        buildDataColumn('Port'),
-      ],
-      rows: buildDataRows(discovery),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        dataRowMinHeight: 24,
+        dataTextStyle: const TextStyle(color: Colors.black, fontSize: 12),
+        columnSpacing: 8,
+        horizontalMargin: 0,
+        headingTextStyle: const TextStyle(
+            color: Colors.black, fontSize: 12, fontWeight: FontWeight.w600),
+        columns: <DataColumn>[
+          buildDataColumn('Name'),
+          buildDataColumn('Type'),
+          buildDataColumn('Host'),
+          buildDataColumn('Port'),
+          buildDataColumn('Addresses')
+        ],
+        rows: buildDataRows(discovery),
+      ),
     );
   }
 
@@ -212,7 +215,10 @@ class DiscoveryState extends State<DiscoveryWidget> {
                 DataCell(Text(e.name ?? 'unknown')),
                 DataCell(Text(e.type ?? 'unknown')),
                 DataCell(Text(e.host ?? 'unknown')),
-                DataCell(Text(e.port != null ? '${e.port}' : 'unknown'))
+                DataCell(Text(e.port != null ? '${e.port}' : 'unknown')),
+                DataCell(Text(e.addresses != null
+                    ? renderAddresses(e.addresses)
+                    : 'unknown')),
               ],
             ))
         .toList();
@@ -264,4 +270,12 @@ Map<String, Uint8List?> createTxt() {
     'a-blank': Uint8List(0),
     'a-null': null,
   };
+}
+
+String renderAddresses(List<InternetAddress>? addresses) {
+  if (addresses == null || addresses.isEmpty) {
+    return '';
+  }
+
+  return addresses.map((a) => a.address).join('\n');
 }

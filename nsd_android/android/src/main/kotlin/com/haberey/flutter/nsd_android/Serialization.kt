@@ -1,6 +1,9 @@
 package com.haberey.flutter.nsd_android
 
 import android.net.nsd.NsdServiceInfo
+import android.os.Build
+import java.net.Inet4Address
+import java.net.Inet6Address
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.charset.CharsetDecoder
@@ -107,13 +110,35 @@ private fun assertValidUtf8(key: String, value: ByteArray) {
 }
 
 internal fun serializeServiceInfo(nsdServiceInfo: NsdServiceInfo): Map<String, Any?> {
+    val inetAddresses = when {
+        Build.VERSION.SDK_INT >= 34 -> nsdServiceInfo.hostAddresses
+        else -> listOfNotNull(nsdServiceInfo.host)
+    }
+
+    val addressEntries = inetAddresses.mapNotNull { getAddressEntry(it) }
+
     return mapOf(
         Key.SERVICE_NAME.serializeKey to nsdServiceInfo.serviceName,
         Key.SERVICE_TYPE.serializeKey to removeLeadingAndTrailingDots(serviceType = nsdServiceInfo.serviceType),
         Key.SERVICE_HOST.serializeKey to nsdServiceInfo.host?.canonicalHostName,
-        Key.SERVICE_ADDRESSES.serializeKey to nsdServiceInfo.host?.hostAddress,
+        Key.SERVICE_ADDRESSES.serializeKey to addressEntries,
         Key.SERVICE_PORT.serializeKey to if (nsdServiceInfo.port == 0) null else nsdServiceInfo.port,
         Key.SERVICE_TXT.serializeKey to nsdServiceInfo.attributes,
+    )
+}
+
+private fun getAddressEntry(addr: InetAddress): Map<String, Any?>? {
+    val addressStr = addr.hostAddress ?: return null
+
+    val typeStr = when (addr) {
+        is Inet4Address -> "ipv4"
+        is Inet6Address -> "ipv6"
+        else -> null
+    }
+
+    return mapOf(
+        "address" to addressStr,
+        "type" to typeStr,
     )
 }
 
