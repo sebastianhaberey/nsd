@@ -13,17 +13,17 @@ dependencies:
   nsd:
     path: ../
   cupertino_icons: ^1.0.8
-  provider: ^6.1.2
+  provider: ^6.1.5+1
   flutter_speed_dial: ^7.0.0
-  uuid: ^4.5.1
-  shelf: ^1.4.1 # pinned by flutter
+  uuid: ^4.5.2
+  shelf: ^1.4.2
 
 dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
