@@ -43,18 +43,18 @@ cd nsd/example/android
 ```
 
 Copy the resulting changes
-from [example gradle-wrapper.properties](example/android/gradle/wrapper/gradle-wrapper.properties)
+from [example gradle-wrapper.properties](../example/android/gradle/wrapper/gradle-wrapper.properties)
 to
-[nsd_android gradle-wrapper.properties](../nsd_android/android/gradle/wrapper/gradle-wrapper.properties).
+[nsd_android gradle-wrapper.properties](../../nsd_android/android/gradle/wrapper/gradle-wrapper.properties).
 
 ### Update AGP and Kotlin version
 
-Update the values in [example settings.gradle](example/android/settings.gradle).
+Update the values in [example settings.gradle](../example/android/settings.gradle).
 
 ### Update Java / Kotlin compatibility
 
-Update the values in [example build.gradle](example/android/app/build.gradle)
-and [nsd_android build.gradle](../nsd_android/android/build.gradle)
+Update the values in [example build.gradle](../example/android/app/build.gradle)
+and [nsd_android build.gradle](../../nsd_android/android/build.gradle)
 
 ## iOS / macOS
 
