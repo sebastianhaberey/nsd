@@ -18,6 +18,7 @@ func serializeService(_ netService: NetService) -> [String: Any?] {
         "service.name": netService.name,
         "service.type": cleanServiceType(netService.type),
         "service.host": netService.hostName,
+        "service.ipStrings": netService.ipAddresses.map { $0.ipString },
     ]
 
     let port = netService.port;
