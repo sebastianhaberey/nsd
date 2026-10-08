@@ -1,3 +1,10 @@
+# 3.0.2
+
+* Marshal DNS-SD callbacks to Flutter's platform thread and retain native
+  request contexts through completion after cancellation.
+* Bound outstanding native requests, retained browse results, and pending
+  platform callbacks.
+
 ## 3.0.1
 
 * issue #60: made change log more readable by putting newest entry first

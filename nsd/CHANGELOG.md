@@ -1,3 +1,8 @@
+## 5.0.2
+
+* Resolve Android and Windows implementations from their sibling packages so
+  this fork keeps the platform compatibility fixes with the public API package.
+
 ## 5.0.1
 
 * updated project to comply with pana SPM requirements

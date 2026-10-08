@@ -1,3 +1,8 @@
+# 2.2.1
+
+* Use built-in Kotlin with Android Gradle Plugin 9 and keep Kotlin compilation
+  on JVM 17; retain the legacy Kotlin plugin path for earlier AGP versions.
+
 # 2.2.0
 
 * synchronized with current flutter template

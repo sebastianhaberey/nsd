@@ -16,14 +16,29 @@
 namespace nsd_windows {
 
 	NsdWindows::NsdWindows(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel) {
-		this->methodChannel = std::move(methodChannel);
+		dispatcher = std::make_shared<PlatformDispatcher>();
+        this->methodChannel = std::move(methodChannel);
 		this->methodChannel->SetMethodCallHandler(
 			[nsdWindows = this](const auto& call, auto result) { nsdWindows->HandleMethodCall(call, result);
 			});
 		this->systemRequirementsSatisfied = CheckSystemRequirementsSatisfied();
 	}
 
-	NsdWindows::~NsdWindows() {}
+	NsdWindows::~NsdWindows() {
+        dispatcher->Shutdown();
+        for (auto& entry : discoveryContextMap) DnsServiceBrowseCancel(&entry.second->canceller);
+        for (auto& entry : resolveContextMap) DnsServiceResolveCancel(&entry.second->canceller);
+        for (auto& entry : registerContextMap) {
+            auto& ctx = *entry.second;
+            if (ctx.request.pServiceInstance) {
+                ctx.pending = entry.second;
+                ctx.request.pRegisterCompletionCallback = &DnsServiceUnregisterCallback;
+                DnsServiceDeRegister(&ctx.request,nullptr);
+                DnsServiceFreeInstance(ctx.request.pServiceInstance);
+                ctx.request.pServiceInstance = nullptr;
+            } else { DnsServiceRegisterCancel(&ctx.canceller); }
+        }
+    }
 
 	void NsdWindows::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue>& methodCall,
 		std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result) {
@@ -62,6 +77,8 @@ namespace nsd_windows {
 
 	void NsdWindows::StartDiscovery(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+        if (discoveryContextMap.size() >= 64) throw NsdError(ErrorCause::INTERNAL_ERROR,"NSD request limit");
+
 		if (!this->systemRequirementsSatisfied) {
 			throw NsdError(ErrorCause::OPERATION_NOT_SUPPORTED, "Plugin requires at least Windows 10, build 18362");
 		}
@@ -69,8 +86,10 @@ namespace nsd_windows {
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
-		auto context = std::make_unique<DiscoveryContext>();
+		auto context = std::make_shared<DiscoveryContext>();
 		context->nsdWindows = this;
+        context->dispatcher = dispatcher;
+        context->pending = context;
 		context->handle = handle;
 
 		auto queryName = ToUtf16(serviceType + ".local");
@@ -85,6 +104,7 @@ namespace nsd_windows {
 		auto status = DnsServiceBrowse(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
+            context->pending.reset();
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
 		}
 
@@ -105,7 +125,7 @@ namespace nsd_windows {
 		auto& context = *it->second.get();
 
 		const auto status = DnsServiceBrowseCancel(&context.canceller);
-		discoveryContextMap.erase(it);
+		context.cancelled = true;
 
 		if (status != ERROR_SUCCESS) {
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
@@ -117,12 +137,16 @@ namespace nsd_windows {
 
 	void NsdWindows::Resolve(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+        if (resolveContextMap.size() >= 64) throw NsdError(ErrorCause::INTERNAL_ERROR,"NSD request limit");
+
 		auto handle = Deserialize<std::string>(arguments, "handle");
 		auto serviceName = Deserialize<std::string>(arguments, "service.name");
 		auto serviceType = Deserialize<std::string>(arguments, "service.type");
 
-		auto context = std::make_unique<ResolveContext>();
+		auto context = std::make_shared<ResolveContext>();
 		context->nsdWindows = this;
+        context->dispatcher = dispatcher;
+        context->pending = context;
 		context->handle = handle;
 
 		auto queryName = ToUtf16(serviceName + "." + serviceType + ".local");
@@ -137,6 +161,7 @@ namespace nsd_windows {
 		const auto status = DnsServiceResolve(&request, &context->canceller);
 
 		if (status != DNS_REQUEST_PENDING) {
+            context->pending.reset();
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
 		}
 
@@ -146,6 +171,8 @@ namespace nsd_windows {
 
 	void NsdWindows::Register(const flutter::EncodableMap& arguments, std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& result)
 	{
+        if (registerContextMap.size() >= 64) throw NsdError(ErrorCause::INTERNAL_ERROR,"NSD request limit");
+
 		if (!this->systemRequirementsSatisfied) {
 			throw NsdError(ErrorCause::OPERATION_NOT_SUPPORTED, "Plugin requires at least Windows 10, build 18362");
 		}
@@ -176,8 +203,10 @@ namespace nsd_windows {
 			serviceTxt->pValuePointers // PCWSTR* values
 		);
 
-		auto context = std::make_unique<RegisterContext>();
+		auto context = std::make_shared<RegisterContext>();
 		context->nsdWindows = this;
+        context->dispatcher = dispatcher;
+        context->pending = context;
 		context->handle = handle;
 
 		auto& request = context->request;
@@ -195,6 +224,7 @@ namespace nsd_windows {
 		request.pRegisterCompletionCallback = nullptr; // will be replaced by Unregister()
 
 		if (status != DNS_REQUEST_PENDING) {
+            context->pending.reset();
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
 		}
 
@@ -214,7 +244,8 @@ namespace nsd_windows {
 		auto& context = *it->second.get();
 		auto& request = context.request;
 
-		request.pRegisterCompletionCallback = &DnsServiceUnregisterCallback; // set callback for request reuse
+		context.pending = it->second;
+        request.pRegisterCompletionCallback = &DnsServiceUnregisterCallback; // set callback for request reuse
 
 		auto status = DnsServiceDeRegister(&request, nullptr);
 
@@ -222,6 +253,7 @@ namespace nsd_windows {
 		request.pServiceInstance = nullptr;
 
 		if (status != DNS_REQUEST_PENDING) {
+            context.pending.reset();
 			throw NsdError(ErrorCause::INTERNAL_ERROR, GetErrorMessage(status));
 		}
 
@@ -230,6 +262,13 @@ namespace nsd_windows {
 
 	void NsdWindows::OnServiceDiscovered(const std::string handle, const DWORD status, PDNS_RECORD records)
 	{
+        auto context = discoveryContextMap.find(handle);
+        if (context == discoveryContextMap.end() || context->second->cancelled || status == ERROR_CANCELLED) {
+            DnsRecordListFree(records,DnsFreeRecordList);
+            if (status == ERROR_CANCELLED && context != discoveryContextMap.end()) discoveryContextMap.erase(context);
+            return;
+        }
+
 		//std::cout << GetTimeNow() << " " << "OnServiceDiscovered()" << std::endl;
 
 		if (status != ERROR_SUCCESS) {
@@ -257,7 +296,8 @@ namespace nsd_windows {
 		if (serviceInfo.status == ServiceInfo::STATUS_FOUND) {
 
 			if (it == services.end()) {
-				services.push_back(serviceInfo);
+				if (services.size() >= 64) { DnsRecordListFree(records,DnsFreeRecordList); return; }
+                services.push_back(serviceInfo);
 				methodChannel->InvokeMethod("onServiceDiscovered", CreateMethodResult({
 						{ "handle", handle },
 						{ "service.name", serviceInfo.name.value() },
@@ -387,29 +427,32 @@ namespace nsd_windows {
 		methodChannel->InvokeMethod("onUnregistrationSuccessful", CreateMethodResult({ { "handle", handle } }));
 	}
 
-	void NsdWindows::DnsServiceBrowseCallback(const DWORD status, LPVOID context, PDNS_RECORD records)
-	{
-		DiscoveryContext& discoveryContext = *static_cast<DiscoveryContext*>(context);
-		discoveryContext.nsdWindows->OnServiceDiscovered(discoveryContext.handle, status, records);
-	}
-
-	void NsdWindows::DnsServiceResolveCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
-	{
-		ResolveContext& resolveContext = *static_cast<ResolveContext*>(context);
-		resolveContext.nsdWindows->OnServiceResolved(resolveContext.handle, status, pInstance);
-	}
-
-	void NsdWindows::DnsServiceRegisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
-	{
-		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
-		registerContext.nsdWindows->OnServiceRegistered(registerContext.handle, status, pInstance);
-	}
-
-	void NsdWindows::DnsServiceUnregisterCallback(const DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE pInstance)
-	{
-		RegisterContext& registerContext = *static_cast<RegisterContext*>(context);
-		registerContext.nsdWindows->OnServiceUnregistered(registerContext.handle, status, pInstance);
-	}
+    // DNS callbacks run on system worker threads. Marshal the entire operation
+    // to the Flutter platform thread, including request-map mutation. Contexts
+    // retain themselves until their final native completion, so cancellation
+    // cannot free a pQueryContext that Windows still has to call.
+    void NsdWindows::DnsServiceBrowseCallback(DWORD status, LPVOID context, PDNS_RECORD records) {
+        auto ctx = static_cast<DiscoveryContext*>(context)->shared_from_this();
+        if (status == ERROR_CANCELLED) ctx->pending.reset();
+        ctx->dispatcher->Post([ctx,status,records] {
+            ctx->nsdWindows->OnServiceDiscovered(ctx->handle,status,records);
+        }, [records] { DnsRecordListFree(records,DnsFreeRecordList); });
+    }
+    void NsdWindows::DnsServiceResolveCallback(DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE instance) {
+        auto ctx = static_cast<ResolveContext*>(context)->shared_from_this(); ctx->pending.reset();
+        ctx->dispatcher->Post([ctx,status,instance] { ctx->nsdWindows->OnServiceResolved(ctx->handle,status,instance); },
+            [instance] { DnsServiceFreeInstance(instance); });
+    }
+    void NsdWindows::DnsServiceRegisterCallback(DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE instance) {
+        auto ctx = static_cast<RegisterContext*>(context)->shared_from_this(); ctx->pending.reset();
+        ctx->dispatcher->Post([ctx,status,instance] { ctx->nsdWindows->OnServiceRegistered(ctx->handle,status,instance); },
+            [instance] { DnsServiceFreeInstance(instance); });
+    }
+    void NsdWindows::DnsServiceUnregisterCallback(DWORD status, LPVOID context, PDNS_SERVICE_INSTANCE instance) {
+        auto ctx = static_cast<RegisterContext*>(context)->shared_from_this(); ctx->pending.reset();
+        ctx->dispatcher->Post([ctx,status,instance] { ctx->nsdWindows->OnServiceUnregistered(ctx->handle,status,instance); },
+            [instance] { DnsServiceFreeInstance(instance); });
+    }
 
 	std::optional<ServiceInfo> NsdWindows::GetServiceInfoFromRecords(const PDNS_RECORD& records) {
 

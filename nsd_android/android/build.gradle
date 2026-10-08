@@ -22,7 +22,9 @@ rootProject.allprojects {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+// AGP 9 supplies Kotlin; applying the legacy plugin throws before NSD starts.
+def builtInKotlin = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger() >= 9
+if (!builtInKotlin) apply plugin: 'kotlin-android'
 
 android {
     namespace 'com.haberey.flutter.nsd_android'
@@ -32,8 +34,8 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
+    if (!builtInKotlin) {
+        kotlinOptions { jvmTarget = '17' }
     }
 
     sourceSets {
@@ -46,4 +48,8 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         compileSdkVersion flutter.compileSdkVersion
     }
+}
+
+if (builtInKotlin) {
+    kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 } }
 }

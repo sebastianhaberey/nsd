@@ -27,6 +27,7 @@ list(APPEND PLUGIN_SOURCES
 # Define the plugin library target. Its name must not be changed (see comment
 # on PLUGIN_NAME above).
 add_library(${PLUGIN_NAME} SHARED
+  "platform_dispatcher.cpp"
   "include/nsd_windows/nsd_windows_plugin_c_api.h"
   "nsd_windows_plugin_c_api.cpp"
   ${PLUGIN_SOURCES}

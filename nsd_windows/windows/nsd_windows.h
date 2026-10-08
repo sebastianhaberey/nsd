@@ -7,6 +7,7 @@
 #include <windns.h>
 
 #include <memory>
+#include "platform_dispatcher.h"
 
 #pragma warning(disable : 4458) // declaration hides class member (used intentionally in method parameters vs local variables)
 #pragma comment(lib, "dnsapi.lib")
@@ -31,23 +32,30 @@ namespace nsd_windows {
 	};
 
 
-	struct DiscoveryContext {
+	struct DiscoveryContext : std::enable_shared_from_this<DiscoveryContext> {
+        std::shared_ptr<PlatformDispatcher> dispatcher;
+        std::shared_ptr<void> pending;
 
 		NsdWindows* nsdWindows;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 		std::vector<ServiceInfo> services;
+        bool cancelled = false;
 	};
 
 
-	struct ResolveContext {
+	struct ResolveContext : std::enable_shared_from_this<ResolveContext> {
+        std::shared_ptr<PlatformDispatcher> dispatcher;
+        std::shared_ptr<void> pending;
 
 		NsdWindows* nsdWindows;
 		std::string handle;
 		DNS_SERVICE_CANCEL canceller;
 	};
 
-	struct RegisterContext {
+	struct RegisterContext : std::enable_shared_from_this<RegisterContext> {
+        std::shared_ptr<PlatformDispatcher> dispatcher;
+        std::shared_ptr<void> pending;
 
 		NsdWindows* nsdWindows;
 		std::string handle;
@@ -80,11 +88,12 @@ namespace nsd_windows {
 		static std::optional<ServiceInfo> GetServiceInfoFromPtrRecord(const PDNS_RECORD& record);
 
 		std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> methodChannel;
-		std::map<std::string, std::unique_ptr<DiscoveryContext>> discoveryContextMap;
-		std::map<std::string, std::unique_ptr<RegisterContext>> registerContextMap;
-		std::map<std::string, std::unique_ptr<ResolveContext>> resolveContextMap;
+		std::map<std::string, std::shared_ptr<DiscoveryContext>> discoveryContextMap;
+		std::map<std::string, std::shared_ptr<RegisterContext>> registerContextMap;
+		std::map<std::string, std::shared_ptr<ResolveContext>> resolveContextMap;
 
 		bool systemRequirementsSatisfied;
+        std::shared_ptr<PlatformDispatcher> dispatcher;
 
 		void HandleMethodCall(
 			const flutter::MethodCall<flutter::EncodableValue>& method_call,
